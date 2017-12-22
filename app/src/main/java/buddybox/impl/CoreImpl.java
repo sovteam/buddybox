@@ -26,6 +26,7 @@ public class CoreImpl implements Core {
     private final Handler handler = new Handler();
 
     private int nextId = 0;
+    private final Map<Integer, Song> songsById = new HashMap<>();
     private final Map<Integer, File> songFilesById = new HashMap<>();
 
     private StateListener listener;
@@ -51,8 +52,8 @@ public class CoreImpl implements Core {
 
     private void play(Playable.Play event) {
         int id = event.playableId;
+        currentSong = songsById.get(id);
         File file = songFilesById.get(id);
-        currentSong = readSongMetadata(id, file);
         try {
             Uri myUri = Uri.parse(file.getCanonicalPath());
             player.reset();
@@ -87,13 +88,16 @@ public class CoreImpl implements Core {
     private List<Playable> listMP3Songs() {
         List<Playable> ret = new ArrayList<>();
         File[] files = musicDirectory.listFiles();
+        songsById.clear();
         songFilesById.clear();
         for (File file : files) {
             if (!file.getName().toLowerCase().endsWith(".mp3"))
                 continue;
             int id = nextId++;
+            Song song = readSongMetadata(id, file);
+            songsById.put(id, song);
             songFilesById.put(id, file);
-            ret.add(readSongMetadata(id, file));
+            ret.add(song);
         }
         return ret;
     }
