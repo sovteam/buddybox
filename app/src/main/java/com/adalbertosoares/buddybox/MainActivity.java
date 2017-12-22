@@ -15,6 +15,7 @@ import java.util.List;
 
 import buddybox.api.Core;
 import buddybox.api.Playable;
+import buddybox.api.Song;
 import buddybox.api.VisibleState;
 
 import static buddybox.CoreSingleton.dispatch;
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         // set events
         ListView list = (ListView) findViewById(R.id.recentPlayables);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            System.out.println(">>> click i: " + i + " l: " + l + " view: " + view + " adapterView: " + adapterView);
+            dispatch(playables.getItem(i).play());
         }});
 
         playables = new PlayablesArrayAdapter();
@@ -83,8 +84,15 @@ public class MainActivity extends AppCompatActivity {
         // list songs
         playables.updateRecent(state.recent);
 
-        ((TextView)findViewById(R.id.playingName)).setText(state.songPlaying.name());
-        ((TextView)findViewById(R.id.playingSubtitle)).setText(state.songPlaying.subtitle());
-        ((Button)findViewById(R.id.playPause)).setText(state.isPaused ? "PLAY" : "PAUSE");
+        Song songPlaying = state.songPlaying;
+        View playingBar = findViewById(R.id.playingBar);
+        if (songPlaying == null)
+            playingBar.setVisibility(View.INVISIBLE);
+        else {
+            playingBar.setVisibility(View.VISIBLE);
+            ((TextView)findViewById(R.id.playingName)).setText(songPlaying.name());
+            ((TextView)findViewById(R.id.playingSubtitle)).setText(songPlaying.subtitle());
+            ((Button)findViewById(R.id.playPause)).setText(state.isPaused ? "PLAY" : "PAUSE");
+        }
     }
 }

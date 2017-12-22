@@ -39,7 +39,8 @@
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true">
+        android:layout_alignParentEnd="true"
+        android:id="@+id/playingBar">
 
 
         <TextView
@@ -48,8 +49,8 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="Small Text"
             android:id="@+id/playingSubtitle"
-            android:layout_above="@+id/playingName"
-            android:layout_alignParentEnd="true" />
+            android:layout_below="@+id/playingName"
+            android:layout_alignParentStart="true" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,8 +58,8 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Large Text"
             android:id="@+id/playingName"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignTop="@+id/playPause"
+            android:layout_alignParentStart="true" />
 
         <Button
             android:layout_width="wrap_content"
@@ -66,7 +67,7 @@
             android:text="Play"
             android:id="@+id/playPause"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
 
 

@@ -1,12 +1,17 @@
 package buddybox.api;
 
-/**
- * Created by adalberto on 20/12/17.
- */
 public interface Playable {
-    int id();
+
+    class Play extends Core.Event {
+        public final int playableId;
+
+        public Play(int playableId) {
+            this.playableId = playableId;
+        }
+    }
 
     String name();
-
     String subtitle();
+
+    Play play();
 }
