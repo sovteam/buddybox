@@ -1,14 +1,15 @@
 package buddybox;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import buddybox.api.Core;
-import buddybox.sim.CoreSim;
 
 public class CoreSingleton {
 
-    private static final Core INSTANCE = new CoreSim(); // switching between sims and real impl is done here
+    private static Core INSTANCE;
+
+    public static void init(Core instance) {
+        if (INSTANCE != null) throw new IllegalStateException();
+        INSTANCE = instance;
+    }
 
     public static void dispatch(Core.Event event) {
         INSTANCE.dispatch(event);

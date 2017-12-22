@@ -88,34 +88,3 @@ public class MainActivity extends AppCompatActivity {
         ((Button)findViewById(R.id.playPause)).setText(state.isPaused ? "PLAY" : "PAUSE");
     }
 }
-
-
-
- /*
-        File musicDirectory = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        System.out.println(">>> Environment: " + Environment.DIRECTORY_MUSIC);
-        for (File file : musicDirectory.listFiles()) {
-            System.out.println(">>> File: " + file.getName());
-        }
-
-
-
-
-        File mp3 = musicDirectory.listFiles()[0];
-
-        try {
-            MediaPlayer mPlayer = new MediaPlayer();
-            Uri myUri = Uri.parse(mp3.getCanonicalPath());
-            System.out.println(">>> URI: " + myUri);
-            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mPlayer.setDataSource(MainActivity.this, myUri);
-            mPlayer.prepare();
-            mPlayer.start();
-
-            // mPlayer.pause();
-
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println(musicDirectory);*/
