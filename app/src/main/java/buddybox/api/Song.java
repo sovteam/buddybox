@@ -39,4 +39,7 @@ public class Song implements Playable {
             this.songID = songID;
         }
     }
+
+    public static final PlayPauseCurrent PLAY_PAUSE_CURRENT = new PlayPauseCurrent();
+    public static class PlayPauseCurrent extends Core.Event {}
 }

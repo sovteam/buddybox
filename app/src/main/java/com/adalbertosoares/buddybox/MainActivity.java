@@ -1,32 +1,25 @@
 package com.adalbertosoares.buddybox;
 
-import android.content.Context;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import static buddybox.CoreSingleton.dispatch;
-import static buddybox.CoreSingleton.setStateListener;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import buddybox.api.Core;
 import buddybox.api.Playable;
 import buddybox.api.VisibleState;
+
+import static buddybox.CoreSingleton.dispatch;
+import static buddybox.CoreSingleton.setStateListener;
+import static buddybox.api.Song.PLAY_PAUSE_CURRENT;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
 
         playables = new PlayablesArrayAdapter();
         list.setAdapter(playables);
+
+        findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(PLAY_PAUSE_CURRENT);
+        }});
 
         setStateListener(new Core.StateListener() { @Override public void update(VisibleState state) {
             updateState(state);
@@ -85,6 +82,10 @@ public class MainActivity extends AppCompatActivity {
     private void updateState(VisibleState state) {
         // list songs
         playables.updateRecent(state.recent);
+
+        ((TextView)findViewById(R.id.playingName)).setText(state.songPlaying.name());
+        ((TextView)findViewById(R.id.playingSubtitle)).setText(state.songPlaying.subtitle());
+        ((Button)findViewById(R.id.playPause)).setText(state.isPaused ? "PLAY" : "PAUSE");
     }
 }
 
