@@ -7,7 +7,7 @@ import buddybox.sim.CoreSim;
 
 public class BuddyBoxApp extends Application {
 
-    private static boolean USE_SIMULATOR = false;
+    private static boolean USE_SIMULATOR = true;
 
     @Override
     public void onCreate() {

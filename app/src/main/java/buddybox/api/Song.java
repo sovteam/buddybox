@@ -2,7 +2,7 @@ package buddybox.api;
 
 public class Song implements Playable {
 
-    private final int id;
+    public final int id;
     public final String name;
     public final String artist;
     public final String genre;

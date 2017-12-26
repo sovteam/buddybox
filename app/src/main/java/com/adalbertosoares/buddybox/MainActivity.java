@@ -1,5 +1,6 @@
 package com.adalbertosoares.buddybox;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -44,12 +46,17 @@ public class MainActivity extends AppCompatActivity {
             dispatch(PLAY_PAUSE_CURRENT);
         }});
 
+        findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            startActivity(new Intent(MainActivity.this, PlayingActivity.class));
+        }});
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         setStateListener(new Core.StateListener() { @Override public void update(VisibleState state) {
             updateState(state);
         }});
-
-
-
     }
 
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
@@ -92,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
             playingBar.setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.playingName)).setText(songPlaying.name());
             ((TextView)findViewById(R.id.playingSubtitle)).setText(songPlaying.subtitle());
-            ((Button)findViewById(R.id.playPause)).setText(state.isPaused ? "PLAY" : "PAUSE");
+            ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
         }
     }
 }

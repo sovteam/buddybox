@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Buddy Box</string>
+    <string name="play">Play</string>
+    <string name="no_song_playing">No song playing</string>
+    <string name="music_library">Music Library</string>
+    <string name="loved">Loved</string>
+    <string name="buddies">Buddies</string>
+    <string name="play_pause_button">Play/Pause Button</string>
 </resources>

@@ -26,8 +26,8 @@ public class CoreImpl implements Core {
     private final Handler handler = new Handler();
 
     private int nextId = 0;
-    private final Map<Integer, Song> songsById = new HashMap<>();
-    private final Map<Integer, File> songFilesById = new HashMap<>();
+    private Map<Integer, Song> songsById;
+    private Map<Integer, File> songFilesById;
 
     private StateListener listener;
     private File musicDirectory;
@@ -41,6 +41,10 @@ public class CoreImpl implements Core {
 
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() { @Override public void onCompletion(MediaPlayer mediaPlayer) {
+            int nextSongById = (currentSong.id + 1) % songsById.size();
+            dispatch(songsById.get(nextSongById).play());
+        }});
     }
 
 
@@ -86,20 +90,21 @@ public class CoreImpl implements Core {
     }
 
     private List<Playable> listMP3Songs() {
-        List<Playable> ret = new ArrayList<>();
-        File[] files = musicDirectory.listFiles();
-        songsById.clear();
-        songFilesById.clear();
-        for (File file : files) {
-            if (!file.getName().toLowerCase().endsWith(".mp3"))
-                continue;
-            int id = nextId++;
-            Song song = readSongMetadata(id, file);
-            songsById.put(id, song);
-            songFilesById.put(id, file);
-            ret.add(song);
+        if (songsById == null) {
+            songsById = new HashMap<>();
+            songFilesById = new HashMap<>();
+            File[] files = musicDirectory.listFiles();
+            int nextId = 0;
+            for (File file : files) {
+                if (!file.getName().toLowerCase().endsWith(".mp3"))
+                    continue;
+                int id = nextId++;
+                Song song = readSongMetadata(id, file);
+                songsById.put(id, song);
+                songFilesById.put(id, file);
+            }
         }
-        return ret;
+        return new ArrayList<Playable>(songsById.values());
     }
 
     @NonNull
