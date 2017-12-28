@@ -16,17 +16,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import buddybox.api.Core;
+import buddybox.api.Play;
 import buddybox.api.Playable;
+import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
 
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
-import static buddybox.api.Song.PLAY_PAUSE_CURRENT;
+import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 
 public class MainActivity extends AppCompatActivity {
 
     private PlayablesArrayAdapter playables;
+    private Playlist currentPlaylist;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         // set events
         ListView list = (ListView) findViewById(R.id.recentPlayables);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(playables.getItem(i).play());
+            dispatch(new Play(currentPlaylist, i));
         }});
 
         playables = new PlayablesArrayAdapter();
@@ -81,16 +84,16 @@ public class MainActivity extends AppCompatActivity {
             textView.setText(value);
         }
 
-        void updateRecent(List<Playable> recent) {
+        void updateRecent(Playlist recent) {
             clear();
-            addAll(recent);
+            addAll(recent.songs);
         }
     }
 
     private void updateState(VisibleState state) {
         // list songs
         playables.updateRecent(state.recent);
-
+        currentPlaylist = state.recent;
         Song songPlaying = state.songPlaying;
         View playingBar = findViewById(R.id.playingBar);
         if (songPlaying == null)

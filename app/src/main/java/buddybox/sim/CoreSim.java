@@ -3,10 +3,9 @@ package buddybox.sim;
 import android.os.Handler;
 
 import java.util.Arrays;
-import java.util.List;
 
 import buddybox.api.Core;
-import buddybox.api.Playable;
+import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
 
@@ -38,7 +37,7 @@ public class CoreSim implements Core {
     }
 
     @Override
-    public void dispatch(Core.Event event) { System.out.println(event); }
+    public void dispatch(Core.Event event) { }
 
     @Override
     public void setStateListener(StateListener listener) {
@@ -49,8 +48,8 @@ public class CoreSim implements Core {
 
     private void updateListener() {
         count++;
-        List<Playable> recent = Arrays.asList(
-                (Playable) new Song(1, "Mmmbop " + count, "Hanson", "Pop"),
+        Playlist recent = new Playlist(0, "Recent", Arrays.asList(
+                new Song(1, "Mmmbop " + count, "Hanson", "Pop"),
                 new Song(2, "Xispas 1", "Cractus", "Chivas"),
                 new Song(3, "Xispas 2", "Cractus", "Chivas"),
                 new Song(4, "Xispas 3", "Cractus", "Chivas"),
@@ -61,7 +60,7 @@ public class CoreSim implements Core {
                 new Song(9, "Mmmbop 8", "Hanson", "Pop"),
                 new Song(10, "Xispas 9", "Cractus", "Chivas"),
                 new Song(11, "Xispas 10", "Cractus", "Chivas"),
-                new Song(12, "Xispas 11", "Cractus", "Chivas"));
+                new Song(12, "Xispas 11", "Cractus", "Chivas")));
 
         Song song = new Song(count, "Song " + count, "Artist " + count, "Genre " + count);
 

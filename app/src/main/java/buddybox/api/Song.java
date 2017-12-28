@@ -11,8 +11,5 @@ public class Song implements Playable {
 
     @Override public String name() { return name; }
     @Override public String subtitle() { return artist; }
-    @Override public Play play() { return new Play(id); }
 
-    public static class PlayPauseCurrent extends Core.Event {}
-    public static final PlayPauseCurrent PLAY_PAUSE_CURRENT = new PlayPauseCurrent();
 }

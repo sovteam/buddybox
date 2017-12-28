@@ -10,6 +10,12 @@ public interface Core {
         void update(VisibleState state);
     }
 
-    class Event {}
+    class Event {
+        public final String type;
+
+        public Event(String type) {
+            this.type = type;
+        }
+    }
 
 }

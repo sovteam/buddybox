@@ -12,6 +12,7 @@ public class CoreSingleton {
     }
 
     public static void dispatch(Core.Event event) {
+        System.out.println(">>> Dispatch Event Type: " +  event.type);
         INSTANCE.dispatch(event);
     }
 

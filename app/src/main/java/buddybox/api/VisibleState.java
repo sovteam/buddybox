@@ -28,12 +28,12 @@ public class VisibleState {
     public final List<Song> lovedSongs;
 
     // Library
-    public final List<Playable> recent;
+    public final Playlist recent;
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
 
 
-    public VisibleState(int buddyCount, int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, List<Song> lovedSongs, List<Playable> recent, List<Playlist> playlists, List<Playable> searchResults) {
+    public VisibleState(int buddyCount, int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, List<Song> lovedSongs, Playlist recent, List<Playlist> playlists, List<Playable> searchResults) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;

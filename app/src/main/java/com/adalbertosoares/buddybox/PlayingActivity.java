@@ -12,7 +12,9 @@ import buddybox.api.VisibleState;
 
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
-import static buddybox.api.Song.PLAY_PAUSE_CURRENT;
+import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.api.Play.SKIP_NEXT;
+import static buddybox.api.Play.SKIP_PREVIOUS;
 
 public class PlayingActivity extends AppCompatActivity {
 
@@ -28,6 +30,14 @@ public class PlayingActivity extends AppCompatActivity {
 
         findViewById(R.id.playingMinimize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             finish();
+        }});
+
+        findViewById(R.id.skipNext).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SKIP_NEXT);
+        }});
+
+        findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SKIP_PREVIOUS);
         }});
     }
 

@@ -2,13 +2,20 @@ package buddybox.api;
 
 import java.util.List;
 
+import buddybox.impl.SongImpl;
+
 public class Playlist implements Playable {
 
     private final int id;
     public final String name;
+    public int currentSongIndex;
     public final List<Song> songs;
 
-    public Playlist(int id, String name, List<Song> songs) { this.id = id; this.name = name; this.songs = songs; }
+    public Playlist(int id, String name, List<Song> songs) {
+        this.id = id;
+        this.name = name;
+        this.songs = songs;
+    }
 
     @Override
     public String name() {
@@ -20,8 +27,11 @@ public class Playlist implements Playable {
         return "Playlist with " + songs.size() + " songs";
     }
 
-    @Override
-    public Play play() {
-        return new Playable.Play(id);
+    public SongImpl song(int songIndex) {
+        return (SongImpl)songs.get(songIndex);
+    }
+
+    public int songAfter(int songIndex, int step) {
+        return (songs.size() + songIndex + step) % songs.size();
     }
 }
