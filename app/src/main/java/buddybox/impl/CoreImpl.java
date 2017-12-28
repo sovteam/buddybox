@@ -2,6 +2,7 @@ package buddybox.impl;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
@@ -39,8 +40,7 @@ public class CoreImpl implements Core {
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() { @Override public void onCompletion(MediaPlayer mediaPlayer) {
-            currentSongIndex = recentPlaylist().songAfter(currentSongIndex, 1);
-            play(recentPlaylist(), currentSongIndex);
+            play(recentPlaylist(), recentPlaylist().songAfter(currentSongIndex, 1));
             updateListener();
         }});
     }
@@ -56,8 +56,7 @@ public class CoreImpl implements Core {
     }
 
     private void skip(int step) {
-        currentSongIndex = recentPlaylist.songAfter(currentSongIndex, step);
-        play(recentPlaylist, currentSongIndex);
+        play(recentPlaylist, recentPlaylist.songAfter(currentSongIndex, step));
     }
 
     private void play(Play event) {
@@ -65,6 +64,8 @@ public class CoreImpl implements Core {
     }
 
     private void play(Playlist playlist, int songIndex) {
+        // TODO set currentPlaylist
+        currentSongIndex = songIndex;
         try {
             Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
             player.reset();
@@ -111,11 +112,22 @@ public class CoreImpl implements Core {
 
     @NonNull
     private SongImpl readSongMetadata(int id, File file) {
-        return new SongImpl(id,
-                file.getName().substring(0, file.getName().length() - 4),
-                "Unknown Artist",
-                "Unknown Genre",
-                file);
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(file.getPath());
+
+        String name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        if (name == null || name.trim().isEmpty())
+            name = file.getName().substring(0, file.getName().length() - 4);
+
+        String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        if (artist == null || artist.trim().isEmpty())
+            artist = "Unknown Artist";
+
+        String genre = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE);
+        if (genre == null || genre.trim().isEmpty())
+            genre = "Unknown Genre";
+
+        return new SongImpl(id, name, artist, genre, file);
     }
 
     @Override
