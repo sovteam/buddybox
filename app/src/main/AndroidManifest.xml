@@ -19,12 +19,21 @@
         <activity android:name=".PlayingActivity"/>
 
         <receiver
-            android:name="com.adalbertosoares.buddybox.NotificationDismissedReceiver"
+            android:name=".NotificationDismissedReceiver"
             android:exported="false" />
 
         <receiver
-            android:name="com.adalbertosoares.buddybox.NotificationPlayPauseReceiver"
+            android:name=".NotificationPlayPauseReceiver"
             android:exported="false" />
+
+        <receiver
+            android:name=".NotificationSkipNextReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".NotificationSkipPreviousReceiver"
+            android:exported="false" />
+
     </application>
 
 

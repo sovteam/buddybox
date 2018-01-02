@@ -5,13 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 
 import static buddybox.CoreSingleton.dispatch;
-import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.api.Play.SKIP_NEXT;
 
-public class NotificationPlayPauseReceiver extends BroadcastReceiver {
-
+public class NotificationSkipNextReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        System.out.println(">>> Notification Play/Pause button");
-        dispatch(PLAY_PAUSE_CURRENT);
+        dispatch(SKIP_NEXT);
     }
 }
