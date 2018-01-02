@@ -31,11 +31,13 @@ public class CoreImpl implements Core {
     private int currentSongIndex;
     private Playlist recentPlaylist;
 
+    private int nextId = 0;
+
     public CoreImpl(Context context) {
         this.context = context;
 
         musicDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        System.out.println(musicDirectory);
+        System.out.println(">>> Music directory: " + musicDirectory);
 
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -95,19 +97,29 @@ public class CoreImpl implements Core {
 
     private Playlist recentPlaylist() {
         if (recentPlaylist == null) {
-            File[] files = musicDirectory.listFiles();
-            ArrayList<Song> songs = new ArrayList<>();
-            int nextId = 0;
-            for (File file : files) {
+            recentPlaylist = new Playlist(0, "Recent", listSongs(musicDirectory));
+        }
+        return recentPlaylist;
+    }
+
+    private ArrayList<Song> listSongs(File directory) {
+        ArrayList<Song> songs = new ArrayList<>();
+        for (File file : directory.listFiles()) {
+            if (file.isDirectory()) {
+                songs.addAll(listSongs(file));
+            } else {
                 if (!file.getName().toLowerCase().endsWith(".mp3"))
                     continue;
-                int id = nextId++;
+                int id = nextId();
                 Song song = readSongMetadata(id, file);
                 songs.add(song);
             }
-            recentPlaylist = new Playlist(0, "Recent", songs);
         }
-        return recentPlaylist;
+        return songs;
+    }
+
+    private int nextId() {
+        return nextId++;
     }
 
     @NonNull

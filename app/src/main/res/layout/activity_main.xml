@@ -8,9 +8,10 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="60dp"
         android:id="@+id/topBar"
-        android:layout_alignParentTop="true">
+        android:layout_alignParentTop="true"
+        android:gravity="center_vertical|center_horizontal">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -21,18 +22,22 @@
             android:textAlignment="center">
 
             <ImageButton
-                android:layout_width="60dp"
+                android:layout_width="95dp"
                 android:layout_height="60dp"
                 android:id="@+id/libraryNavbarBtn"
                 android:src="@drawable/ic_library_music"
                 android:contentDescription="@string/music_library"
-                android:layout_alignParentTop="true"
+                android:layout_alignParentTop="false"
                 android:layout_alignParentEnd="true"
                 android:background="@android:color/transparent"
-                android:paddingBottom="10dp" />
+                android:paddingBottom="10dp"
+                android:layout_alignWithParentIfMissing="false"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentRight="false"
+                android:layout_alignParentStart="false" />
 
             <ImageButton
-                android:layout_width="60dp"
+                android:layout_width="95dp"
                 android:layout_height="60dp"
                 android:id="@+id/lovedNavbarBtn"
                 android:src="@drawable/ic_loved"
@@ -40,10 +45,12 @@
                 android:layout_alignParentTop="true"
                 android:layout_toStartOf="@+id/libraryNavbarBtn"
                 android:background="@android:color/transparent"
-                android:paddingBottom="10dp" />
+                android:paddingBottom="10dp"
+                android:layout_alignParentLeft="false"
+                android:layout_alignParentRight="false" />
 
             <ImageButton
-                android:layout_width="60dp"
+                android:layout_width="95dp"
                 android:layout_height="60dp"
                 android:id="@+id/radioNavbarBtn"
                 android:src="@drawable/ic_whatshot"
@@ -54,7 +61,7 @@
                 android:paddingBottom="10dp" />
 
             <ImageButton
-                android:layout_width="60dp"
+                android:layout_width="95dp"
                 android:layout_height="60dp"
                 android:id="@+id/sharingNavbarBtn"
                 android:src="@drawable/ic_sharing"
