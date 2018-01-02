@@ -70,6 +70,7 @@ public class CoreImpl implements Core {
         currentSongIndex = songIndex;
         try {
             Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
+            player.pause();
             player.reset();
             player.setDataSource(context, myUri);
             player.prepare();
