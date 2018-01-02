@@ -31,7 +31,7 @@ public class CoreImpl implements Core {
     private int currentSongIndex;
     private Playlist recentPlaylist;
 
-    private int nextId = 0;
+    private int nextId;
 
     public CoreImpl(Context context) {
         this.context = context;

@@ -1,19 +1,22 @@
 package com.adalbertosoares.buddybox;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import buddybox.api.Core;
 import buddybox.api.Play;
@@ -30,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
 
     private PlayablesArrayAdapter playables;
     private Playlist currentPlaylist;
+
+    NotificationCompat.Builder notification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +57,39 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             startActivity(new Intent(MainActivity.this, PlayingActivity.class));
         }});
+
+        buildMainAppNotification();
+    }
+
+    private void buildMainAppNotification() {
+        int notificationId = 123;
+        notification = new NotificationCompat.Builder(this);
+        notification.setAutoCancel(false);
+        notification.setSmallIcon(R.drawable.ic_play);
+        notification.setTicker("This is a ticker");
+        notification.setWhen(System.currentTimeMillis());
+        notification.setContentTitle("Notification Title");
+        notification.setContentText("Notification Text");
+
+        // Close app on dismiss
+        Intent intentDismiss = new Intent(this, NotificationDismissedReceiver.class);
+        intentDismiss.putExtra("com.my.app.notificationId", notificationId);
+        PendingIntent pendingDelete = PendingIntent.getBroadcast(this, notificationId, intentDismiss, 0);
+        notification.setDeleteIntent(pendingDelete);
+
+        // TODO launch notification if closed when PLAY_PAUSE
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingContent = PendingIntent.getBroadcast(this, notificationId, intent, 0);
+        notification.setContentIntent(pendingContent);
+
+        // Play/Pause button
+        Intent intentPlayPause = new Intent(this, NotificationPlayPauseReceiver.class);
+        intentPlayPause.putExtra("com.my.app.notificationId", notificationId);
+        PendingIntent pendingPlayPause = PendingIntent.getBroadcast(this, notificationId, intentPlayPause, 0);
+        notification.addAction(R.drawable.ic_pause, "Play/Pause", pendingPlayPause);
+
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.notify(notificationId, notification.build());
     }
 
     @Override

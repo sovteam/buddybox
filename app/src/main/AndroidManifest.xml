@@ -17,7 +17,16 @@
         </activity>
 
         <activity android:name=".PlayingActivity"/>
+
+        <receiver
+            android:name="com.adalbertosoares.buddybox.NotificationDismissedReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="com.adalbertosoares.buddybox.NotificationPlayPauseReceiver"
+            android:exported="false" />
     </application>
+
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 </manifest>
