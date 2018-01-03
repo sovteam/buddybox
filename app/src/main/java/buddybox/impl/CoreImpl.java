@@ -18,7 +18,12 @@ import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
 
-import static buddybox.api.Play.*;
+import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.api.Play.SKIP_NEXT;
+import static buddybox.api.Play.SKIP_PREVIOUS;
+import static buddybox.api.SelectFrame.*;
+import static buddybox.api.VisibleState.MainFrames.LIBRARY;
+import static buddybox.api.VisibleState.MainFrames.SAMPLER;
 
 public class CoreImpl implements Core {
 
@@ -32,6 +37,7 @@ public class CoreImpl implements Core {
     private Playlist recentPlaylist;
 
     private int nextId;
+    private VisibleState.MainFrames currentFrame = VisibleState.MainFrames.LIBRARY;
 
     public CoreImpl(Context context) {
         this.context = context;
@@ -54,7 +60,20 @@ public class CoreImpl implements Core {
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
         if (event.getClass() == Play.class) play((Play)event);
+
+        if (event == SELECT_LIBRARY) selectLibrary();
+        if (event == SELECT_SAMPLER) selectSampler();
+
         updateListener();
+    }
+
+    private void selectSampler() {
+        currentFrame = SAMPLER;
+        player.pause();
+    }
+
+    private void selectLibrary() {
+        currentFrame = LIBRARY;
     }
 
     private void skip(int step) {
@@ -90,7 +109,7 @@ public class CoreImpl implements Core {
 
     private void updateListener() {
         Runnable runnable = new Runnable() { @Override public void run() {
-            VisibleState state = new VisibleState(1, 1, null, recentPlaylist().song(currentSongIndex), null, !player.isPlaying(), null, null, null, recentPlaylist(), null, null);
+            VisibleState state = new VisibleState(currentFrame, 1, null, recentPlaylist().song(currentSongIndex), null, !player.isPlaying(), null, null, null, recentPlaylist(), null, null, 1);
             listener.update(state);
         }};
         handler.post(runnable);

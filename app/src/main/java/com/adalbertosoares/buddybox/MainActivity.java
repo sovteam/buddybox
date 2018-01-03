@@ -26,6 +26,7 @@ import buddybox.api.VisibleState;
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.api.SelectFrame.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +56,14 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             startActivity(new Intent(MainActivity.this, PlayingActivity.class));
+        }});
+
+        findViewById(R.id.libraryNavbarBtn).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SELECT_LIBRARY);
+        }});
+
+        findViewById(R.id.samplerNavbarBtn).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SELECT_SAMPLER);
         }});
     }
 
@@ -102,6 +111,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void updateState(VisibleState state) {
+        switch (state.selectedFrame) {
+            case LIBRARY:
+                updateLibraryState(state);
+                break;
+            case SAMPLER:
+                updateSamplerState(state);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void updateSamplerState(VisibleState state) {
+        findViewById(R.id.frameSampler).setVisibility(View.VISIBLE);
+        findViewById(R.id.frameLibrary).setVisibility(View.INVISIBLE);
+        findViewById(R.id.playingBar).setVisibility(View.INVISIBLE);
+
+        // TODO update sample playing OR show "Invite your friends"
+        // TODO remove main notification actions and show "Buddy Box: Sampler"
+    }
+
+    private void updateLibraryState(VisibleState state) {
+        findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
+        findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
+        findViewById(R.id.playingBar).setVisibility(View.VISIBLE);
+
         // list songs
         playables.updateRecent(state.recent);
         currentPlaylist = state.recent;
