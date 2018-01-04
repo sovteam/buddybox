@@ -32,6 +32,7 @@ public class CoreImpl implements Core {
     private final Context context;
     private final MediaPlayer player;
     private final Handler handler = new Handler();
+    private boolean isMediaPlayerPrepared = false;
 
     private StateListener listener;
     private File musicDirectory;
@@ -103,6 +104,7 @@ public class CoreImpl implements Core {
             player.setDataSource(context, myUri);
             player.prepare();
             player.start();
+            isMediaPlayerPrepared = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -111,8 +113,10 @@ public class CoreImpl implements Core {
     private void playPauseCurrent() {
         if (player.isPlaying())
             player.pause();
-        else
+        else if (isMediaPlayerPrepared)
             player.start();
+        else
+            play(recentPlaylist(), currentSongIndex);
     }
 
 
