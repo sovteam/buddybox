@@ -1,4 +1,4 @@
-package com.adalbertosoares.buddybox;
+package buddybox.ui;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,6 +13,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
 

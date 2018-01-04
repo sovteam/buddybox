@@ -1,4 +1,4 @@
-package com.adalbertosoares.buddybox;
+package buddybox.ui;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

@@ -1,10 +1,12 @@
-package com.adalbertosoares.buddybox;
+package buddybox.ui;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.adalbertosoares.buddybox.R;
 
 import buddybox.api.Core;
 import buddybox.api.Song;

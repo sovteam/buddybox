@@ -1,15 +1,15 @@
-package com.adalbertosoares.buddybox;
+package buddybox.ui;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
 import static buddybox.CoreSingleton.dispatch;
-import static buddybox.api.Play.SKIP_NEXT;
+import static buddybox.api.Play.SKIP_PREVIOUS;
 
-public class NotificationSkipNextReceiver extends BroadcastReceiver {
+public class NotificationSkipPreviousReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        dispatch(SKIP_NEXT);
+        dispatch(SKIP_PREVIOUS);
     }
 }

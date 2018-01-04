@@ -9,29 +9,29 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="buddybox.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".PlayingActivity"/>
+        <activity android:name="buddybox.ui.PlayingActivity"/>
 
         <receiver
-            android:name=".NotificationDismissedReceiver"
+            android:name="buddybox.ui.NotificationDismissedReceiver"
             android:exported="false" />
 
         <receiver
-            android:name=".NotificationPlayPauseReceiver"
+            android:name="buddybox.ui.NotificationPlayPauseReceiver"
             android:exported="false" />
 
         <receiver
-            android:name=".NotificationSkipNextReceiver"
+            android:name="buddybox.ui.NotificationSkipNextReceiver"
             android:exported="false" />
 
         <receiver
-            android:name=".NotificationSkipPreviousReceiver"
+            android:name="buddybox.ui.NotificationSkipPreviousReceiver"
             android:exported="false" />
 
     </application>
