@@ -5,9 +5,6 @@ import java.util.Map;
 
 public class VisibleState {
 
-    public enum MainFrames { LIBRARY, SAMPLER, LOVED, BUDDIES }
-    public final MainFrames selectedFrame;
-
     // Sharing
     public final int buddyCount;
     public final int songCount;
@@ -24,7 +21,7 @@ public class VisibleState {
     // public final String artistNameError;
     // public final String genreNameError;
 
-    // Radio
+    // Sampler
     public final Song sampling;
 
     // Loved
@@ -36,7 +33,7 @@ public class VisibleState {
     public final List<Playable> searchResults;
 
 
-    public VisibleState(MainFrames selectedFrame, int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, List<Song> lovedSongs, Playlist recent, List<Playlist> playlists, List<Playable> searchResults, int buddyCount) {
+    public VisibleState(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, List<Song> lovedSongs, Playlist recent, List<Playlist> playlists, List<Playable> searchResults, int buddyCount) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -53,6 +50,5 @@ public class VisibleState {
         this.recent = recent;
         this.playlists = playlists;
         this.searchResults = searchResults;
-        this.selectedFrame = selectedFrame;
     }
 }

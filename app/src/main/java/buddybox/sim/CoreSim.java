@@ -9,8 +9,6 @@ import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
 
-import static buddybox.api.VisibleState.*;
-
 public class CoreSim implements Core {
 
     private StateListener listener;
@@ -67,6 +65,6 @@ public class CoreSim implements Core {
         Song song = new Song(count, "Song " + count, "Artist " + count, "Genre " + count);
 
         boolean isPaused = count % 2 == 0;
-        this.listener.update(new VisibleState(MainFrames.LIBRARY, 1, null, song, null, isPaused, null, null, null, recent, null, null, 1));
+        this.listener.update(new VisibleState(1, null, song, null, isPaused, null, null, null, recent, null, null, 1));
     }
 }

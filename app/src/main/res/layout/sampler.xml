@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Song Name"
-            android:id="@+id/textView6"
+            android:id="@+id/samplingName"
             android:layout_gravity="center_horizontal" />
 
         <TextView
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Song Artist"
-            android:id="@+id/textView7"
+            android:id="@+id/samplingArtist"
             android:layout_gravity="center_horizontal" />
     </LinearLayout>
 
@@ -77,6 +77,15 @@
             android:layout_marginLeft="160dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true" />
+
+        <ImageButton
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:id="@+id/imageButton"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:background="#FFFFFF"
+            android:src="@drawable/ic_delete" />
 
     </RelativeLayout>
 

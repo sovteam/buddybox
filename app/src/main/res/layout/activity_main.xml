@@ -17,7 +17,6 @@
         android:id="@+id/frameLibrary">
 
         <include layout="@layout/library" />
-
     </FrameLayout>
 
     <FrameLayout
@@ -28,7 +27,6 @@
         android:id="@+id/frameSampler">
 
         <include layout="@layout/sampler" />
-
     </FrameLayout>
 
     <include layout="@layout/playing_bar" />

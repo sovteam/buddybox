@@ -11,6 +11,9 @@ import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import buddybox.api.Core;
 import buddybox.api.Play;
@@ -21,9 +24,8 @@ import buddybox.api.VisibleState;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
 import static buddybox.api.Play.SKIP_PREVIOUS;
-import static buddybox.api.SelectFrame.*;
-import static buddybox.api.VisibleState.MainFrames.LIBRARY;
-import static buddybox.api.VisibleState.MainFrames.SAMPLER;
+
+import static buddybox.api.Sampler.*;
 
 public class CoreImpl implements Core {
 
@@ -33,11 +35,14 @@ public class CoreImpl implements Core {
 
     private StateListener listener;
     private File musicDirectory;
+
     private int currentSongIndex;
     private Playlist recentPlaylist;
 
+    private boolean isSampling = false;
+    private Song sampling;
+
     private int nextId;
-    private VisibleState.MainFrames currentFrame = VisibleState.MainFrames.LIBRARY;
 
     public CoreImpl(Context context) {
         this.context = context;
@@ -61,19 +66,23 @@ public class CoreImpl implements Core {
         if (event == SKIP_PREVIOUS) skip(-1);
         if (event.getClass() == Play.class) play((Play)event);
 
-        if (event == SELECT_LIBRARY) selectLibrary();
-        if (event == SELECT_SAMPLER) selectSampler();
+        if (event == SAMPLER_START) samplerStart();
+        if (event == SAMPLER_STOP) samplerStop();
 
         updateListener();
     }
 
-    private void selectSampler() {
-        currentFrame = SAMPLER;
-        player.pause();
+    private void samplerStop() {
+        if (isSampling)
+            player.stop();
+        isSampling = false;
     }
 
-    private void selectLibrary() {
-        currentFrame = LIBRARY;
+    private void samplerStart() {
+        isSampling = true;
+        sampling = recentPlaylist.songs.get(0);
+        List<Song> songs = Collections.singletonList(sampling);
+        play(new Playlist(666, "Sampling", songs), 0);
     }
 
     private void skip(int step) {
@@ -109,7 +118,7 @@ public class CoreImpl implements Core {
 
     private void updateListener() {
         Runnable runnable = new Runnable() { @Override public void run() {
-            VisibleState state = new VisibleState(currentFrame, 1, null, recentPlaylist().song(currentSongIndex), null, !player.isPlaying(), null, null, null, recentPlaylist(), null, null, 1);
+            VisibleState state = new VisibleState(1, null, isSampling ? null : recentPlaylist().song(currentSongIndex), null, !player.isPlaying(), null, isSampling ? sampling : null, null, recentPlaylist(), null, null, 1);
             listener.update(state);
         }};
         handler.post(runnable);

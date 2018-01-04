@@ -28,7 +28,8 @@ import buddybox.api.VisibleState;
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.api.SelectFrame.*;
+
+import static buddybox.api.Sampler.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,13 +61,32 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, PlayingActivity.class));
         }});
 
+        // NavBar
         findViewById(R.id.libraryNavbarBtn).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SELECT_LIBRARY);
+            navigateTo(R.id.frameLibrary);
         }});
 
         findViewById(R.id.samplerNavbarBtn).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SELECT_SAMPLER);
+            navigateTo(R.id.frameSampler);
         }});
+
+        navigateTo(R.id.frameLibrary);
+    }
+
+    private void navigateTo(int frame) {
+        if (frame == R.id.frameLibrary) {
+            libraryActivate();
+        } else {
+            findViewById(R.id.frameLibrary).setVisibility(View.INVISIBLE);
+        }
+
+        if (frame == R.id.frameSampler) {
+            samplerActivate();
+        } else {
+            findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
+            dispatch(SAMPLER_STOP);
+        }
+
     }
 
     @Override
@@ -113,32 +133,38 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void updateState(VisibleState state) {
-        switch (state.selectedFrame) {
-            case LIBRARY:
-                updateLibraryState(state);
-                break;
-            case SAMPLER:
-                updateSamplerState(state);
-                break;
-            default:
-                break;
-        }
+        updateLibraryState(state);
+        updateSamplerState(state);
     }
 
     private void updateSamplerState(VisibleState state) {
-        findViewById(R.id.frameSampler).setVisibility(View.VISIBLE);
-        findViewById(R.id.frameLibrary).setVisibility(View.INVISIBLE);
-        findViewById(R.id.playingBar).setVisibility(View.INVISIBLE);
-
+        // TODO show warning if user does not have enough memory
         // TODO update sample playing OR show "Invite your friends"
-        // TODO remove main notification actions and show "Buddy Box: Sampler"
+
+        if (state.sampling == null)
+            return;
+
+        TextView name = (TextView) findViewById(R.id.samplingName);
+        name.setText(state.sampling.name);
+
+        TextView artist = (TextView) findViewById(R.id.samplingArtist);
+        artist.setText(state.sampling.artist);
+    }
+
+    private void samplerActivate() {
+        findViewById(R.id.frameSampler).setVisibility(View.VISIBLE);
+
+        // TODO remove main notification"
+
+        dispatch(SAMPLER_START);
+    }
+
+    private void libraryActivate() {
+        findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
+        // TODO add main notification
     }
 
     private void updateLibraryState(VisibleState state) {
-        findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
-        findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
-        findViewById(R.id.playingBar).setVisibility(View.VISIBLE);
-
         // list songs
         playables.updateRecent(state.recent);
         currentPlaylist = state.recent;
