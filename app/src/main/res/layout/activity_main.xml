@@ -29,6 +29,26 @@
         <include layout="@layout/sampler" />
     </FrameLayout>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/includeNavbar"
+        android:id="@+id/frameLoved">
+
+        <include layout="@layout/loved" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/includeNavbar"
+        android:id="@+id/frameSharing">
+
+        <include layout="@layout/sharing" />
+    </FrameLayout>
+
     <include layout="@layout/playing_bar" />
 
 </RelativeLayout>

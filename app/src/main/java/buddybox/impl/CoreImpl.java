@@ -77,6 +77,7 @@ public class CoreImpl implements Core {
         if (isSampling)
             player.stop();
         isSampling = false;
+        isMediaPlayerPrepared = false;
     }
 
     private void samplerStart() {

@@ -6,4 +6,7 @@
     <string name="loved">Loved</string>
     <string name="buddies">Buddies</string>
     <string name="play_pause_button">Play/Pause Button</string>
+    <string name="library">Library</string>
+    <string name="sampler">Sampler</string>
+    <string name="sharing">Sharing</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="60dp"
@@ -7,111 +7,117 @@
     android:layout_alignParentTop="true"
     android:layout_centerHorizontal="true"
     android:layout_marginBottom="10dp"
+    android:orientation="horizontal"
     tools:showIn="@layout/activity_main">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:textAlignment="center">
-
-        <ImageButton
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:id="@+id/libraryNavbarBtn"
-            android:src="@drawable/ic_library_music"
-            android:contentDescription="@string/music_library"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:background="@android:color/transparent"
-            android:paddingBottom="10dp"
-            android:layout_alignWithParentIfMissing="false"
-            android:layout_alignParentLeft="false"
-            android:layout_alignParentRight="false"
-            android:layout_alignParentStart="false" />
-
-        <ImageButton
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:id="@+id/lovedNavbarBtn"
-            android:src="@drawable/ic_loved"
-            android:contentDescription="@string/loved"
-            android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/libraryNavbarBtn"
-            android:background="@android:color/transparent"
-            android:paddingBottom="10dp"
-            android:layout_alignParentLeft="false"
-            android:layout_alignParentRight="false" />
-
-        <ImageButton
-            android:layout_width="80dp"
-            android:layout_height="60dp"
-            android:id="@+id/samplerNavbarBtn"
-            android:src="@drawable/ic_whatshot"
-            android:contentDescription="Radio"
-            android:layout_alignParentTop="true"
-            android:layout_toStartOf="@+id/lovedNavbarBtn"
-            android:background="@android:color/transparent"
-            android:paddingBottom="10dp"
-            android:adjustViewBounds="false" />
-
-        <ImageButton
-            android:layout_width="80dp"
-            android:layout_height="60dp"
+        android:gravity="center_horizontal"
+        android:paddingTop="8dp"
+        android:clickable="true"
+        android:background="?selectableItemBackground"
+        android:id="@+id/sharingNavBar">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:id="@+id/sharingNavbarBtn"
             android:src="@drawable/ic_sharing"
             android:contentDescription="@string/buddies"
-            android:background="@android:color/transparent"
-            android:layout_alignParentTop="true"
-            android:layout_alignBottom="@+id/samplerNavbarBtn"
-            android:layout_toStartOf="@+id/samplerNavbarBtn"
-            android:paddingBottom="10dp" />
+            android:clickable="false"
+            android:background="@android:color/transparent" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Sharing"
-            android:id="@+id/textView"
-            android:layout_alignParentBottom="true"
-            android:layout_alignEnd="@+id/sharingNavbarBtn"
-            android:layout_alignStart="@+id/sharingNavbarBtn"
+            android:text="@string/sharing"
+            android:id="@+id/sharingText"
             android:textAlignment="center" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:paddingTop="8dp"
+        android:clickable="true"
+        android:background="?selectableItemBackground"
+        android:id="@+id/samplerNavBar">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/samplerNavbarBtn"
+            android:src="@drawable/ic_whatshot"
+            android:background="@android:color/transparent"
+            android:clickable="false"
+            android:adjustViewBounds="false" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Sampler"
-            android:id="@+id/textView2"
-            android:textAlignment="center"
-            android:layout_alignParentBottom="true"
-            android:layout_alignStart="@+id/samplerNavbarBtn"
-            android:layout_toStartOf="@+id/lovedNavbarBtn" />
+            android:text="@string/sampler"
+            android:id="@+id/samplerText"
+            android:textAlignment="center" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:paddingTop="8dp"
+        android:clickable="true"
+        android:background="?selectableItemBackground"
+        android:id="@+id/lovedNavBar">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/lovedNavbarBtn"
+            android:src="@drawable/ic_loved"
+            android:contentDescription="@string/loved"
+            android:clickable="false"
+            android:background="@android:color/transparent" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Loved"
-            android:id="@+id/textView3"
-            android:textAlignment="center"
-            android:layout_alignEnd="@+id/lovedNavbarBtn"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/samplerNavbarBtn" />
+            android:text="@string/loved"
+            android:id="@+id/lovedText"
+            android:textAlignment="center" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:paddingTop="8dp"
+        android:clickable="true"
+        android:background="?selectableItemBackground"
+        android:id="@+id/libraryNavBar">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/libraryNavbarBtn"
+            android:src="@drawable/ic_library_music"
+            android:contentDescription="@string/music_library"
+            android:background="@android:color/transparent"
+            android:clickable="false" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Library"
-            android:id="@+id/textView4"
-            android:textAlignment="center"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignStart="@+id/libraryNavbarBtn" />
+            android:text="@string/library"
+            android:id="@+id/libraryText"
+            android:textAlignment="center" />
+    </LinearLayout>
 
-    </RelativeLayout>
-</RelativeLayout>
+</LinearLayout>

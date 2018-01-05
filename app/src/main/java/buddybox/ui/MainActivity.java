@@ -3,6 +3,7 @@ package buddybox.ui;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
@@ -11,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -62,31 +64,23 @@ public class MainActivity extends AppCompatActivity {
         }});
 
         // NavBar
-        findViewById(R.id.libraryNavbarBtn).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+        findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             navigateTo(R.id.frameLibrary);
         }});
 
-        findViewById(R.id.samplerNavbarBtn).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+        findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             navigateTo(R.id.frameSampler);
         }});
 
+        findViewById(R.id.lovedNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            navigateTo(R.id.frameLoved);
+        }});
+
+        findViewById(R.id.sharingNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            navigateTo(R.id.frameSharing);
+        }});
+
         navigateTo(R.id.frameLibrary);
-    }
-
-    private void navigateTo(int frame) {
-        if (frame == R.id.frameLibrary) {
-            libraryActivate();
-        } else {
-            findViewById(R.id.frameLibrary).setVisibility(View.INVISIBLE);
-        }
-
-        if (frame == R.id.frameSampler) {
-            samplerActivate();
-        } else {
-            findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
-            dispatch(SAMPLER_STOP);
-        }
-
     }
 
     @Override
@@ -104,16 +98,35 @@ public class MainActivity extends AppCompatActivity {
         }});
     }
 
+    private void updateState(VisibleState state) {
+        updateLibraryState(state);
+        updateSamplerState(state);
+    }
+    private void updateSamplerState(VisibleState state) {
+        // TODO show warning if user does not have enough memory
+        // TODO update sample playing OR show "Invite your friends"
+
+        if (state.sampling == null)
+            return;
+
+        TextView name = (TextView) findViewById(R.id.samplingName);
+        name.setText(state.sampling.name);
+
+        TextView artist = (TextView) findViewById(R.id.samplingArtist);
+        artist.setText(state.sampling.artist);
+    }
+
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
 
         PlayablesArrayAdapter() {
             super(MainActivity.this, -1, new ArrayList<Playable>());
         }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View rowView = convertView == null
-                ? getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
-                : convertView;
+                    ? getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
+                    : convertView;
 
             setText(rowView, android.R.id.text1, getItem(position).name());
             setText(rowView, android.R.id.text2, getItem(position).subtitle());
@@ -130,29 +143,59 @@ public class MainActivity extends AppCompatActivity {
             clear();
             addAll(recent.songs);
         }
-
-    }
-    private void updateState(VisibleState state) {
-        updateLibraryState(state);
-        updateSamplerState(state);
     }
 
-    private void updateSamplerState(VisibleState state) {
-        // TODO show warning if user does not have enough memory
-        // TODO update sample playing OR show "Invite your friends"
+    private void navigateTo(int frame) {
+        if (frame == R.id.frameLibrary) {
+            libraryActivate();
+        } else {
+            findViewById(R.id.frameLibrary).setVisibility(View.INVISIBLE);
+            ((TextView) findViewById(R.id.libraryText)).setTextColor(Color.parseColor("#FFFFFF"));
+            ((ImageView) findViewById(R.id.libraryNavbarBtn)).setImageResource(R.drawable.ic_library_music);
+        }
 
-        if (state.sampling == null)
-            return;
+        if (frame == R.id.frameSampler) {
+            samplerActivate();
+        } else {
+            findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
+            ((TextView) findViewById(R.id.samplerText)).setTextColor(Color.parseColor("#FFFFFF"));
+            ((ImageView) findViewById(R.id.samplerNavbarBtn)).setImageResource(R.drawable.ic_whatshot);
+            dispatch(SAMPLER_STOP);
+        }
 
-        TextView name = (TextView) findViewById(R.id.samplingName);
-        name.setText(state.sampling.name);
+        if (frame == R.id.frameLoved) {
+            lovedActivate();
+        } else {
+            findViewById(R.id.frameLoved).setVisibility(View.INVISIBLE);
+            ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#FFFFFF"));
+            ((ImageView) findViewById(R.id.lovedNavbarBtn)).setImageResource(R.drawable.ic_loved);
+        }
 
-        TextView artist = (TextView) findViewById(R.id.samplingArtist);
-        artist.setText(state.sampling.artist);
+        if (frame == R.id.frameSharing) {
+            sharingActivate();
+        } else {
+            findViewById(R.id.frameSharing).setVisibility(View.INVISIBLE);
+            ((TextView) findViewById(R.id.sharingText)).setTextColor(Color.parseColor("#FFFFFF"));
+            ((ImageView) findViewById(R.id.sharingNavbarBtn)).setImageResource(R.drawable.ic_sharing);
+        }
+    }
+
+    private void lovedActivate() {
+        findViewById(R.id.frameLoved).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((ImageView) findViewById(R.id.lovedNavbarBtn)).setImageResource(R.drawable.ic_loved_blue);
+    }
+
+    private void sharingActivate() {
+        findViewById(R.id.frameSharing).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.sharingText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((ImageView) findViewById(R.id.sharingNavbarBtn)).setImageResource(R.drawable.ic_sharing_blue);
     }
 
     private void samplerActivate() {
         findViewById(R.id.frameSampler).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.samplerText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((ImageView) findViewById(R.id.samplerNavbarBtn)).setImageResource(R.drawable.ic_whatshot_blue);
 
         // TODO remove main notification"
 
@@ -161,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void libraryActivate() {
         findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.libraryText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((ImageView) findViewById(R.id.libraryNavbarBtn)).setImageResource(R.drawable.ic_library_music_blue);
+
         // TODO add main notification
     }
 
