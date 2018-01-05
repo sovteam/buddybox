@@ -10,11 +10,13 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import buddybox.MyFileObserver;
 import buddybox.api.Core;
 import buddybox.api.Play;
 import buddybox.api.Playlist;
@@ -45,11 +47,23 @@ public class CoreImpl implements Core {
 
     private int nextId;
 
+    private MyFileObserver fileObs;
+
     public CoreImpl(Context context) {
         this.context = context;
 
         musicDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         System.out.println(">>> Music directory: " + musicDirectory);
+
+        // Folder observer !!! ONLY root
+        try {
+            fileObs = new MyFileObserver(musicDirectory.getCanonicalPath());
+            fileObs.startWatching();
+            // TODO track onDestroy main activity to call fileObs.stopWatching();
+            // TODO track subdirs >> http://www.roman10.net/2011/08/06/android-fileobserverthe-underlying-inotify-mechanism-and-an-example/
+        } catch (IOException e) {
+            System.out.println(e.getStackTrace());
+        }
 
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
