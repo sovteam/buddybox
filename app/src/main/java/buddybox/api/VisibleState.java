@@ -31,9 +31,10 @@ public class VisibleState {
     public final Playlist recent;
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
+    public final long availableMemorySize;
 
 
-    public VisibleState(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, List<Song> lovedSongs, Playlist recent, List<Playlist> playlists, List<Playable> searchResults, int buddyCount) {
+    public VisibleState(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, List<Song> lovedSongs, Playlist recent, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -50,5 +51,6 @@ public class VisibleState {
         this.recent = recent;
         this.playlists = playlists;
         this.searchResults = searchResults;
+        this.availableMemorySize = availableMemorySize;
     }
 }

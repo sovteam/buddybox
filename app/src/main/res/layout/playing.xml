@@ -38,7 +38,9 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="340dp"
-        android:layout_weight="0.97">
+        android:layout_weight="0.97"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -48,7 +50,8 @@
             android:id="@+id/playingSongName"
             android:layout_marginTop="118dp"
             android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:textAlignment="center" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,7 +60,8 @@
             android:text="Artist"
             android:id="@+id/playingSongArtist"
             android:layout_below="@+id/playingSongName"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:textAlignment="center" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -66,7 +70,8 @@
             android:text="Genre"
             android:id="@+id/playingSongGenre"
             android:layout_below="@+id/playingSongArtist"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            android:textAlignment="center" />
 
     </RelativeLayout>
 

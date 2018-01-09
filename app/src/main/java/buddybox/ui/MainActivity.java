@@ -110,8 +110,24 @@ public class MainActivity extends AppCompatActivity {
         // TODO show warning if user does not have enough memory
         // TODO update sample playing OR show "Invite your friends"
 
-        if (state.sampling == null)
+        if (state.availableMemorySize < 10*1024) {
+            findViewById(R.id.samplerLowMemory).setVisibility(View.VISIBLE);
+            findViewById(R.id.samplerEmpty).setVisibility(View.INVISIBLE);
+            findViewById(R.id.sampler).setVisibility(View.INVISIBLE);
             return;
+        } else {
+            findViewById(R.id.samplerLowMemory).setVisibility(View.INVISIBLE);
+        }
+
+        if (state.sampling == null) {
+            findViewById(R.id.samplerEmpty).setVisibility(View.VISIBLE);
+            findViewById(R.id.sampler).setVisibility(View.INVISIBLE);
+            return;
+        } else {
+            findViewById(R.id.samplerEmpty).setVisibility(View.INVISIBLE);
+        }
+
+        findViewById(R.id.sampler).setVisibility(View.VISIBLE);
 
         TextView name = (TextView) findViewById(R.id.samplingName);
         name.setText(state.sampling.name);

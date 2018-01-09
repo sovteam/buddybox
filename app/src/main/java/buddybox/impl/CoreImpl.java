@@ -7,6 +7,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.StatFs;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -151,11 +152,32 @@ public class CoreImpl implements Core {
 
     private void updateListener() {
         Runnable runnable = new Runnable() { @Override public void run() {
-            VisibleState state = new VisibleState(1, null, isSampling ? null : recentPlaylist().song(currentSongIndex), null, !player.isPlaying(), null, isSampling ? sampling : null, null, recentPlaylist(), null, null, 1);
+            VisibleState state = new VisibleState(
+                    1,
+                    null,
+                    isSampling ? null : recentPlaylist().song(currentSongIndex),
+                    null,
+                    !player.isPlaying(),
+                    null,
+                    isSampling ? sampling : null,
+                    null,
+                    recentPlaylist(),
+                    null,
+                    null,
+                    1,
+                    getAvailableMemorySize());
             listener.update(state);
         }};
         handler.post(runnable);
     }
+
+    public long getAvailableMemorySize() {
+        StatFs stat = new StatFs(musicDirectory.getPath());
+        long blockSize = stat.getBlockSizeLong();
+        long availableBlocks = stat.getAvailableBlocksLong();
+        return availableBlocks * blockSize;
+    }
+
 
     private Playlist recentPlaylist() {
         if (recentPlaylist == null) {
