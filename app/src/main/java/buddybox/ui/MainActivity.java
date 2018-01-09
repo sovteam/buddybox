@@ -1,14 +1,10 @@
 package buddybox.ui;
 
-import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.view.View;
@@ -84,6 +80,19 @@ public class MainActivity extends AppCompatActivity {
             navigateTo(R.id.frameSharing);
         }});
 
+        // Sampler
+        findViewById(R.id.hateIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SAMPLER_HATE);
+        }});
+
+        findViewById(R.id.loveIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SAMPLER_LOVE);
+        }});
+
+        findViewById(R.id.deleteIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SAMPLER_DELETE);
+        }});
+
         navigateTo(R.id.frameLibrary);
     }
 
@@ -107,8 +116,9 @@ public class MainActivity extends AppCompatActivity {
         updateSamplerState(state);
     }
     private void updateSamplerState(VisibleState state) {
-        // TODO show warning if user does not have enough memory
-        // TODO update sample playing OR show "Invite your friends"
+
+        int samplerCount = state.newSamplerSongsCount;
+        ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(state.newSamplerSongsCount));
 
         if (state.availableMemorySize < 10*1024) {
             findViewById(R.id.samplerLowMemory).setVisibility(View.VISIBLE);

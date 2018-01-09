@@ -38,32 +38,50 @@
             android:textAlignment="center" />
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:paddingTop="8dp"
+        android:gravity="clip_vertical"
         android:clickable="true"
         android:background="?selectableItemBackground"
         android:id="@+id/samplerNavBar">
+
         <ImageView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/samplerNavbarBtn"
             android:src="@drawable/ic_whatshot"
             android:background="@android:color/transparent"
             android:clickable="false"
-            android:adjustViewBounds="false" />
+            android:adjustViewBounds="false"
+            android:contentDescription="@string/flame"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:paddingTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/newSamplerSongsCount"
+            android:layout_toEndOf="@+id/samplerNavbarBtn"
+            android:layout_alignTop="@+id/samplerNavbarBtn"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_red_light"
+            android:text="99" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/sampler"
             android:id="@+id/samplerText"
-            android:textAlignment="center" />
-    </LinearLayout>
+            android:textAlignment="center"
+            android:layout_below="@+id/samplerNavbarBtn"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 
     <LinearLayout
         android:orientation="vertical"

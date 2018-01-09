@@ -38,4 +38,20 @@ public class Playlist implements Playable {
             ? null
             : (songs.size() + songIndex + step) % songs.size();
     }
+
+    public boolean isEmpty() {
+        return this.songs == null || this.songs.isEmpty();
+    }
+
+    public int size() {
+        if (songs == null)
+            return 0;
+        return songs.size();
+    }
+
+    public void removeSong(int songIndex) {
+        if (songIndex > this.songs.size())
+            return;
+        this.songs.remove(songIndex);
+    }
 }

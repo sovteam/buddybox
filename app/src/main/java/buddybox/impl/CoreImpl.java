@@ -1,6 +1,7 @@
 package buddybox.impl;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -12,14 +13,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,25 +42,30 @@ public class CoreImpl implements Core {
     private final MediaPlayer player;
     private final Handler handler = new Handler();
     private boolean isMediaPlayerPrepared = false;
-
     private StateListener listener;
+
     private File musicDirectory;
-
-    private int currentSongIndex;
     private Playlist recentPlaylist;
+    private int currentSongIndex;
 
+    private final File samplerDirectory;
     private boolean isSampling = false;
+    private Playlist samplerPlaylist;
     private Song sampling;
 
     private int nextId;
-
     private MyFileObserver fileObs;
     private HashMap<String, String> genreMap;
 
     public CoreImpl(Context context) {
         this.context = context;
 
-        //musicDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        //samplerDirectory = this.context.getExternalFilesDir("SongSamples");
+        samplerDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        if (samplerDirectory != null)
+            samplerDirectory.mkdirs();
+        System.out.println(">>>>> sampler directory " + samplerDirectory);
+
         musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
         System.out.println(">>> Music directory: " + musicDirectory);
 
@@ -79,9 +82,14 @@ public class CoreImpl implements Core {
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() { @Override public void onCompletion(MediaPlayer mediaPlayer) {
-            play(recentPlaylist(), recentPlaylist().songAfter(currentSongIndex, 1));
+            if (isSampling)
+                play(samplerPlaylist(), 0);
+            else
+                play(recentPlaylist(), recentPlaylist().songAfter(currentSongIndex, 1));
             updateListener();
         }});
+
+        samplerPlaylist();
     }
 
     @Override
@@ -93,9 +101,58 @@ public class CoreImpl implements Core {
 
         if (event == SAMPLER_START) samplerStart();
         if (event == SAMPLER_STOP) samplerStop();
+        if (event == SAMPLER_LOVE) samplerLove();
+        if (event == SAMPLER_HATE) samplerHate();
+        if (event == SAMPLER_DELETE) samplerDelete();
 
         if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
         updateListener();
+    }
+
+    private void samplerHate() {
+        System.out.println(">>> Sampler HATE");
+
+        // TODO register song hated
+        samplerNextSong(false);
+    }
+
+    private void samplerLove() {
+        System.out.println(">>> Sampler LOVE");
+
+        // TODO register song loved
+        // TODO add song to library
+        samplerNextSong(true);
+    }
+
+    private void samplerDelete() {
+        System.out.println(">>> Sampler delete");
+
+        // TODO register song deleted
+        samplerNextSong(false);
+    }
+
+    private void samplerNextSong(boolean moveSongToLibrary) {
+        if (samplerPlaylist.isEmpty())
+            return;
+
+        playPauseCurrent();
+
+        SongImpl song = samplerPlaylist.song(0);
+        samplerPlaylist.removeSong(0);
+
+        if (moveSongToLibrary) {
+            boolean r = song.file.renameTo(new File(musicDirectory + "/" + song.file.getName()));
+            System.out.println(">>> LOVE move file " + r);
+        } else
+            song.file.delete();
+
+        if (samplerPlaylist.isEmpty()) {
+            sampling = null;
+            return;
+        }
+
+        sampling = samplerPlaylist.song(0);
+        play(samplerPlaylist, 0);
     }
 
     private void addSong(SongAdded event) {
@@ -115,11 +172,19 @@ public class CoreImpl implements Core {
 
     private void samplerStart() {
         isSampling = true;
-        sampling = recentPlaylist.song(0);
-        if (sampling == null)
+        Playlist playlist = samplerPlaylist();
+        if (playlist.isEmpty())
             return;
-        List<Song> songs = Collections.singletonList(sampling);
-        play(new Playlist(666, "Sampling", songs), 0);
+        sampling = playlist.song(0);
+        play(playlist, 0);
+    }
+
+    @NonNull
+    private Playlist samplerPlaylist() {
+        if (samplerPlaylist == null) {
+            samplerPlaylist = new Playlist(666, "Sampler", listSongs(samplerDirectory));
+        }
+        return samplerPlaylist;
     }
 
     private void skip(int step) {
@@ -135,6 +200,7 @@ public class CoreImpl implements Core {
         if (songIndex == null)
             return;
 
+        // TODO differ sampler from library
         currentSongIndex = songIndex;
         try {
             Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
@@ -182,12 +248,14 @@ public class CoreImpl implements Core {
                     !player.isPlaying(),
                     null,
                     isSampling ? sampling : null,
-                    null,
+                    samplerPlaylist().size(),
                     playlist,
                     null,
                     null,
                     1,
-                    getAvailableMemorySize());
+                    getAvailableMemorySize(),
+                    null
+            );
             listener.update(state);
         }};
         handler.post(runnable);

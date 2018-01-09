@@ -80,7 +80,7 @@
         <ImageButton
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:id="@+id/imageButton"
+            android:id="@+id/deleteIt"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:background="#FFFFFF"
