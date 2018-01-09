@@ -1,6 +1,10 @@
-package buddybox;
+package buddybox.impl;
 
 import android.os.FileObserver;
+
+import buddybox.api.SongAdded;
+
+import static buddybox.CoreSingleton.dispatch;
 
 public class MyFileObserver extends FileObserver {
     
@@ -8,11 +12,13 @@ public class MyFileObserver extends FileObserver {
     
     public MyFileObserver(String path) {
         super(path, FileObserver.ALL_EVENTS);
+        System.out.println(">>> observer path " + path);
         absolutePath = path;
     }
     
     @Override
     public void onEvent(int event, String path) {
+        System.out.println(">>> observer onEvent " + path);
         if (path == null) {
             return;
         }
@@ -29,7 +35,7 @@ public class MyFileObserver extends FileObserver {
 
         //data was read from a file
         if ((FileObserver.ACCESS & event)!=0) {
-            System.out.println(">>> FileObserver: " + absolutePath + "/" + path + " is accessed/read");
+            //System.out.println(">>> FileObserver: " + absolutePath + "/" + path + " is accessed/read");
         }
 
         //data was written to a file
@@ -42,17 +48,19 @@ public class MyFileObserver extends FileObserver {
             System.out.println(">>> FileObserver: " + path + " is closed");
         }
 
-        //someone has a file or directory open for writing, and closed it 
+        //someone has a file or directory open for writing, and closed it
         if ((FileObserver.CLOSE_WRITE & event)!=0) {
             // TODO add new song
+            dispatch(new SongAdded(absolutePath + "/" + path));
             System.out.println(">>> FileObserver: " + absolutePath + "/" + path + " is written and closed");
         }
+
 
         //[todo: consider combine this one with one below]
         //a file was deleted from the monitored directory
         if ((FileObserver.DELETE & event)!=0) {
             //for testing copy file
-// FileUtils.copyFile(absolutePath + "/" + path);
+            // FileUtils.copyFile(absolutePath + "/" + path);
             System.out.println(">>> FileObserver: " + absolutePath + "/" + path + " is deleted");
         }
 

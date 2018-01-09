@@ -28,10 +28,14 @@ public class Playlist implements Playable {
     }
 
     public SongImpl song(int songIndex) {
-        return (SongImpl)songs.get(songIndex);
+        return songIndex >= songs.size()
+            ? null
+            : (SongImpl)songs.get(songIndex);
     }
 
-    public int songAfter(int songIndex, int step) {
-        return (songs.size() + songIndex + step) % songs.size();
+    public Integer songAfter(int songIndex, int step) {
+        return songs.size() == 0
+            ? null
+            : (songs.size() + songIndex + step) % songs.size();
     }
 }

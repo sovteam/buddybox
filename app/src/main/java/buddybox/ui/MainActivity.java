@@ -1,10 +1,14 @@
 package buddybox.ui;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.view.View;
@@ -211,11 +215,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateLibraryState(VisibleState state) {
-        // list songs
-        playables.updateRecent(state.recent);
-        currentPlaylist = state.recent;
         Song songPlaying = state.songPlaying;
         View playingBar = findViewById(R.id.playingBar);
+        playables.updateRecent(state.recent);
+        currentPlaylist = state.recent;
+
         if (songPlaying == null) {
             playingBar.setVisibility(View.INVISIBLE);
         } else {
@@ -225,6 +229,14 @@ public class MainActivity extends AppCompatActivity {
             ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
             updateMainNotification(state);
         }
+
+        if (state.recent.songs.isEmpty()) {
+            findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
+            findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
+            return;
+        }
+        findViewById(R.id.library_empty).setVisibility(View.INVISIBLE);
+        findViewById(R.id.recentPlayables).setVisibility(View.VISIBLE);
     }
 
     private NotificationCompat.Builder mainNotification() {

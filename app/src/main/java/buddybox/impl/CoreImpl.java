@@ -8,19 +8,19 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import buddybox.MyFileObserver;
 import buddybox.api.Core;
 import buddybox.api.Play;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
+import buddybox.api.SongAdded;
 import buddybox.api.VisibleState;
 
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
@@ -52,18 +52,19 @@ public class CoreImpl implements Core {
     public CoreImpl(Context context) {
         this.context = context;
 
-        musicDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        //musicDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+        musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
         System.out.println(">>> Music directory: " + musicDirectory);
 
         // Folder observer !!! ONLY root
-        try {
+        /*try {
             fileObs = new MyFileObserver(musicDirectory.getCanonicalPath());
             fileObs.startWatching();
             // TODO track onDestroy main activity to call fileObs.stopWatching();
             // TODO track subdirs >> http://www.roman10.net/2011/08/06/android-fileobserverthe-underlying-inotify-mechanism-and-an-example/
         } catch (IOException e) {
             System.out.println(e.getStackTrace());
-        }
+        }*/
 
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -72,7 +73,6 @@ public class CoreImpl implements Core {
             updateListener();
         }});
     }
-
 
     @Override
     public void dispatch(Event event) {
@@ -84,7 +84,16 @@ public class CoreImpl implements Core {
         if (event == SAMPLER_START) samplerStart();
         if (event == SAMPLER_STOP) samplerStop();
 
+        if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
         updateListener();
+    }
+
+    private void addSong(SongAdded event) {
+        System.out.println(">>> song added " +  event.filePath);
+        Song song = tryToReadSong(new File(event.filePath));
+        if (song == null)
+            return;
+        recentPlaylist.songs.add(song);
     }
 
     private void samplerStop() {
@@ -96,7 +105,9 @@ public class CoreImpl implements Core {
 
     private void samplerStart() {
         isSampling = true;
-        sampling = recentPlaylist.songs.get(0);
+        sampling = recentPlaylist.song(0);
+        if (sampling == null)
+            return;
         List<Song> songs = Collections.singletonList(sampling);
         play(new Playlist(666, "Sampling", songs), 0);
     }
@@ -109,8 +120,11 @@ public class CoreImpl implements Core {
         play(event.playlist, event.songIndex);
     }
 
-    private void play(Playlist playlist, int songIndex) {
+    private void play(Playlist playlist, Integer songIndex) {
         // TODO set currentPlaylist
+        if (songIndex == null)
+            return;
+
         currentSongIndex = songIndex;
         try {
             Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
@@ -151,19 +165,26 @@ public class CoreImpl implements Core {
     }
 
     private ArrayList<Song> listSongs(File directory) {
+        System.out.println(">>> listSongs ");
         ArrayList<Song> songs = new ArrayList<>();
         for (File file : directory.listFiles()) {
             if (file.isDirectory()) {
                 songs.addAll(listSongs(file));
             } else {
-                if (!file.getName().toLowerCase().endsWith(".mp3"))
-                    continue;
-                int id = nextId();
-                Song song = readSongMetadata(id, file);
+                Song song = tryToReadSong(file);
+                if (song == null) continue;
                 songs.add(song);
             }
         }
+        System.out.println(">>> songs size: " + songs.size());
         return songs;
+    }
+
+    @Nullable
+    private Song tryToReadSong(File file) {
+        return file.getName().toLowerCase().endsWith(".mp3")
+            ? readSongMetadata(nextId(), file)
+            : null;
     }
 
     private int nextId() {
