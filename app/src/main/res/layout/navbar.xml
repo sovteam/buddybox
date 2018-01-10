@@ -83,32 +83,50 @@
             android:layout_centerHorizontal="true" />
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:paddingTop="8dp"
+        android:gravity="clip_vertical"
         android:clickable="true"
         android:background="?selectableItemBackground"
         android:id="@+id/lovedNavBar">
+
         <ImageView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/lovedNavbarBtn"
             android:src="@drawable/ic_loved"
             android:contentDescription="@string/loved"
             android:clickable="false"
-            android:background="@android:color/transparent" />
+            android:background="@android:color/transparent"
+            android:adjustViewBounds="false"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true"
+            android:paddingTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/newLovedSongsCount"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_red_light"
+            android:text="44"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/lovedNavbarBtn" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/loved"
             android:id="@+id/lovedText"
-            android:textAlignment="center" />
-    </LinearLayout>
+            android:textAlignment="center"
+            android:layout_below="@+id/lovedNavbarBtn"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 
     <LinearLayout
         android:orientation="vertical"

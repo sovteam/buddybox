@@ -26,6 +26,7 @@ import buddybox.api.Playable;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
+import buddybox.impl.SongImpl;
 
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
@@ -38,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
     private PlayablesArrayAdapter playables;
     private Playlist currentPlaylist;
 
+    private LovedPlayablesArrayAdapter lovedPlayables;
+    private Playlist lovedPlaylist;
+
     NotificationCompat.Builder mainNotification;
     private int notificationId = 0; // TODO move to a better place
 
@@ -46,15 +50,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // set events
+        // library list
         ListView list = (ListView) findViewById(R.id.recentPlayables);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             dispatch(new Play(currentPlaylist, i));
         }});
-
         playables = new PlayablesArrayAdapter();
         list.setAdapter(playables);
 
+        // Loved list
+        ListView lovedList = (ListView) findViewById(R.id.lovedPlayables);
+        lovedList.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            dispatch(new Play(lovedPlaylist, i));
+        }});
+        lovedPlayables = new LovedPlayablesArrayAdapter();
+        lovedList.setAdapter(lovedPlayables);
+
+        findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            navigateTo(R.id.frameSampler);
+        }});
+
+        // Playing
         findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(PLAY_PAUSE_CURRENT);
         }});
@@ -114,12 +130,31 @@ public class MainActivity extends AppCompatActivity {
     private void updateState(VisibleState state) {
         updateLibraryState(state);
         updateSamplerState(state);
+        updateLovedState(state);
+
+        // Update new samplers count
+        int samplerCount = state.samplerPlaylist == null ? 0 : state.samplerPlaylist.size();
+        ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(samplerCount));
+
+        // Update new loved count
+        int lovedCount = state.lovedPlaylist == null ? 0 : state.lovedPlaylist.size();
+        ((TextView)findViewById(R.id.newLovedSongsCount)).setText(lovedCount == 0 ? "" : Integer.toString(lovedCount));
     }
+
+    private void updateLovedState(VisibleState state) {
+        lovedPlayables.updateRecent(state.lovedPlaylist);
+        lovedPlaylist = state.lovedPlaylist;
+
+        if (state.lovedPlaylist == null || state.lovedPlaylist.isEmpty()) {
+            findViewById(R.id.lovedEmpty).setVisibility(View.VISIBLE);
+            findViewById(R.id.lovedPlayables).setVisibility(View.INVISIBLE);
+        } else {
+            findViewById(R.id.lovedEmpty).setVisibility(View.INVISIBLE);
+            findViewById(R.id.lovedPlayables).setVisibility(View.VISIBLE);
+        }
+    }
+
     private void updateSamplerState(VisibleState state) {
-
-        int samplerCount = state.newSamplerSongsCount;
-        ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(state.newSamplerSongsCount));
-
         if (state.availableMemorySize < 10*1024) {
             findViewById(R.id.samplerLowMemory).setVisibility(View.VISIBLE);
             findViewById(R.id.samplerEmpty).setVisibility(View.INVISIBLE);
@@ -129,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.samplerLowMemory).setVisibility(View.INVISIBLE);
         }
 
-        if (state.sampling == null) {
+        if (state.samplerPlaylist == null || state.samplerPlaylist.isEmpty()) {
             findViewById(R.id.samplerEmpty).setVisibility(View.VISIBLE);
             findViewById(R.id.sampler).setVisibility(View.INVISIBLE);
             return;
@@ -139,11 +174,9 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.sampler).setVisibility(View.VISIBLE);
 
-        TextView name = (TextView) findViewById(R.id.samplingName);
-        name.setText(state.sampling.name);
-
-        TextView artist = (TextView) findViewById(R.id.samplingArtist);
-        artist.setText(state.sampling.artist);
+        Song song = state.samplerPlaylist.song(0);
+        ((TextView) findViewById(R.id.samplingName)).setText(song.name);
+        ((TextView) findViewById(R.id.samplingArtist)).setText(song.artist);
     }
 
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
@@ -158,9 +191,9 @@ public class MainActivity extends AppCompatActivity {
                     ? getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
                     : convertView;
 
-            setText(rowView, android.R.id.text1, getItem(position).name());
-            setText(rowView, android.R.id.text2, getItem(position).subtitle());
-
+            Playable item = getItem(position);
+            setText(rowView, android.R.id.text1, item.name());
+            setText(rowView, android.R.id.text2, item.subtitle());
             return rowView;
         }
 
@@ -172,6 +205,25 @@ public class MainActivity extends AppCompatActivity {
         void updateRecent(Playlist recent) {
             clear();
             addAll(recent.songs);
+        }
+    }
+
+    private class LovedPlayablesArrayAdapter extends PlayablesArrayAdapter {
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View rowView = super.getView(position, convertView, parent);
+            TextView text1 = (TextView) rowView.findViewById(android.R.id.text1);
+            TextView text2 = (TextView) rowView.findViewById(android.R.id.text2);
+            Playable item = getItem(position);
+
+            if (item.getClass() == SongImpl.class && ((SongImpl)item).isLoved()) {
+                text1.setTextColor(Color.GREEN);
+                text2.setTextColor(Color.GREEN);
+            } else {
+                text1.setTextColor(Color.WHITE);
+                text2.setTextColor(Color.WHITE);
+            }
+            return rowView;
         }
     }
 

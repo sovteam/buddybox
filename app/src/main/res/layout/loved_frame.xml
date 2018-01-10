@@ -6,14 +6,13 @@
     android:weightSum="1"
     android:gravity="center">
 
+    <include layout="@layout/loved_empty" />
 
-    <TextView
+    <ListView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Loved"
-        android:id="@+id/textView"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="122dp" />
+        android:layout_height="match_parent"
+        android:id="@+id/lovedPlayables"
+        android:choiceMode="singleChoice"
+        android:clickable="true"/>
+
 </RelativeLayout>

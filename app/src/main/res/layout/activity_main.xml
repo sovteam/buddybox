@@ -16,7 +16,7 @@
         android:layout_below="@+id/includeNavbar"
         android:id="@+id/frameLibrary">
 
-        <include layout="@layout/library" />
+        <include layout="@layout/library_frame" />
     </FrameLayout>
 
     <FrameLayout
@@ -36,7 +36,7 @@
         android:layout_below="@+id/includeNavbar"
         android:id="@+id/frameLoved">
 
-        <include layout="@layout/loved" />
+        <include layout="@layout/loved_frame" />
     </FrameLayout>
 
     <FrameLayout

@@ -22,11 +22,10 @@ public class VisibleState {
     // public final String genreNameError;
 
     // Sampler
-    public final Song sampling;
-    public final int newSamplerSongsCount;
+    public final Playlist samplerPlaylist;
 
     // Loved
-    public final List<Song> lovedSongs;
+    public final Playlist lovedPlaylist;
 
     // Library
     public final Playlist recent;
@@ -35,7 +34,7 @@ public class VisibleState {
     public final long availableMemorySize;
 
 
-    public VisibleState(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Song sampling, int newSamplerSongsCount, Playlist recent, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, List<Song> lovedSongs) {
+    public VisibleState(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -45,14 +44,12 @@ public class VisibleState {
         this.isPaused = isPaused;
         this.playlistBySong = playlistBySong;
 
-        this.sampling = sampling;
-
-        this.lovedSongs = lovedSongs;
+        this.samplerPlaylist = samplerPlaylist;
+        this.lovedPlaylist = lovedPlaylist;
 
         this.recent = recent;
         this.playlists = playlists;
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;
-        this.newSamplerSongsCount = newSamplerSongsCount;
     }
 }

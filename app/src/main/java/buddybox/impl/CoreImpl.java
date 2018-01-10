@@ -1,7 +1,6 @@
 package buddybox.impl;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -15,8 +14,8 @@ import android.support.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +30,8 @@ import buddybox.api.VisibleState;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
 import static buddybox.api.Play.SKIP_PREVIOUS;
+
+import buddybox.impl.db.Database;
 
 import static buddybox.api.Sampler.*;
 
@@ -51,7 +52,6 @@ public class CoreImpl implements Core {
     private final File samplerDirectory;
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
-    private Song sampling;
 
     private int nextId;
     private MyFileObserver fileObs;
@@ -59,6 +59,8 @@ public class CoreImpl implements Core {
 
     public CoreImpl(Context context) {
         this.context = context;
+
+        //System.out.println(Database.initDatabase(context));
 
         //samplerDirectory = this.context.getExternalFilesDir("SongSamples");
         samplerDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
@@ -88,8 +90,6 @@ public class CoreImpl implements Core {
                 play(recentPlaylist(), recentPlaylist().songAfter(currentSongIndex, 1));
             updateListener();
         }});
-
-        samplerPlaylist();
     }
 
     @Override
@@ -119,8 +119,11 @@ public class CoreImpl implements Core {
     private void samplerLove() {
         System.out.println(">>> Sampler LOVE");
 
-        // TODO register song loved
-        // TODO add song to library
+        // TODO persist song loved
+        Song lovedSong = samplerPlaylist.song(0);
+        recentPlaylist.songs.add(lovedSong);
+        lovedSong.setLoved();
+
         samplerNextSong(true);
     }
 
@@ -141,18 +144,15 @@ public class CoreImpl implements Core {
         samplerPlaylist.removeSong(0);
 
         if (moveSongToLibrary) {
-            boolean r = song.file.renameTo(new File(musicDirectory + "/" + song.file.getName()));
+            File newFile = new File(musicDirectory + "/" + song.file.getName());
+            boolean r = song.file.renameTo(newFile);
+            song.file = newFile; // TODO switch to immutable
             System.out.println(">>> LOVE move file " + r);
         } else
             song.file.delete();
 
-        if (samplerPlaylist.isEmpty()) {
-            sampling = null;
-            return;
-        }
-
-        sampling = samplerPlaylist.song(0);
-        play(samplerPlaylist, 0);
+        if (!samplerPlaylist.isEmpty())
+            play(samplerPlaylist, 0);
     }
 
     private void addSong(SongAdded event) {
@@ -175,7 +175,6 @@ public class CoreImpl implements Core {
         Playlist playlist = samplerPlaylist();
         if (playlist.isEmpty())
             return;
-        sampling = playlist.song(0);
         play(playlist, 0);
     }
 
@@ -247,18 +246,35 @@ public class CoreImpl implements Core {
                     null,
                     !player.isPlaying(),
                     null,
-                    isSampling ? sampling : null,
-                    samplerPlaylist().size(),
-                    playlist,
+                    samplerPlaylist(),
+                    lovedPlaylist(),
                     null,
                     null,
                     1,
                     getAvailableMemorySize(),
-                    null
+                    playlist
             );
             listener.update(state);
         }};
         handler.post(runnable);
+    }
+
+    private Playlist lovedPlaylist() {
+        // Select loved songs
+        ArrayList<Song> lovedSongs = new ArrayList<>();
+        for (Song song : recentPlaylist.songs) {
+            if (song.isLoved()) {
+                System.out.println(">> Love " + song.name);
+                lovedSongs.add(song);
+            }
+        }
+
+        // Sort by most recent loved
+        Collections.sort(lovedSongs, new Comparator<Song>() { @Override public int compare(Song songA, Song songB) {
+            return songB.loved.compareTo(songA.loved);
+        }});
+
+        return new Playlist(69, "Loved", lovedSongs);
     }
 
     public long getAvailableMemorySize() {
@@ -268,10 +284,11 @@ public class CoreImpl implements Core {
         return availableBlocks * blockSize;
     }
 
-
     private Playlist recentPlaylist() {
         if (recentPlaylist == null) {
+            Long now = System.currentTimeMillis();
             recentPlaylist = new Playlist(0, "Recent", listSongs(musicDirectory));
+            System.out.println(">>> seconds to list all songs: " + (System.currentTimeMillis() - now) / 1000);
         }
         return recentPlaylist;
     }
