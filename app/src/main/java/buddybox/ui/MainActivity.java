@@ -7,8 +7,14 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.support.v7.widget.Toolbar;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +28,7 @@ import android.widget.TextView;
 import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import buddybox.api.Core;
 import buddybox.api.Play;
@@ -30,6 +37,8 @@ import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
 import buddybox.impl.SongImpl;
+import buddybox.ui.library.PlaylistsFragment;
+import buddybox.ui.library.RecentFragment;
 
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
@@ -53,10 +62,22 @@ public class MainActivity extends AppCompatActivity {
     NotificationCompat.Builder mainNotification;
     private int notificationId = 0; // TODO move to a better place
 
+    // Library Pager
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Library pager
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        setupViewPager(viewPager);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
 
         // library list
         ListView list = (ListView) findViewById(R.id.recentPlayables);
@@ -118,6 +139,42 @@ public class MainActivity extends AppCompatActivity {
         }});
 
         navigateTo(R.id.frameLibrary);
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new RecentFragment(), "RECENT");
+        adapter.addFragment(new PlaylistsFragment(), "PLAYLISTS");
+        viewPager.setAdapter(adapter);
+    }
+
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
     }
 
     @Override
@@ -399,4 +456,5 @@ public class MainActivity extends AppCompatActivity {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         nm.notify(id, notificationBuilder.build());
     }
+
 }

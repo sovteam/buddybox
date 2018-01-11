@@ -6,9 +6,10 @@
     android:id="@+id/topBar"
     android:layout_alignParentTop="true"
     android:layout_centerHorizontal="true"
-    android:layout_marginBottom="10dp"
     android:orientation="horizontal"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/activity_main"
+    android:background="#000000"
+    android:baselineAligned="false">
 
     <LinearLayout
         android:orientation="vertical"
