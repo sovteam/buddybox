@@ -37,8 +37,8 @@ import static buddybox.api.Sampler.*;
 
 public class CoreImpl implements Core {
 
-    public static final String UNKNOWN_GENRE = "Unknown Genre";
-    public static final String UNKNOWN_ARTIST = "Unknown Artist";
+    private static final String UNKNOWN_GENRE = "Unknown Genre";
+    private static final String UNKNOWN_ARTIST = "Unknown Artist";
     private final Context context;
     private final MediaPlayer player;
     private final Handler handler = new Handler();
@@ -54,7 +54,7 @@ public class CoreImpl implements Core {
     private Playlist samplerPlaylist;
 
     private int nextId;
-    private MyFileObserver fileObs;
+//    private MyFileObserver fileObs;
     private HashMap<String, String> genreMap;
 
     public CoreImpl(Context context) {
@@ -65,7 +65,8 @@ public class CoreImpl implements Core {
         //samplerDirectory = this.context.getExternalFilesDir("SongSamples");
         samplerDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         if (samplerDirectory != null)
-            samplerDirectory.mkdirs();
+            if (!samplerDirectory.exists() && !samplerDirectory.mkdirs())
+                System.out.println("Unable to create folder: " + samplerDirectory);
         System.out.println(">>>>> sampler directory " + samplerDirectory);
 
         musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
@@ -148,8 +149,8 @@ public class CoreImpl implements Core {
             boolean r = song.file.renameTo(newFile);
             song.file = newFile; // TODO switch to immutable
             System.out.println(">>> LOVE move file " + r);
-        } else
-            song.file.delete();
+        } else if (!song.file.delete())
+            System.out.println("Unable to delete file: " + song.file);
 
         if (!samplerPlaylist.isEmpty())
             play(samplerPlaylist, 0);
@@ -180,9 +181,8 @@ public class CoreImpl implements Core {
 
     @NonNull
     private Playlist samplerPlaylist() {
-        if (samplerPlaylist == null) {
+        if (samplerPlaylist == null)
             samplerPlaylist = new Playlist(666, "Sampler", listSongs(samplerDirectory));
-        }
         return samplerPlaylist;
     }
 
@@ -277,7 +277,7 @@ public class CoreImpl implements Core {
         return new Playlist(69, "Loved", lovedSongs);
     }
 
-    public long getAvailableMemorySize() {
+    private long getAvailableMemorySize() {
         StatFs stat = new StatFs(musicDirectory.getPath());
         long blockSize = stat.getBlockSizeLong();
         long availableBlocks = stat.getAvailableBlocksLong();
@@ -294,18 +294,27 @@ public class CoreImpl implements Core {
     }
 
     private ArrayList<Song> listSongs(File directory) {
-        ArrayList<Song> songs = new ArrayList<>();
-        for (File file : directory.listFiles()) {
+        ArrayList<Song> ret = new ArrayList<>();
+
+        if (!directory.exists()) {
+            System.out.println("Directory does not exist: " + directory);
+            return ret;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) return ret;
+
+        for (File file : files) {
             if (file.isDirectory()) {
-                songs.addAll(listSongs(file));
+                ret.addAll(listSongs(file));
             } else {
                 Song song = tryToReadSong(file);
                 if (song == null) continue;
-                songs.add(song);
+                ret.add(song);
             }
         }
-        System.out.println(">>> songs size: " + songs.size() + " at " + directory);
-        return songs;
+        System.out.println(">>> songs size: " + ret.size() + " at " + directory);
+        return ret;
     }
 
     @Nullable
@@ -372,7 +381,7 @@ public class CoreImpl implements Core {
 
     private Map<String, String> genreMap() {
         if (genreMap == null) {
-            genreMap = new HashMap<String,String>();
+            genreMap = new HashMap<>();
             genreMap.put("0", "Blues");
             genreMap.put("1", "Classic Rock");
             genreMap.put("2", "Country");
