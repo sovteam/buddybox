@@ -32,9 +32,10 @@ public class Database {
 
         System.out.println(">> query");
         Cursor c = ret.query("BANANA", new String[]{"ID", "NAME"}, "ID = ?", new String[]{"1"}, null, null, "ID");
+        c.moveToFirst();
         System.out.println(">> query result ID: " + c.getString(0) + " NAME: " + c.getString(1));
-        c.moveToNext();
-        System.out.println(">> query result ID: " + c.getString(0) + " NAME: " + c.getString(1));
+//        c.moveToNext();
+//        System.out.println(">> query result ID: " + c.getString(0) + " NAME: " + c.getString(1));
 
 
         return ret;
