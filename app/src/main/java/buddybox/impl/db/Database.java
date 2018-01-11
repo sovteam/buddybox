@@ -13,7 +13,7 @@ public class Database {
 
     public static SQLiteDatabase initDatabase(Context context) {
 
-        File dbFile = new File(context.getFilesDir(), "database.sqlite");
+        File dbFile = new File(context.getExternalFilesDir("DB") + File.separator + "database.sqlite");
         SQLiteDatabase ret = SQLiteDatabase.openOrCreateDatabase(dbFile, null);
 
         System.out.println(">> create table");

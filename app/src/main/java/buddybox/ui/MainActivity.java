@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -31,8 +32,11 @@ import buddybox.impl.SongImpl;
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
-
-import static buddybox.api.Sampler.*;
+import static buddybox.api.Sampler.SAMPLER_DELETE;
+import static buddybox.api.Sampler.SAMPLER_HATE;
+import static buddybox.api.Sampler.SAMPLER_LOVE;
+import static buddybox.api.Sampler.SAMPLER_START;
+import static buddybox.api.Sampler.SAMPLER_STOP;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -81,19 +85,19 @@ public class MainActivity extends AppCompatActivity {
 
         // NavBar
         findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameLibrary);
+            navigateTo(R.id.frameLibrary, view);
         }});
 
         findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameSampler);
+            navigateTo(R.id.frameSampler, view);
         }});
 
         findViewById(R.id.lovedNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameLoved);
+            navigateTo(R.id.frameLoved, view);
         }});
 
         findViewById(R.id.sharingNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameSharing);
+            navigateTo(R.id.frameSharing, view);
         }});
 
         // Sampler
@@ -225,6 +229,11 @@ public class MainActivity extends AppCompatActivity {
             }
             return rowView;
         }
+    }
+
+    private void navigateTo(int frame, View view) {
+        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+        navigateTo(frame);
     }
 
     private void navigateTo(int frame) {

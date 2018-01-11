@@ -30,10 +30,11 @@ import buddybox.api.VisibleState;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
 import static buddybox.api.Play.SKIP_PREVIOUS;
-
-import buddybox.impl.db.Database;
-
-import static buddybox.api.Sampler.*;
+import static buddybox.api.Sampler.SAMPLER_DELETE;
+import static buddybox.api.Sampler.SAMPLER_HATE;
+import static buddybox.api.Sampler.SAMPLER_LOVE;
+import static buddybox.api.Sampler.SAMPLER_START;
+import static buddybox.api.Sampler.SAMPLER_STOP;
 
 public class CoreImpl implements Core {
 
