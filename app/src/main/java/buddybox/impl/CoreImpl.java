@@ -30,6 +30,7 @@ import buddybox.api.VisibleState;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
 import static buddybox.api.Play.SKIP_PREVIOUS;
+import static buddybox.api.Sampler.LOVED_VIEWED;
 import static buddybox.api.Sampler.SAMPLER_DELETE;
 import static buddybox.api.Sampler.SAMPLER_HATE;
 import static buddybox.api.Sampler.SAMPLER_LOVE;
@@ -107,8 +108,18 @@ public class CoreImpl implements Core {
         if (event == SAMPLER_HATE) samplerHate();
         if (event == SAMPLER_DELETE) samplerDelete();
 
+        if (event == LOVED_VIEWED) lovedViewed();
+
         if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
         updateListener();
+    }
+
+    private void lovedViewed() {
+        System.out.println(">>> Loved VIEWED");
+        for (Song song : lovedPlaylist().songs) {
+            if (!song.isLovedViewed())
+                song.setLovedViewed();
+        }
     }
 
     private void samplerHate() {
@@ -146,7 +157,7 @@ public class CoreImpl implements Core {
         samplerPlaylist.removeSong(0);
 
         if (moveSongToLibrary) {
-            File newFile = new File(musicDirectory + "/" + song.file.getName());
+            File newFile = new File(musicDirectory + "/" + song.file.getName()); // TODO define folder for loved ones
             boolean r = song.file.renameTo(newFile);
             song.file = newFile; // TODO switch to immutable
             System.out.println(">>> LOVE move file " + r);
@@ -166,7 +177,7 @@ public class CoreImpl implements Core {
     }
 
     private void samplerStop() {
-        if (isSampling)
+        if (isSampling && !samplerPlaylist.isEmpty())
             player.stop();
         isSampling = false;
         isMediaPlayerPrepared = false;
@@ -182,6 +193,7 @@ public class CoreImpl implements Core {
 
     @NonNull
     private Playlist samplerPlaylist() {
+        System.out.println(">> samplerPlaylist call!");
         if (samplerPlaylist == null)
             samplerPlaylist = new Playlist(666, "Sampler", listSongs(samplerDirectory));
         return samplerPlaylist;

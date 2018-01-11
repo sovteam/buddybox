@@ -4,7 +4,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.view.HapticFeedbackConstants;
@@ -37,6 +39,8 @@ import static buddybox.api.Sampler.SAMPLER_HATE;
 import static buddybox.api.Sampler.SAMPLER_LOVE;
 import static buddybox.api.Sampler.SAMPLER_START;
 import static buddybox.api.Sampler.SAMPLER_STOP;
+
+import static buddybox.api.Sampler.LOVED_VIEWED;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -141,8 +145,12 @@ public class MainActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(samplerCount));
 
         // Update new loved count
-        int lovedCount = state.lovedPlaylist == null ? 0 : state.lovedPlaylist.size();
-        ((TextView)findViewById(R.id.newLovedSongsCount)).setText(lovedCount == 0 ? "" : Integer.toString(lovedCount));
+        int countNewLoved = 0;
+        for (Song song : lovedPlaylist.songs) {
+            if (!song.isLovedViewed())
+                countNewLoved++;
+        }
+        ((TextView)findViewById(R.id.newLovedSongsCount)).setText(countNewLoved == 0 ? "" : Integer.toString(countNewLoved));
     }
 
     private void updateLovedState(VisibleState state) {
@@ -220,12 +228,16 @@ public class MainActivity extends AppCompatActivity {
             TextView text2 = (TextView) rowView.findViewById(android.R.id.text2);
             Playable item = getItem(position);
 
-            if (item.getClass() == SongImpl.class && ((SongImpl)item).isLoved()) {
-                text1.setTextColor(Color.GREEN);
-                text2.setTextColor(Color.GREEN);
-            } else {
+            if (((SongImpl)item).isLovedViewed()) {
                 text1.setTextColor(Color.WHITE);
                 text2.setTextColor(Color.WHITE);
+                text1.setTypeface(null, Typeface.NORMAL);
+                text2.setTypeface(null, Typeface.NORMAL);
+            } else {
+                text1.setTextColor(Color.parseColor("#43a047"));
+                text2.setTextColor(Color.parseColor("#43a047"));
+                text1.setTypeface(null, Typeface.BOLD);
+                text2.setTypeface(null, Typeface.NORMAL);
             }
             return rowView;
         }
@@ -272,6 +284,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void lovedActivate() {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                dispatch(LOVED_VIEWED);
+            }
+        }, 2000);
         findViewById(R.id.frameLoved).setVisibility(View.VISIBLE);
         ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#03a9f4"));
         ((ImageView) findViewById(R.id.lovedNavbarBtn)).setImageResource(R.drawable.ic_loved_blue);
