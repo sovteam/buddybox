@@ -28,7 +28,7 @@ public class VisibleState {
     public final Playlist lovedPlaylist;
 
     // Library
-    public final Playlist recent;
+    public final Playlist recentPlaylist;
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
     public final long availableMemorySize;
@@ -47,7 +47,7 @@ public class VisibleState {
         this.samplerPlaylist = samplerPlaylist;
         this.lovedPlaylist = lovedPlaylist;
 
-        this.recent = recent;
+        this.recentPlaylist = recent;
         this.playlists = playlists;
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;

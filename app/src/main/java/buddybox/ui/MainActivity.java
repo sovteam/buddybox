@@ -14,7 +14,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.widget.Toolbar;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +27,7 @@ import android.widget.TextView;
 import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import buddybox.api.Core;
@@ -43,18 +43,14 @@ import buddybox.ui.library.RecentFragment;
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.api.Sampler.LOVED_VIEWED;
 import static buddybox.api.Sampler.SAMPLER_DELETE;
 import static buddybox.api.Sampler.SAMPLER_HATE;
 import static buddybox.api.Sampler.SAMPLER_LOVE;
 import static buddybox.api.Sampler.SAMPLER_START;
 import static buddybox.api.Sampler.SAMPLER_STOP;
 
-import static buddybox.api.Sampler.LOVED_VIEWED;
-
 public class MainActivity extends AppCompatActivity {
-
-    private PlayablesArrayAdapter playables;
-    private Playlist currentPlaylist;
 
     private LovedPlayablesArrayAdapter lovedPlayables;
     private Playlist lovedPlaylist;
@@ -63,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private int notificationId = 0; // TODO move to a better place
 
     // Library Pager
-    private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
@@ -78,14 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
-
-        // library list
-        ListView list = (ListView) findViewById(R.id.recentPlayables);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new Play(currentPlaylist, i));
-        }});
-        playables = new PlayablesArrayAdapter();
-        list.setAdapter(playables);
 
         // Loved list
         ListView lovedList = (ListView) findViewById(R.id.lovedPlayables);
@@ -151,9 +138,15 @@ public class MainActivity extends AppCompatActivity {
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
+        private final HashMap<String, Fragment> allFragments;
 
         public ViewPagerAdapter(FragmentManager manager) {
             super(manager);
+            allFragments = new HashMap<>();
+        }
+
+        public Fragment getFragment(String title) {
+            return allFragments.get(title);
         }
 
         @Override
@@ -169,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
         public void addFragment(Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
+            allFragments.put(title, fragment);
         }
 
         @Override
@@ -380,8 +374,6 @@ public class MainActivity extends AppCompatActivity {
     private void updateLibraryState(VisibleState state) {
         Song songPlaying = state.songPlaying;
         View playingBar = findViewById(R.id.playingBar);
-        playables.updateRecent(state.recent);
-        currentPlaylist = state.recent;
 
         if (songPlaying == null) {
             playingBar.setVisibility(View.INVISIBLE);
@@ -393,13 +385,10 @@ public class MainActivity extends AppCompatActivity {
             updateMainNotification(state);
         }
 
-        if (state.recent.songs.isEmpty()) {
-            findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
-            findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
-            return;
-        }
-        findViewById(R.id.library_empty).setVisibility(View.INVISIBLE);
-        findViewById(R.id.recentPlayables).setVisibility(View.VISIBLE);
+        // Update Library Recent
+        Fragment frag = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("RECENT");
+        System.out.println(">>>>>> call update recent frag");
+        ((RecentFragment)frag).updateState(state);
     }
 
     private NotificationCompat.Builder mainNotification() {

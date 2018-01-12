@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:weightSum="1"
+    android:gravity="top"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="You have 3 buddies"
+        android:id="@+id/textView"
+        android:layout_marginRight="55dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/textView14"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Invite a Buddy"
+        android:id="@+id/button3"
+        android:textAlignment="gravity"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="The more friends you have, the more songs you will receive. "
+        android:id="@+id/textView14"
+        android:layout_below="@+id/button3"
+        android:layout_alignEnd="@+id/button3"
+        android:layout_marginBottom="30dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="You have 42 songs"
+        android:id="@+id/textView15"
+        android:layout_marginRight="55dp"
+        android:layout_below="@+id/textView14"
+        android:layout_alignStart="@+id/textView14" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add mp3 files"
+        android:id="@+id/button4"
+        android:textAlignment="gravity"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_below="@+id/textView14"
+        android:layout_alignEnd="@+id/button3" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="IMPORTANT: This player shares the MP3 files in your music folder: /android/.../music Make sure all MP3 files there can be shared. "
+        android:id="@+id/textView16"
+        android:layout_below="@+id/button4"
+        android:layout_alignParentEnd="true" />
+</RelativeLayout>

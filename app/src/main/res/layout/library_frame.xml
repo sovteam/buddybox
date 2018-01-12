@@ -5,13 +5,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:weightSum="1">
 
-    <include layout="@layout/library_empty" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/recentPlayables"
-        android:choiceMode="singleChoice"
-        android:clickable="true"/>
+    <include layout="@layout/library_pager" />
 
 </RelativeLayout>

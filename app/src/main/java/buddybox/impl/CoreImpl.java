@@ -72,6 +72,8 @@ public class CoreImpl implements Core {
         System.out.println(">>>>> sampler directory " + samplerDirectory);
 
         musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+        if (!musicDirectory.exists())
+            musicDirectory.mkdirs();
         System.out.println(">>> Music directory: " + musicDirectory);
 
         // Folder observer !!! ONLY root
@@ -193,7 +195,6 @@ public class CoreImpl implements Core {
 
     @NonNull
     private Playlist samplerPlaylist() {
-        System.out.println(">> samplerPlaylist call!");
         if (samplerPlaylist == null)
             samplerPlaylist = new Playlist(666, "Sampler", listSongs(samplerDirectory));
         return samplerPlaylist;

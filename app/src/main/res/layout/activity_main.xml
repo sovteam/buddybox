@@ -45,7 +45,7 @@
         android:layout_below="@+id/includeNavbar"
         android:id="@+id/frameSharing">
 
-        <include layout="@layout/sharing" />
+        <include layout="@layout/sharing_frame" />
     </FrameLayout>
 
     <include layout="@layout/playing_bar" />
