@@ -11,8 +11,14 @@ import android.os.StatFs;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -26,6 +32,12 @@ import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.SongAdded;
 import buddybox.api.VisibleState;
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.BitstreamException;
+import javazoom.jl.decoder.Decoder;
+import javazoom.jl.decoder.DecoderException;
+import javazoom.jl.decoder.Header;
+import javazoom.jl.decoder.SampleBuffer;
 
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
@@ -159,7 +171,10 @@ public class CoreImpl implements Core {
         samplerPlaylist.removeSong(0);
 
         if (moveSongToLibrary) {
-            File newFile = new File(musicDirectory + "/" + song.file.getName()); // TODO define folder for loved ones
+            // TODO define folder for loved ones
+            File newFile = new File(musicDirectory + File.separator + song.file.getName());
+            if (!newFile.exists())
+                newFile.mkdirs();
             boolean r = song.file.renameTo(newFile);
             song.file = newFile; // TODO switch to immutable
             System.out.println(">>> LOVE move file " + r);
@@ -213,9 +228,17 @@ public class CoreImpl implements Core {
         if (songIndex == null)
             return;
 
+        System.out.println(">>> passei!!");
+        //sha256
+
+
         // TODO differ sampler from library
         currentSongIndex = songIndex;
         try {
+            byte[] data = decode(playlist.song(songIndex).file.getCanonicalPath(), 2000, 1000*60*30);
+            System.out.println(">>>!!! data length: " + data.length);
+            System.out.println(">>>!!! " + Arrays.toString(Arrays.copyOf(data, 100000)));
+
             Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
             player.pause();
             player.reset();
@@ -225,6 +248,63 @@ public class CoreImpl implements Core {
             isMediaPlayerPrepared = true;
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public static byte[] decode(String path, int startMs, int maxMs) throws Exception {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream(1024);
+
+        float totalMs = 0;
+        boolean seeking = true;
+
+        File file = new File(path);
+        InputStream inputStream = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
+        try {
+            Bitstream bitstream = new Bitstream(inputStream);
+            Decoder decoder = new Decoder();
+
+            boolean done = false;
+            while (! done) {
+                Header frameHeader = bitstream.readFrame();
+                if (frameHeader == null) {
+                    done = true;
+                } else {
+                    totalMs += frameHeader.ms_per_frame();
+
+                    if (totalMs >= startMs) {
+                        seeking = false;
+                    }
+
+                    if (! seeking) {
+                        SampleBuffer output = (SampleBuffer) decoder.decodeFrame(frameHeader, bitstream);
+
+                        if (output.getSampleFrequency() != 44100
+                                || output.getChannelCount() != 2) {
+                            throw new RuntimeException("mono or non-44100 MP3 not supported");
+                        }
+
+                        short[] pcm = output.getBuffer();
+                        for (short s : pcm) {
+                            outStream.write(s & 0xff);
+                            outStream.write((s >> 8 ) & 0xff);
+                        }
+                    }
+
+                    if (totalMs >= (startMs + maxMs)) {
+                        done = true;
+                    }
+                }
+                bitstream.closeFrame();
+            }
+            System.out.println(">>> Passei");
+            return outStream.toByteArray();
+        } catch (BitstreamException e) {
+            throw new IOException("Bitstream error: " + e);
+        } catch (DecoderException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } finally {
+            inputStream.close();
         }
     }
 
