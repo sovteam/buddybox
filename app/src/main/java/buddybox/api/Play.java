@@ -1,6 +1,6 @@
 package buddybox.api;
 
-public class Play extends Core.Event {
+public class Play extends Model.Event {
     public final int songIndex;
     public final Playlist playlist;
 
@@ -10,8 +10,8 @@ public class Play extends Core.Event {
         this.songIndex = songIndex;
     }
 
-    public static final Core.Event PLAY_PAUSE_CURRENT = new Core.Event("PlayPauseCurrent");
-    public static final Core.Event SKIP_NEXT = new Core.Event("SkipNext");
-    public static final Core.Event SKIP_PREVIOUS = new Core.Event("SkipPrevious");
+    public static final Model.Event PLAY_PAUSE_CURRENT = new Model.Event("PlayPauseCurrent");
+    public static final Model.Event SKIP_NEXT = new Model.Event("SkipNext");
+    public static final Model.Event SKIP_PREVIOUS = new Model.Event("SkipPrevious");
 
 }

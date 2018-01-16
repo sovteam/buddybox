@@ -2,8 +2,8 @@ package buddybox;
 
 import android.app.Application;
 
-import buddybox.impl.CoreImpl;
-import buddybox.sim.CoreSim;
+import buddybox.impl.ModelImpl;
+import buddybox.sim.ModelSim;
 
 public class BuddyBoxApp extends Application {
 
@@ -12,6 +12,6 @@ public class BuddyBoxApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        CoreSingleton.init(USE_SIMULATOR ? new CoreSim() : new CoreImpl(this));
+        CoreSingleton.init(USE_SIMULATOR ? new ModelSim() : new ModelImpl(this));
     }
 }

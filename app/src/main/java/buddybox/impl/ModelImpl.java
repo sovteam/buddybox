@@ -17,16 +17,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import buddybox.api.Core;
+import buddybox.api.Model;
 import buddybox.api.Play;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
@@ -49,7 +51,7 @@ import static buddybox.api.Sampler.SAMPLER_LOVE;
 import static buddybox.api.Sampler.SAMPLER_START;
 import static buddybox.api.Sampler.SAMPLER_STOP;
 
-public class CoreImpl implements Core {
+public class ModelImpl implements Model {
 
     private static final String UNKNOWN_GENRE = "Unknown Genre";
     private static final String UNKNOWN_ARTIST = "Unknown Artist";
@@ -71,7 +73,7 @@ public class CoreImpl implements Core {
 //    private MyFileObserver fileObs;
     private HashMap<String, String> genreMap;
 
-    public CoreImpl(Context context) {
+    public ModelImpl(Context context) {
         this.context = context;
 
         //System.out.println(Database.initDatabase(context));
@@ -110,6 +112,7 @@ public class CoreImpl implements Core {
     }
 
     @Override
+    synchronized
     public void dispatch(Event event) {
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
@@ -228,17 +231,9 @@ public class CoreImpl implements Core {
         if (songIndex == null)
             return;
 
-        System.out.println(">>> passei!!");
-        //sha256
-
-
         // TODO differ sampler from library
         currentSongIndex = songIndex;
         try {
-            byte[] data = decode(playlist.song(songIndex).file.getCanonicalPath(), 2000, 1000*60*30);
-            System.out.println(">>>!!! data length: " + data.length);
-            System.out.println(">>>!!! " + Arrays.toString(Arrays.copyOf(data, 100000)));
-
             Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
             player.pause();
             player.reset();
@@ -288,6 +283,7 @@ public class CoreImpl implements Core {
                             outStream.write(s & 0xff);
                             outStream.write((s >> 8 ) & 0xff);
                         }
+                        outStream.flush();
                     }
 
                     if (totalMs >= (startMs + maxMs)) {
@@ -296,7 +292,20 @@ public class CoreImpl implements Core {
                 }
                 bitstream.closeFrame();
             }
-            System.out.println(">>> Passei");
+            outStream.close();
+
+            // Check outStream content
+            int count = 0;
+            int countNot = 0;
+            for (byte b : outStream.toByteArray()) {
+                if (b == 0)
+                    count++;
+                else
+                    countNot++;
+            }
+            System.out.println(">>>### zeros: " + count);
+            System.out.println(">>>### not zeros: " + countNot);
+
             return outStream.toByteArray();
         } catch (BitstreamException e) {
             throw new IOException("Bitstream error: " + e);
@@ -306,6 +315,46 @@ public class CoreImpl implements Core {
         } finally {
             inputStream.close();
         }
+    }
+
+    private byte[] rawMP3(File file) {
+        byte[] ret = null;
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
+            in.mark(10);
+            int headerEnd = readID3v2Header(in);
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+            int nRead;
+            byte[] data = new byte[16384];
+            while ((nRead = in.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+
+            ret = buffer.toByteArray();
+            int end = ret.length;
+            if (end > 128 && ret[end-128] == 84 && ret[end-127] == 65 && ret[end-126] == 71) // Detect TAG from ID3v1
+                end -= 129;
+
+            ret = Arrays.copyOfRange(ret, headerEnd, end); // Discard header (ID3 v2) and last 128 bytes (ID3 v1)
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
+    private int readID3v2Header (InputStream in) throws IOException {
+        byte[] id3header = new byte[4];
+        int size = -10;
+        in.read(id3header, 0, 3);
+        // Look for ID3v2
+        if (id3header[0] == 'I' && id3header[1] == 'D' && id3header[2] == '3') {
+            in.read(id3header, 0, 3);
+            in.read(id3header, 0, 4);
+            size = (id3header[0] << 21) + (id3header[1] << 14) + (id3header[2] << 7) + id3header[3];
+        }
+        return size + 10;
     }
 
     private void playPauseCurrent() {
@@ -381,10 +430,73 @@ public class CoreImpl implements Core {
     private Playlist recentPlaylist() {
         if (recentPlaylist == null) {
             Long now = System.currentTimeMillis();
-            recentPlaylist = new Playlist(0, "Recent", listSongs(musicDirectory));
+            List<Song> allSongs = listSongs(musicDirectory);
+            recentPlaylist = new Playlist(0, "Recent", allSongs);
             System.out.println(">>> seconds to list all songs: " + (System.currentTimeMillis() - now) / 1000);
+
+            Thread t = new Thread(new SongHashThread(allSongs));
+            t.start();
         }
         return recentPlaylist;
+    }
+
+    public class SongHashThread implements Runnable {
+
+        private final List<Song> songs;
+
+        public SongHashThread(List<Song> songs) {
+            this.songs = songs;
+        }
+
+        public void run() {
+            updateHashCodes(songs);
+        }
+    }
+
+    private void updateHashCodes(List<Song> songs) {
+        Long start = System.currentTimeMillis();
+        for (Song song : songs) {
+            try {
+                // Hash of raw mp3 less header
+                Long now = System.currentTimeMillis();
+                byte[] raw = rawMP3(((SongImpl) song).file);
+                if (raw != null) {
+                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                    byte[] hashBytes = Arrays.copyOf(digest.digest(raw), 16); // 128 bits is enough
+                    Hash hash = new Hash(hashBytes);
+                    System.out.println(">>>### Hash Raw File: " + hash.hashCode() + ", time: " + ((System.currentTimeMillis() - now)) + ", file: " + song.name);
+                }
+
+                /*
+                // Hash of decoded mp3
+                byte[] data = decode(((SongImpl)song).file.getCanonicalPath(), 0, 1000*60*30);
+                byte[] hashBytes = Arrays.copyOf(digest.digest(data), 16); // 128 bits is enough
+                Hash hash = new Hash(hashBytes);
+                System.out.println(">>>### Hash Decoded: " + hash.hashCode() + ", time: " + ((System.currentTimeMillis() - now)/1000) + ", file: " + song.name);*/
+
+                // song.setHash(hash);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        long total = System.currentTimeMillis() - start;
+        System.out.println("!!!!!!!! updateHashCodes TOTAL FILES: " + songs.size());
+        System.out.println("!!!!!!!! updateHashCodes TOTAL SECONDS: " + (total/1000));
+        System.out.println("!!!!!!!! updateHashCodes AVERAGE MILLISECONDS: " + ((double)total/songs.size()));
+    }
+
+    class Hash {
+        public final byte[] bytes;
+
+        Hash(byte[] bytes) {
+            this.bytes = bytes;
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(bytes);
+        }
     }
 
     private ArrayList<Song> listSongs(File directory) {
@@ -441,7 +553,12 @@ public class CoreImpl implements Core {
 
         String genre = formatSongGenre(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
 
-        return new SongImpl(id, name, artist, genre, file);
+        String durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        Integer duration = null;
+        if (durationStr != null)
+            duration = Integer.parseInt(durationStr);
+
+        return new SongImpl(id, name, artist, genre, duration, file);
     }
 
     @Override

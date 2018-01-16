@@ -1,6 +1,6 @@
 package buddybox.api;
 
-public class SongAdded extends Core.Event {
+public class SongAdded extends Model.Event {
     public final String filePath;
 
     public SongAdded(String filePath) {

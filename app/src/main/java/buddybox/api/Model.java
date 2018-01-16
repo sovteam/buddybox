@@ -1,6 +1,6 @@
 package buddybox.api;
 
-public interface Core {
+public interface Model {
 
     void dispatch(Event event);
 

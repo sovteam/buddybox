@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import buddybox.api.Core;
+import buddybox.api.Model;
 import buddybox.api.Play;
 import buddybox.api.Playable;
 import buddybox.api.Playlist;
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setStateListener(new Core.StateListener() { @Override public void update(VisibleState state) {
+        setStateListener(new Model.StateListener() { @Override public void update(VisibleState state) {
             updateState(state);
         }});
     }

@@ -1,22 +1,22 @@
 package buddybox;
 
-import buddybox.api.Core;
+import buddybox.api.Model;
 
 public class CoreSingleton {
 
-    private static Core INSTANCE;
+    private static Model INSTANCE;
 
-    public static void init(Core instance) {
+    public static void init(Model instance) {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = instance;
     }
 
-    public static void dispatch(Core.Event event) {
+    public static void dispatch(Model.Event event) {
         System.out.println(">>> Dispatch Event Type: " +  event.type);
         INSTANCE.dispatch(event);
     }
 
-    public static void setStateListener(Core.StateListener listener) {
+    public static void setStateListener(Model.StateListener listener) {
         INSTANCE.setStateListener(listener);
     }
 
