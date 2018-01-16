@@ -65,6 +65,6 @@ public class ModelSim implements Model {
         Song song = new Song(count, "Song " + count, "Artist " + count, "Genre " + count, null);
 
         boolean isPaused = count % 2 == 0;
-        this.listener.update(new VisibleState(1, null, song, null, isPaused, null, null, null, null, null, 1, count * 1024, recent));
+        this.listener.update(new VisibleState(1, null, song, null, isPaused, null, null, null, null, null, 1, count * 1024, recent, null));
     }
 }

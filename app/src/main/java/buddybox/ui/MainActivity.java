@@ -37,6 +37,7 @@ import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.VisibleState;
 import buddybox.impl.SongImpl;
+import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
 
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new RecentFragment(), "RECENT");
+        adapter.addFragment(new ArtistsFragment(), "ARTISTS");
         adapter.addFragment(new PlaylistsFragment(), "PLAYLISTS");
         viewPager.setAdapter(adapter);
     }
@@ -386,9 +388,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Update Library Recent
-        Fragment frag = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("RECENT");
-        System.out.println(">>>>>> call update recent frag");
-        ((RecentFragment)frag).updateState(state);
+        Fragment fragRec = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("RECENT");
+        ((RecentFragment)fragRec).updateState(state);
+
+        Fragment fragArt = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("ARTISTS");
+        ((ArtistsFragment)fragArt).updateState(state);
     }
 
     private NotificationCompat.Builder mainNotification() {

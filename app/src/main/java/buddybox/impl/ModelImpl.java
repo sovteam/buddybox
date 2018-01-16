@@ -28,18 +28,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import buddybox.api.Artist;
 import buddybox.api.Model;
 import buddybox.api.Play;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
 import buddybox.api.SongAdded;
 import buddybox.api.VisibleState;
-import javazoom.jl.decoder.Bitstream;
-import javazoom.jl.decoder.BitstreamException;
-import javazoom.jl.decoder.Decoder;
-import javazoom.jl.decoder.DecoderException;
-import javazoom.jl.decoder.Header;
-import javazoom.jl.decoder.SampleBuffer;
 
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
@@ -64,6 +59,7 @@ public class ModelImpl implements Model {
     private File musicDirectory;
     private Playlist recentPlaylist;
     private int currentSongIndex;
+    private ArrayList<Artist> artists;
 
     private final File samplerDirectory;
     private boolean isSampling = false;
@@ -246,117 +242,6 @@ public class ModelImpl implements Model {
         }
     }
 
-    public static byte[] decode(String path, int startMs, int maxMs) throws Exception {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream(1024);
-
-        float totalMs = 0;
-        boolean seeking = true;
-
-        File file = new File(path);
-        InputStream inputStream = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
-        try {
-            Bitstream bitstream = new Bitstream(inputStream);
-            Decoder decoder = new Decoder();
-
-            boolean done = false;
-            while (! done) {
-                Header frameHeader = bitstream.readFrame();
-                if (frameHeader == null) {
-                    done = true;
-                } else {
-                    totalMs += frameHeader.ms_per_frame();
-
-                    if (totalMs >= startMs) {
-                        seeking = false;
-                    }
-
-                    if (! seeking) {
-                        SampleBuffer output = (SampleBuffer) decoder.decodeFrame(frameHeader, bitstream);
-
-                        if (output.getSampleFrequency() != 44100
-                                || output.getChannelCount() != 2) {
-                            throw new RuntimeException("mono or non-44100 MP3 not supported");
-                        }
-
-                        short[] pcm = output.getBuffer();
-                        for (short s : pcm) {
-                            outStream.write(s & 0xff);
-                            outStream.write((s >> 8 ) & 0xff);
-                        }
-                        outStream.flush();
-                    }
-
-                    if (totalMs >= (startMs + maxMs)) {
-                        done = true;
-                    }
-                }
-                bitstream.closeFrame();
-            }
-            outStream.close();
-
-            // Check outStream content
-            int count = 0;
-            int countNot = 0;
-            for (byte b : outStream.toByteArray()) {
-                if (b == 0)
-                    count++;
-                else
-                    countNot++;
-            }
-            System.out.println(">>>### zeros: " + count);
-            System.out.println(">>>### not zeros: " + countNot);
-
-            return outStream.toByteArray();
-        } catch (BitstreamException e) {
-            throw new IOException("Bitstream error: " + e);
-        } catch (DecoderException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            inputStream.close();
-        }
-    }
-
-    private byte[] rawMP3(File file) {
-        byte[] ret = null;
-        try {
-            InputStream in = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
-            in.mark(10);
-            int headerEnd = readID3v2Header(in);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            int nRead;
-            byte[] data = new byte[16384];
-            while ((nRead = in.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            buffer.flush();
-
-            ret = buffer.toByteArray();
-            int end = ret.length;
-            if (end > 128 && ret[end-128] == 84 && ret[end-127] == 65 && ret[end-126] == 71) // Detect TAG from ID3v1
-                end -= 129;
-
-            ret = Arrays.copyOfRange(ret, headerEnd, end); // Discard header (ID3 v2) and last 128 bytes (ID3 v1)
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-        return ret;
-    }
-
-    private int readID3v2Header (InputStream in) throws IOException {
-        byte[] id3header = new byte[4];
-        int size = -10;
-        in.read(id3header, 0, 3);
-        // Look for ID3v2
-        if (id3header[0] == 'I' && id3header[1] == 'D' && id3header[2] == '3') {
-            in.read(id3header, 0, 3);
-            in.read(id3header, 0, 4);
-            size = (id3header[0] << 21) + (id3header[1] << 14) + (id3header[2] << 7) + id3header[3];
-        }
-        return size + 10;
-    }
-
     private void playPauseCurrent() {
         if (player.isPlaying())
             player.pause();
@@ -365,7 +250,6 @@ public class ModelImpl implements Model {
         else
             play(recentPlaylist(), currentSongIndex);
     }
-
 
     private void updateListener() {
         System.out.println(">> updateListener");
@@ -395,11 +279,27 @@ public class ModelImpl implements Model {
                     null,
                     1,
                     getAvailableMemorySize(),
-                    playlist
-            );
+                    playlist,
+                    artists());
             listener.update(state);
         }};
         handler.post(runnable);
+    }
+
+    private ArrayList<Artist> artists() {
+        if (artists == null) {
+            Map<String, Artist> artistsMap = new HashMap<>();
+            for (Song song : recentPlaylist().songs) {
+                Artist artist = artistsMap.get(song.artist);
+                if (artist == null) {
+                    artist = new Artist(song.artist);
+                    artistsMap.put(song.artist, artist);
+                }
+                artist.addSong(song);
+            }
+            artists = new ArrayList<>(artistsMap.values());
+        }
+        return artists;
     }
 
     private Playlist lovedPlaylist() {
@@ -451,6 +351,7 @@ public class ModelImpl implements Model {
         public void run() {
             updateHashCodes(songs);
         }
+
     }
 
     private void updateHashCodes(List<Song> songs) {
@@ -466,16 +367,7 @@ public class ModelImpl implements Model {
                     Hash hash = new Hash(hashBytes);
                     System.out.println(">>>### Hash Raw File: " + hash.hashCode() + ", time: " + ((System.currentTimeMillis() - now)) + ", file: " + song.name);
                 }
-
-                /*
-                // Hash of decoded mp3
-                byte[] data = decode(((SongImpl)song).file.getCanonicalPath(), 0, 1000*60*30);
-                byte[] hashBytes = Arrays.copyOf(digest.digest(data), 16); // 128 bits is enough
-                Hash hash = new Hash(hashBytes);
-                System.out.println(">>>### Hash Decoded: " + hash.hashCode() + ", time: " + ((System.currentTimeMillis() - now)/1000) + ", file: " + song.name);*/
-
                 // song.setHash(hash);
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -487,6 +379,7 @@ public class ModelImpl implements Model {
     }
 
     class Hash {
+
         public final byte[] bytes;
 
         Hash(byte[] bytes) {
@@ -497,6 +390,47 @@ public class ModelImpl implements Model {
         public int hashCode() {
             return Arrays.hashCode(bytes);
         }
+
+    }
+
+    private byte[] rawMP3(File file) {
+        byte[] ret = null;
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
+            in.mark(10);
+            int headerEnd = readID3v2Header(in);
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+            int nRead;
+            byte[] data = new byte[16384];
+            while ((nRead = in.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+
+            ret = buffer.toByteArray();
+            int end = ret.length;
+            if (end > 128 && ret[end-128] == 84 && ret[end-127] == 65 && ret[end-126] == 71) // Detect TAG from ID3v1
+                end -= 129;
+
+            ret = Arrays.copyOfRange(ret, headerEnd, end); // Discard header (ID3 v2) and last 128 bytes (ID3 v1)
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
+    private int readID3v2Header (InputStream in) throws IOException {
+        byte[] id3header = new byte[4];
+        int size = -10;
+        in.read(id3header, 0, 3);
+        // Look for ID3v2
+        if (id3header[0] == 'I' && id3header[1] == 'D' && id3header[2] == '3') {
+            in.read(id3header, 0, 3);
+            in.read(id3header, 0, 4);
+            size = (id3header[0] << 21) + (id3header[1] << 14) + (id3header[2] << 7) + id3header[3];
+        }
+        return size + 10;
     }
 
     private ArrayList<Song> listSongs(File directory) {
