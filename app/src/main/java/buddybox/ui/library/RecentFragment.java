@@ -53,8 +53,6 @@ public class RecentFragment extends Fragment {
         if (recentPlaylist != null)
             updatePlaylist();
 
-        System.out.println(">>>>>> recent frag created. UpdatePlaylist: " + (recentPlaylist != null));
-
         return view;
     }
 
@@ -76,7 +74,6 @@ public class RecentFragment extends Fragment {
             rowView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    System.out.println(">>>>>>>>>>>>>>> add to playlist " + view);
                     openSelectPlaylistDialog(recentPlaylist.songs.get(position));
                 }
             });
@@ -113,7 +110,6 @@ public class RecentFragment extends Fragment {
     }
 
     public void updateState(State state) {
-        System.out.println(">>>>>> update state. has playables " + (playables != null));
         recentPlaylist = state.recentPlaylist;
         playlists = state.playlists;
 
@@ -124,7 +120,6 @@ public class RecentFragment extends Fragment {
     }
 
     private void updatePlaylist() {
-        System.out.println("## updatePlaylist" + recentPlaylist.songs.size());
         playables.updateRecent(recentPlaylist);
         if (recentPlaylist.songs.isEmpty()) {
             view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);

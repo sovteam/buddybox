@@ -98,7 +98,7 @@ public class ModelImpl implements Model {
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
-        if (event == FINISHED_PLAYING) skip(+1);
+        if (event == FINISHED_PLAYING) finishedPlaying();
 
         if (event.getClass() == Play.class) play((Play) event);
 
@@ -117,6 +117,13 @@ public class ModelImpl implements Model {
 
         //if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
         updateListeners();
+    }
+
+    private void finishedPlaying() {
+        if (isSampling)
+            doPlay(samplerPlaylist(), 0);
+        else
+            skip(+1);
     }
 
     private void createPlaylist(CreatePlaylist event) {
@@ -183,8 +190,6 @@ public class ModelImpl implements Model {
         if (samplerPlaylist.isEmpty())
             return;
 
-        playPauseCurrent();
-
         SongImpl song = samplerPlaylist.song(0);
         samplerPlaylist.removeSong(0);
 
@@ -196,27 +201,29 @@ public class ModelImpl implements Model {
             boolean moved = song.file.renameTo(newFile);
             if (moved) {
                 allSongs.put(song.hash, song);
-                song.file = newFile; // TODO switch to immutable
+                song.file = newFile; // TODO switch to immutable, update relativePath
                 System.out.println(">>> LOVE move file " + song.name);
             }
         } else if (!song.file.delete())
             System.out.println("Unable to delete file: " + song.file);
 
         if (!samplerPlaylist.isEmpty())
-            currentSongIndex = 0;
+            doPlay(samplerPlaylist, 0);
     }
 
     private void samplerStop() {
-        if (isSampling && !samplerPlaylist.isEmpty())
         isSampling = false;
+        doStop();
+    }
+
+    private void doStop() {
+        currentPlaylist = null;
+        currentSongIndex = null;
     }
 
     private void samplerStart() {
         isSampling = true;
-        Playlist playlist = samplerPlaylist();
-        if (playlist.isEmpty())
-            return;
-        currentSongIndex = 0;
+        doPlay(samplerPlaylist(), 0);
     }
 
     @NonNull
@@ -252,10 +259,15 @@ public class ModelImpl implements Model {
                 State state = new State(
                         1,
                         null,
-                        isSampling || currentSongIndex == null ? null : playlist.song(currentSongIndex),
+                        currentSongIndex == null
+                                ? null
+                                : isSampling
+                                    ? samplerPlaylist().song(0)
+                                    : playlist.song(currentSongIndex),
                         null,
                         isPaused,
                         null,
+                        isSampling,
                         samplerPlaylist(),
                         lovedPlaylist(),
                         playlists(),
@@ -277,7 +289,6 @@ public class ModelImpl implements Model {
     }
 
     private List<Playlist> playlists() {
-        System.out.println(">>>> Create playlists");
         if (playlists == null) {
             List<SongImpl> songs = new ArrayList<>(allSongs.values());
             playlists = new ArrayList<>();
@@ -289,7 +300,6 @@ public class ModelImpl implements Model {
     }
 
     private ArrayList<Artist> artists() {
-        long start = System.currentTimeMillis();
         if (artists == null) {
             Map<String, Artist> artistsMap = new HashMap<>();
             for (Song song : recentPlaylist().songs) {
@@ -302,9 +312,7 @@ public class ModelImpl implements Model {
             }
             artists = new ArrayList<>(artistsMap.values());
         }
-        System.out.println(">>>@@@@@@@ List artists: " + (System.currentTimeMillis() - start));
         return artists;
-
     }
 
     private Playlist lovedPlaylist() {
@@ -473,9 +481,7 @@ public class ModelImpl implements Model {
                     MessageDigest digest = MessageDigest.getInstance("SHA-256");
                     byte[] hashBytes = Arrays.copyOf(digest.digest(raw), 16); // 128 bits is enough
                     Hash hash = new Hash(hashBytes);
-                    System.out.println(">>>### Hash Raw File: " + hash.hashCode() + ", time: " + ((System.currentTimeMillis() - now)) + ", file: " + song.name);
                 }
-                // song.setHash(hash);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -546,7 +552,6 @@ public class ModelImpl implements Model {
                 ret.add(song);
             }
         }
-        System.out.println(">>> songs size: " + ret.size() + " at " + directory);
         return ret;
     }
 

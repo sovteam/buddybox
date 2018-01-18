@@ -381,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
         Song songPlaying = state.songPlaying;
         View playingBar = findViewById(R.id.playingBar);
 
-        if (songPlaying == null) {
+        if (songPlaying == null || state.isSampling) {
             playingBar.setVisibility(View.INVISIBLE);
         } else {
             playingBar.setVisibility(View.VISIBLE);

@@ -48,8 +48,6 @@ public class PlaylistsFragment extends Fragment {
         if (playlists != null)
             updatePlaylists();
 
-        System.out.println(">>>>>> playlists frag created. UpdatePlaylist: " + (playlists != null));
-
         return view;
     }
 
@@ -84,7 +82,6 @@ public class PlaylistsFragment extends Fragment {
     }
 
     public void updateState(State state) {
-        System.out.println(">>>>>> update state. has playables " + (playlistsAdapter != null));
         playlists = state.playlists;
         if (playlistsAdapter == null)
             return;
@@ -93,7 +90,6 @@ public class PlaylistsFragment extends Fragment {
     }
 
     private void updatePlaylists() {
-        System.out.println("## :/ updatePlaylists " + playlists.size());
         playlistsAdapter.update(playlists);
         if (playlists.isEmpty()) {
             view.findViewById(R.id.playlists_empty).setVisibility(View.VISIBLE);

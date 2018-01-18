@@ -32,13 +32,11 @@ public class CreatePlaylistDialogFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         dispatch(new CreatePlaylist(edit.getText().toString(), getArguments().getString("songId")));
-                        System.out.println("@@@ CREATE playlist: " + edit.getText());
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         CreatePlaylistDialogFragment.this.getDialog().cancel();
-                        System.out.println("@@@ CANCEL new playlist");
                     }
                 });
         AlertDialog dialog = builder.create();

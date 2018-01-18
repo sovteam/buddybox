@@ -40,7 +40,7 @@ public class ArtistsFragment extends Fragment {
         // List artists
         ListView list = (ListView) view.findViewById(R.id.artists);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            System.out.println("Artist click " + i);
+            System.out.println("GUI Artist click " + i);
         }});
         artistsAdapter = new ArtistsArrayAdapter();
         list.setAdapter(artistsAdapter);
@@ -92,7 +92,6 @@ public class ArtistsFragment extends Fragment {
     }
 
     private void updateArtists() {
-        System.out.println("## updateArtists " + artists.size());
         artistsAdapter.update(artists);
         if (artists.isEmpty()) {
             view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);

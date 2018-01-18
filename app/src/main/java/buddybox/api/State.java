@@ -33,8 +33,9 @@ public class State {
     public final List<Playable> searchResults;
     public final long availableMemorySize;
     public final List<Artist> artists;
+    public final boolean isSampling;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -44,6 +45,7 @@ public class State {
         this.isPaused = isPaused;
         this.playlistBySong = playlistBySong;
 
+        this.isSampling = isSampling;
         this.samplerPlaylist = samplerPlaylist;
         this.lovedPlaylist = lovedPlaylist;
 
