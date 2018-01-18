@@ -1,4 +1,4 @@
-package buddybox.ui;
+package buddybox.ui.notification;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

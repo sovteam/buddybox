@@ -24,7 +24,27 @@ public class Playlist implements Playable {
 
     @Override
     public String subtitle() {
-        return "Playlist with " + songs.size() + " songs";
+        return songs.size() + " songs";
+    }
+
+    @Override
+    public String duration() {
+        int total = 0;
+        for (Song song : songs)
+            total += song.duration;
+        return formatDuration(total);
+    }
+
+    public String formatDuration(int miliseconds) {
+        int duration = miliseconds / 1000;
+        int hours = duration / 60 / 60;
+        int minutes = (duration - hours * 60 * 60) / 60;
+        int seconds = duration - hours * 60 * 60 - minutes * 60;
+
+        String ret = hours > 0 ? Integer.toString(hours) + ":" : "";
+        ret += !ret.isEmpty() && minutes < 10 ? "0" + minutes : minutes;
+        ret += ":" + (seconds < 10 ? "0" + seconds : seconds);
+        return  ret;
     }
 
     public SongImpl song(int songIndex) {

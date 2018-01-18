@@ -12,29 +12,33 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="buddybox.ui.MainActivity">
+        <activity
+            android:name="buddybox.ui.MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="buddybox.ui.PlayingActivity"/>
+        <activity
+            android:name="buddybox.ui.PlayingActivity"
+            android:screenOrientation="portrait"/>
 
         <receiver
-            android:name="buddybox.ui.NotificationDismissedReceiver"
+            android:name="buddybox.ui.notification.NotificationDismissedReceiver"
             android:exported="false" />
 
         <receiver
-            android:name="buddybox.ui.NotificationPlayPauseReceiver"
+            android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"
             android:exported="false" />
 
         <receiver
-            android:name="buddybox.ui.NotificationSkipNextReceiver"
+            android:name="buddybox.ui.notification.NotificationSkipNextReceiver"
             android:exported="false" />
 
         <receiver
-            android:name="buddybox.ui.NotificationSkipPreviousReceiver"
+            android:name="buddybox.ui.notification.NotificationSkipPreviousReceiver"
             android:exported="false" />
 
     </application>

@@ -40,6 +40,10 @@ import buddybox.impl.SongImpl;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
+import buddybox.ui.notification.NotificationDismissedReceiver;
+import buddybox.ui.notification.NotificationPlayPauseReceiver;
+import buddybox.ui.notification.NotificationSkipNextReceiver;
+import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
 import static buddybox.CoreSingleton.dispatch;
 import static buddybox.CoreSingleton.setStateListener;
@@ -387,12 +391,15 @@ public class MainActivity extends AppCompatActivity {
             updateMainNotification(state);
         }
 
-        // Update Library Recent
+        // Update Library Content
         Fragment fragRec = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("RECENT");
         ((RecentFragment)fragRec).updateState(state);
 
         Fragment fragArt = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("ARTISTS");
         ((ArtistsFragment)fragArt).updateState(state);
+
+        Fragment fragPlaylists = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("PLAYLISTS");
+        ((PlaylistsFragment)fragPlaylists).updateState(state);
     }
 
     private NotificationCompat.Builder mainNotification() {
@@ -408,7 +415,8 @@ public class MainActivity extends AppCompatActivity {
             mainNotification.setDeleteIntent(pendingDelete);
 
             // Set focus to MainActivity
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             PendingIntent pendingContent = PendingIntent.getBroadcast(this, notificationId, intent, 0);
             mainNotification.setContentIntent(pendingContent);
         }

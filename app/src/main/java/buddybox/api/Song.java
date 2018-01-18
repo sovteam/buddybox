@@ -17,6 +17,11 @@ public class Song implements Playable {
 
     @Override public String name() { return name; }
     @Override public String subtitle() { return artist; }
+    @Override public String duration() {
+        int minutes = duration / 1000 / 60;
+        int seconds = duration / 1000 % 60;
+        return  minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
+    }
 
     public void setLoved() {
         loved = System.currentTimeMillis();

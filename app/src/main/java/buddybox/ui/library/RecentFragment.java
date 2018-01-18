@@ -9,15 +9,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import buddybox.api.Play;
 import buddybox.api.Playable;
 import buddybox.api.Playlist;
+import buddybox.api.Song;
 import buddybox.api.VisibleState;
+import buddybox.ui.MainActivity;
 
 import static buddybox.CoreSingleton.dispatch;
 
@@ -26,6 +30,7 @@ public class RecentFragment extends Fragment {
     private Playlist recentPlaylist;
     private PlayablesArrayAdapter playables;
     private View view;
+    private List<Playlist> playlists;
 
     public RecentFragment(){}
 
@@ -61,14 +66,23 @@ public class RecentFragment extends Fragment {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             View rowView = convertView == null
-                    ? getActivity().getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
+                    ? getActivity().getLayoutInflater().inflate(R.layout.song_item, parent, false)
                     : convertView;
 
             Playable item = getItem(position);
-            setText(rowView, android.R.id.text1, item.name());
-            setText(rowView, android.R.id.text2, item.subtitle());
+            setText(rowView, R.id.text1, item.name());
+            setText(rowView, R.id.text2, item.subtitle() + " " + item.duration()); // TODO remove duration
+
+            rowView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    System.out.println(">>>>>>>>>>>>>>> add to playlist " + view);
+                    openSelectPlaylistDialog(recentPlaylist.songs.get(position));
+                }
+            });
+
             return rowView;
         }
 
@@ -83,9 +97,28 @@ public class RecentFragment extends Fragment {
         }
     }
 
+    private void openSelectPlaylistDialog(Song song) {
+        SelectPlaylistDialogFragment frag = new SelectPlaylistDialogFragment();
+
+        //TODO remove playlists that song already belongs
+        ArrayList<String> list = new ArrayList<>();
+        for (Playlist playlist : playlists) {
+            list.add(playlist.name);
+        }
+
+        Bundle args = new Bundle();
+        args.putString("songId", song.name); // TODO switch to songId
+        args.putStringArrayList("playlists", list);
+        frag.setArguments(args);
+
+        frag.show(getFragmentManager(), "Select Playlist");
+    }
+
     public void updateState(VisibleState state) {
         System.out.println(">>>>>> update state. has playables " + (playables != null));
         recentPlaylist = state.recentPlaylist;
+        playlists = state.playlists;
+
         if (playables == null)
             return;
 

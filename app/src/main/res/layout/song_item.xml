@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:id="@+id/songItem"
+    android:paddingLeft="16dp">
+
+    <ImageView
+        android:layout_width="56dp"
+        android:layout_height="match_parent"
+        android:id="@+id/addToPlaylist"
+        android:src="@drawable/ic_playlist_add"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="Add to Playlist"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:paddingRight="16dp"
+        android:paddingLeft="16dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/addToPlaylist">
+
+        <TextView android:id="@+id/text1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:text="Item"
+            android:singleLine="true" />
+
+        <TextView android:id="@+id/text2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text1"
+            android:layout_alignStart="@+id/text1"
+            android:text="subtitle"
+            android:layout_marginBottom="8dp"
+            android:singleLine="true" />
+    </RelativeLayout>
+
+</RelativeLayout>

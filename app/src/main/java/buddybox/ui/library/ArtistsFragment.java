@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -58,7 +59,7 @@ public class ArtistsFragment extends Fragment {
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, ViewGroup parent) {
             View rowView = convertView == null
                     ? getActivity().getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
                     : convertView;
@@ -66,6 +67,7 @@ public class ArtistsFragment extends Fragment {
             Artist artist = getItem(position);
             setText(rowView, android.R.id.text1, artist.name);
             setText(rowView, android.R.id.text2, Integer.toString(artist.songsCount()) + " songs");
+
             return rowView;
         }
 

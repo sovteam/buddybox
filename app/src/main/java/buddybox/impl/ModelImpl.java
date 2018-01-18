@@ -28,7 +28,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import buddybox.api.AddSongToPlaylist;
 import buddybox.api.Artist;
+import buddybox.api.CreatePlaylist;
 import buddybox.api.Model;
 import buddybox.api.Play;
 import buddybox.api.Playlist;
@@ -68,6 +70,7 @@ public class ModelImpl implements Model {
     private int nextId;
 //    private MyFileObserver fileObs;
     private HashMap<String, String> genreMap;
+    private ArrayList<Playlist> playlists;
 
     public ModelImpl(Context context) {
         this.context = context;
@@ -123,8 +126,38 @@ public class ModelImpl implements Model {
 
         if (event == LOVED_VIEWED) lovedViewed();
 
-        if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
+        if (event.getClass() == AddSongToPlaylist.class) addSongToPlaylist((AddSongToPlaylist)event);
+        if (event.getClass() == CreatePlaylist.class) createPlaylist((CreatePlaylist)event);
+
+        //if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
         updateListener();
+    }
+
+    private void createPlaylist(CreatePlaylist event) {
+        /* TODO implement
+         * String name = playlistName.trim();
+         * if (name.isEmpty()) {
+         *      Toast("Playlist name can\'t be empty");
+         *      return;
+         * }
+         * Playlist playlist = Playlist.findByName(name);
+         * if (playlist != null)
+         *      playlist.addSong(songId);
+         * else
+         *      Playlist.create(event.playlistName, [Song.findById(event.songId)]);
+         */
+        System.out.println("@@@ Dispatched Event: createPlaylist");
+    }
+
+    private void addSongToPlaylist(AddSongToPlaylist event) {
+        /*TODO implement
+        * Playlist playlist = Playlist.findByName(event.playlist);
+        * if (playlist == null)
+        *   Playlist.create(event.playlistName, [Song.findById(event.songId)]);
+        * else
+        *   playlist.addSong(songId);
+        * */
+        System.out.println("@@@ Dispatched Event: addSongToPlaylist");
     }
 
     private void lovedViewed() {
@@ -275,7 +308,7 @@ public class ModelImpl implements Model {
                     null,
                     samplerPlaylist(),
                     lovedPlaylist(),
-                    null,
+                    playlists(),
                     null,
                     1,
                     getAvailableMemorySize(),
@@ -286,7 +319,19 @@ public class ModelImpl implements Model {
         handler.post(runnable);
     }
 
+    private List<Playlist> playlists() {
+        System.out.println(">>>> Create playlists");
+        if (playlists == null) {
+            playlists = new ArrayList<>();
+            playlists.add(new Playlist(10, "My Rock", recentPlaylist.songs.subList(0, 1)));
+            playlists.add(new Playlist(11, "70\'s", recentPlaylist.songs.subList(4, 10)));
+            playlists.add(new Playlist(12, "Pagode do Tadeu", recentPlaylist.songs.subList(11, 32)));
+        }
+        return playlists;
+    }
+
     private ArrayList<Artist> artists() {
+        long start = System.currentTimeMillis();
         if (artists == null) {
             Map<String, Artist> artistsMap = new HashMap<>();
             for (Song song : recentPlaylist().songs) {
@@ -299,7 +344,9 @@ public class ModelImpl implements Model {
             }
             artists = new ArrayList<>(artistsMap.values());
         }
+        System.out.println(">>>@@@@@@@ List artists: " + (System.currentTimeMillis() - start));
         return artists;
+
     }
 
     private Playlist lovedPlaylist() {
