@@ -8,10 +8,9 @@ public class Playlist implements Playable {
 
     private final int id;
     public final String name;
-    public int currentSongIndex;
-    public final List<Song> songs;
+    public final List<SongImpl> songs;
 
-    public Playlist(int id, String name, List<Song> songs) {
+    public Playlist(int id, String name, List<SongImpl> songs) {
         this.id = id;
         this.name = name;
         this.songs = songs;
@@ -35,8 +34,8 @@ public class Playlist implements Playable {
         return formatDuration(total);
     }
 
-    public String formatDuration(int miliseconds) {
-        int duration = miliseconds / 1000;
+    public String formatDuration(int milliseconds) {
+        int duration = milliseconds / 1000;
         int hours = duration / 60 / 60;
         int minutes = (duration - hours * 60 * 60) / 60;
         int seconds = duration - hours * 60 * 60 - minutes * 60;
@@ -50,7 +49,7 @@ public class Playlist implements Playable {
     public SongImpl song(int songIndex) {
         return songIndex >= songs.size()
             ? null
-            : (SongImpl)songs.get(songIndex);
+            : songs.get(songIndex);
     }
 
     public Integer songAfter(int songIndex, int step) {

@@ -3,16 +3,25 @@ package buddybox.api;
 public class Song implements Playable {
 
     public final int id;
+    public final Hash hash;
     public final String name;
     public final String artist;
     public final String genre;
     public final Integer duration;
+    public boolean isMissing = false;
 
     public Long loved;
     public Boolean lovedViewed;
+    public String relativePath;
 
-    public Song(int id, String name, String artist, String genre, Integer duration) { this.id = id; this.name = name; this.artist = artist; this.genre = genre;
+    public Song(int id, Hash hash, String name, String artist, String genre, Integer duration, String relativePath) {
+        this.id = id;
+        this.hash = hash;
+        this.name = name;
+        this.artist = artist;
+        this.genre = genre;
         this.duration = duration;
+        this.relativePath = relativePath;
     }
 
     @Override public String name() { return name; }
@@ -38,5 +47,13 @@ public class Song implements Playable {
 
     public boolean isLovedViewed() {
         return lovedViewed != null && lovedViewed;
+    }
+
+    public void setMissing() {
+        isMissing = true;
+    }
+
+    public void setNotMissing() {
+        isMissing = false;
     }
 }

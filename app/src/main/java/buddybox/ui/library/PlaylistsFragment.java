@@ -15,12 +15,8 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import buddybox.api.Play;
-import buddybox.api.Playable;
 import buddybox.api.Playlist;
-import buddybox.api.VisibleState;
-
-import static buddybox.CoreSingleton.dispatch;
+import buddybox.api.State;
 
 public class PlaylistsFragment extends Fragment {
 
@@ -87,7 +83,7 @@ public class PlaylistsFragment extends Fragment {
 
     }
 
-    public void updateState(VisibleState state) {
+    public void updateState(State state) {
         System.out.println(">>>>>> update state. has playables " + (playlistsAdapter != null));
         playlists = state.playlists;
         if (playlistsAdapter == null)

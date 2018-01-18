@@ -14,4 +14,6 @@ public class Play extends Model.Event {
     public static final Model.Event SKIP_NEXT = new Model.Event("SkipNext");
     public static final Model.Event SKIP_PREVIOUS = new Model.Event("SkipPrevious");
 
+    public static final Model.Event FINISHED_PLAYING = new Model.Event("FinishedPlaying");
+
 }

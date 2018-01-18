@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import static buddybox.CoreSingleton.dispatch;
+import static buddybox.ModelSingleton.dispatch;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 
 public class NotificationPlayPauseReceiver extends BroadcastReceiver {

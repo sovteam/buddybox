@@ -9,7 +9,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
 
@@ -20,10 +19,9 @@ import buddybox.api.Play;
 import buddybox.api.Playable;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
-import buddybox.api.VisibleState;
-import buddybox.ui.MainActivity;
+import buddybox.api.State;
 
-import static buddybox.CoreSingleton.dispatch;
+import static buddybox.ModelSingleton.dispatch;
 
 public class RecentFragment extends Fragment {
 
@@ -114,7 +112,7 @@ public class RecentFragment extends Fragment {
         frag.show(getFragmentManager(), "Select Playlist");
     }
 
-    public void updateState(VisibleState state) {
+    public void updateState(State state) {
         System.out.println(">>>>>> update state. has playables " + (playables != null));
         recentPlaylist = state.recentPlaylist;
         playlists = state.playlists;

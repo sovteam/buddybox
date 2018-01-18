@@ -4,10 +4,10 @@ public interface Model {
 
     void dispatch(Event event);
 
-    void setStateListener(StateListener listener);
+    void addStateListener(StateListener listener);
 
     interface StateListener {
-        void update(VisibleState state);
+        void update(State state);
     }
 
     class Event {

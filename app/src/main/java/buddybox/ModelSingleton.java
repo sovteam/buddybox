@@ -2,7 +2,7 @@ package buddybox;
 
 import buddybox.api.Model;
 
-public class CoreSingleton {
+public class ModelSingleton {
 
     private static Model INSTANCE;
 
@@ -17,7 +17,7 @@ public class CoreSingleton {
     }
 
     public static void setStateListener(Model.StateListener listener) {
-        INSTANCE.setStateListener(listener);
+        INSTANCE.addStateListener(listener);
     }
 
 }

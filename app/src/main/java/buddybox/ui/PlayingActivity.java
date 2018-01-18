@@ -10,10 +10,10 @@ import com.adalbertosoares.buddybox.R;
 
 import buddybox.api.Model;
 import buddybox.api.Song;
-import buddybox.api.VisibleState;
+import buddybox.api.State;
 
-import static buddybox.CoreSingleton.dispatch;
-import static buddybox.CoreSingleton.setStateListener;
+import static buddybox.ModelSingleton.dispatch;
+import static buddybox.ModelSingleton.setStateListener;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
 import static buddybox.api.Play.SKIP_PREVIOUS;
@@ -46,12 +46,12 @@ public class PlayingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setStateListener(new Model.StateListener() { @Override public void update(VisibleState state) {
+        setStateListener(new Model.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }
 
-    private void updateState(VisibleState state) {
+    private void updateState(State state) {
         Song playing = state.songPlaying;
         ((TextView)findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView)findViewById(R.id.playingSongArtist)).setText(playing.artist);

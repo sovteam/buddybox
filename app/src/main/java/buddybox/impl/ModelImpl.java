@@ -1,10 +1,7 @@
 package buddybox.impl;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
@@ -18,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,16 +29,17 @@ import java.util.regex.Pattern;
 import buddybox.api.AddSongToPlaylist;
 import buddybox.api.Artist;
 import buddybox.api.CreatePlaylist;
+import buddybox.api.Hash;
 import buddybox.api.Model;
 import buddybox.api.Play;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
-import buddybox.api.SongAdded;
-import buddybox.api.VisibleState;
+import buddybox.api.State;
 
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Play.SKIP_NEXT;
 import static buddybox.api.Play.SKIP_PREVIOUS;
+import static buddybox.api.Play.FINISHED_PLAYING;
 import static buddybox.api.Sampler.LOVED_VIEWED;
 import static buddybox.api.Sampler.SAMPLER_DELETE;
 import static buddybox.api.Sampler.SAMPLER_HATE;
@@ -52,62 +51,45 @@ public class ModelImpl implements Model {
 
     private static final String UNKNOWN_GENRE = "Unknown Genre";
     private static final String UNKNOWN_ARTIST = "Unknown Artist";
+
     private final Context context;
-    private final MediaPlayer player;
     private final Handler handler = new Handler();
-    private boolean isMediaPlayerPrepared = false;
-    private StateListener listener;
+    private List<StateListener> listeners = new ArrayList<>();
 
     private File musicDirectory;
-    private Playlist recentPlaylist;
-    private int currentSongIndex;
+    private Playlist currentPlaylist;
+    private Integer currentSongIndex;
     private ArrayList<Artist> artists;
 
-    private final File samplerDirectory;
+    private File samplerDirectory;
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
 
     private int nextId;
-//    private MyFileObserver fileObs;
     private HashMap<String, String> genreMap;
     private ArrayList<Playlist> playlists;
+    private HashMap<Hash, SongImpl> allSongs = new HashMap<>();
+    private boolean isPaused;
 
     public ModelImpl(Context context) {
         this.context = context;
 
         //System.out.println(Database.initDatabase(context));
 
-        //samplerDirectory = this.context.getExternalFilesDir("SongSamples");
+        setAppFolders();
+        synchronizeLibrary();
+    }
+
+    private void setAppFolders() {
         samplerDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         if (samplerDirectory != null)
             if (!samplerDirectory.exists() && !samplerDirectory.mkdirs())
                 System.out.println("Unable to create folder: " + samplerDirectory);
-        System.out.println(">>>>> sampler directory " + samplerDirectory);
 
         musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
         if (!musicDirectory.exists())
-            musicDirectory.mkdirs();
-        System.out.println(">>> Music directory: " + musicDirectory);
-
-        // Folder observer !!! ONLY root
-        /*try {
-            fileObs = new MyFileObserver(musicDirectory.getCanonicalPath());
-            fileObs.startWatching();
-            // TODO track onDestroy main activity to call fileObs.stopWatching();
-            // TODO track subdirs >> http://www.roman10.net/2011/08/06/android-fileobserverthe-underlying-inotify-mechanism-and-an-example/
-        } catch (IOException e) {
-            System.out.println(e.getStackTrace());
-        }*/
-
-        player = new MediaPlayer();
-        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() { @Override public void onCompletion(MediaPlayer mediaPlayer) {
-            if (isSampling)
-                play(samplerPlaylist(), 0);
-            else
-                play(recentPlaylist(), recentPlaylist().songAfter(currentSongIndex, 1));
-            updateListener();
-        }});
+            if (!musicDirectory.mkdirs())
+                System.out.println("Unable to create folder: " + musicDirectory);
     }
 
     @Override
@@ -116,7 +98,9 @@ public class ModelImpl implements Model {
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
-        if (event.getClass() == Play.class) play((Play)event);
+        if (event == FINISHED_PLAYING) skip(+1);
+
+        if (event.getClass() == Play.class) play((Play) event);
 
         if (event == SAMPLER_START) samplerStart();
         if (event == SAMPLER_STOP) samplerStop();
@@ -126,11 +110,13 @@ public class ModelImpl implements Model {
 
         if (event == LOVED_VIEWED) lovedViewed();
 
-        if (event.getClass() == AddSongToPlaylist.class) addSongToPlaylist((AddSongToPlaylist)event);
-        if (event.getClass() == CreatePlaylist.class) createPlaylist((CreatePlaylist)event);
+
+        if (event.getClass() == AddSongToPlaylist.class)
+            addSongToPlaylist((AddSongToPlaylist) event);
+        if (event.getClass() == CreatePlaylist.class) createPlaylist((CreatePlaylist) event);
 
         //if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
-        updateListener();
+        updateListeners();
     }
 
     private void createPlaylist(CreatePlaylist event) {
@@ -179,8 +165,8 @@ public class ModelImpl implements Model {
         System.out.println(">>> Sampler LOVE");
 
         // TODO persist song loved
-        Song lovedSong = samplerPlaylist.song(0);
-        recentPlaylist.songs.add(lovedSong);
+        SongImpl lovedSong = samplerPlaylist.song(0);
+        allSongs.put(lovedSong.hash, lovedSong);
         lovedSong.setLoved();
 
         samplerNextSong(true);
@@ -207,29 +193,22 @@ public class ModelImpl implements Model {
             File newFile = new File(musicDirectory + File.separator + song.file.getName());
             if (!newFile.exists())
                 newFile.mkdirs();
-            boolean r = song.file.renameTo(newFile);
-            song.file = newFile; // TODO switch to immutable
-            System.out.println(">>> LOVE move file " + r);
+            boolean moved = song.file.renameTo(newFile);
+            if (moved) {
+                allSongs.put(song.hash, song);
+                song.file = newFile; // TODO switch to immutable
+                System.out.println(">>> LOVE move file " + song.name);
+            }
         } else if (!song.file.delete())
             System.out.println("Unable to delete file: " + song.file);
 
         if (!samplerPlaylist.isEmpty())
-            play(samplerPlaylist, 0);
-    }
-
-    private void addSong(SongAdded event) {
-        System.out.println(">>> song added " +  event.filePath);
-        Song song = tryToReadSong(new File(event.filePath));
-        if (song == null)
-            return;
-        recentPlaylist.songs.add(song);
+            currentSongIndex = 0;
     }
 
     private void samplerStop() {
         if (isSampling && !samplerPlaylist.isEmpty())
-            player.stop();
         isSampling = false;
-        isMediaPlayerPrepared = false;
     }
 
     private void samplerStart() {
@@ -237,7 +216,7 @@ public class ModelImpl implements Model {
         Playlist playlist = samplerPlaylist();
         if (playlist.isEmpty())
             return;
-        play(playlist, 0);
+        currentSongIndex = 0;
     }
 
     @NonNull
@@ -248,84 +227,63 @@ public class ModelImpl implements Model {
     }
 
     private void skip(int step) {
-        play(recentPlaylist, recentPlaylist.songAfter(currentSongIndex, step));
+        doPlay(currentPlaylist, currentPlaylist.songAfter(currentSongIndex, step));
     }
 
     private void play(Play event) {
-        play(event.playlist, event.songIndex);
+        doPlay(event.playlist, event.songIndex);
     }
 
-    private void play(Playlist playlist, Integer songIndex) {
-        // TODO set currentPlaylist
-        if (songIndex == null)
-            return;
-
-        // TODO differ sampler from library
+    private void doPlay(Playlist playlist, int songIndex) {
+        isPaused = false;
         currentSongIndex = songIndex;
-        try {
-            Uri myUri = Uri.parse(playlist.song(songIndex).file.getCanonicalPath());
-            player.pause();
-            player.reset();
-            player.setDataSource(context, myUri);
-            player.prepare();
-            player.start();
-            isMediaPlayerPrepared = true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        currentPlaylist = playlist;
     }
 
     private void playPauseCurrent() {
-        if (player.isPlaying())
-            player.pause();
-        else if (isMediaPlayerPrepared)
-            player.start();
-        else
-            play(recentPlaylist(), currentSongIndex);
+        isPaused = !isPaused;
     }
 
-    private void updateListener() {
-        System.out.println(">> updateListener");
-        Runnable runnable = new Runnable() { @Override public void run() {
-            Playlist playlist = recentPlaylist();
-
-            /* All genres found
-            Set<String> genres = new HashSet<>();
-            for (Song song : playlist.songs) {
-                genres.add(song.genre);
+    private void updateListeners() {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Playlist playlist = recentPlaylist();
+                State state = new State(
+                        1,
+                        null,
+                        isSampling || currentSongIndex == null ? null : playlist.song(currentSongIndex),
+                        null,
+                        isPaused,
+                        null,
+                        samplerPlaylist(),
+                        lovedPlaylist(),
+                        playlists(),
+                        null,
+                        1,
+                        getAvailableMemorySize(),
+                        playlist,
+                        artists());
+                for (StateListener listener : listeners) {
+                    updateListener(listener, state);
+                }
             }
-            for (String g : genres) {
-                System.out.println(">>># " + g);
-            }
-            */
-
-            VisibleState state = new VisibleState(
-                    1,
-                    null,
-                    isSampling ? null : playlist.song(currentSongIndex),
-                    null,
-                    !player.isPlaying(),
-                    null,
-                    samplerPlaylist(),
-                    lovedPlaylist(),
-                    playlists(),
-                    null,
-                    1,
-                    getAvailableMemorySize(),
-                    playlist,
-                    artists());
-            listener.update(state);
-        }};
+        };
         handler.post(runnable);
+    }
+
+    private void updateListener(StateListener listener, State state) {
+        listener.update(state);
     }
 
     private List<Playlist> playlists() {
         System.out.println(">>>> Create playlists");
         if (playlists == null) {
+            List<SongImpl> songs = new ArrayList<>(allSongs.values());
             playlists = new ArrayList<>();
-            playlists.add(new Playlist(10, "My Rock", recentPlaylist.songs.subList(0, 1)));
-            playlists.add(new Playlist(11, "70\'s", recentPlaylist.songs.subList(4, 10)));
-            playlists.add(new Playlist(12, "Pagode do Tadeu", recentPlaylist.songs.subList(11, 32)));
+            playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
+            playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
+            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(2, 3)));
         }
         return playlists;
     }
@@ -351,8 +309,8 @@ public class ModelImpl implements Model {
 
     private Playlist lovedPlaylist() {
         // Select loved songs
-        ArrayList<Song> lovedSongs = new ArrayList<>();
-        for (Song song : recentPlaylist.songs) {
+        ArrayList<SongImpl> lovedSongs = new ArrayList<>();
+        for (SongImpl song : allSongs.values()) {
             if (song.isLoved()) {
                 System.out.println(">> Love " + song.name);
                 lovedSongs.add(song);
@@ -375,16 +333,119 @@ public class ModelImpl implements Model {
     }
 
     private Playlist recentPlaylist() {
-        if (recentPlaylist == null) {
-            Long now = System.currentTimeMillis();
-            List<Song> allSongs = listSongs(musicDirectory);
-            recentPlaylist = new Playlist(0, "Recent", allSongs);
-            System.out.println(">>> seconds to list all songs: " + (System.currentTimeMillis() - now) / 1000);
+        return new Playlist(0, "Recent", new ArrayList<>(allSongs.values()));
+    }
 
-            Thread t = new Thread(new SongHashThread(allSongs));
-            t.start();
+    private void synchronizeLibrary() {
+        List<File> mp3Files = listMp3Files(musicDirectory);
+        Map<Hash, File> mp3Hashes = mp3Hashes(mp3Files);
+        createNewSongs(mp3Hashes);
+        markMissingSongs(mp3Hashes);
+        updateListeners();
+    }
+
+    private Map<Hash, File> mp3Hashes(List<File> mp3Files) {
+        Map<Hash, File> ret = new HashMap<>();
+        for (File mp3 : mp3Files) {
+            ret.put(mp3Hash(mp3), mp3);
         }
-        return recentPlaylist;
+        return ret;
+    }
+
+    private Hash mp3Hash(File mp3) {
+        MessageDigest sha256 = getMessageDigest();
+        if (sha256 == null)
+            throw new RuntimeException("Missing SHA-256 algorithm");
+
+        Hash ret = null;
+        byte[] raw = rawMP3(mp3);
+        if (raw != null) {
+            byte[] hashBytes = Arrays.copyOf(sha256.digest(raw), 16); // 128 bits is enough
+            ret = new Hash(hashBytes);
+        }
+        return ret;
+    }
+
+    private MessageDigest getMessageDigest() {
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return digest;
+    }
+
+    private void markMissingSongs(Map<Hash, File> files) {
+        /** TODO
+         * Song.setFileMissing(hash);
+         * Song.setFileNotMissing(hash);
+         */
+        for (Hash hash : allSongs.keySet()) {
+            if (!files.containsKey(hash))
+                allSongs.get(hash).setMissing();
+            else
+                allSongs.get(hash).setNotMissing();
+        }
+    }
+
+    private void createNewSongs(Map<Hash, File> files) {
+        for (Hash hash : files.keySet()) {
+            if (hasMp3(hash))
+                updateSongPath(hash, files.get(hash).getPath());
+            else
+                createNewSong(hash, files.get(hash));
+        }
+    }
+
+    private void updateSongPath(Hash hash, String path) {
+        /** TODO
+         * Song.updatePath(hash, path);
+         */
+    }
+
+    private void createNewSong(Hash hash, File file) {
+        Map<String, String> map = readMp3Metadata(file);
+        /** TODO
+         * Song.create(hash, file.getPath, metadata);
+         */
+
+        Integer duration = null;
+        String durationStr = map.get("duration");
+        if (durationStr != null)
+            duration = Integer.parseInt(durationStr);
+
+        SongImpl song = new SongImpl(nextId(), hash, map.get("name"), map.get("artist"), map.get("genre"), duration, file);
+        allSongs.put(hash, song);
+    }
+
+    private boolean hasMp3(Hash hash) {
+        /** TODO
+         * return Song.exists(hash);
+         * */
+        return allSongs.containsKey(hash);
+    }
+
+    private List<File> listMp3Files(File directory) {
+        List<File> ret = new ArrayList<>();
+
+        if (!directory.exists()) {
+            System.out.println("Directory does not exist: " + directory);
+            return ret;
+        }
+
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if (file.isDirectory())
+                ret.addAll(listMp3Files(file));
+            else if (isMP3(file))
+                ret.add(file);
+        }
+        return ret;
+    }
+
+    private boolean isMP3(File file) {
+        return file.getName().toLowerCase().endsWith(".mp3");
     }
 
     public class SongHashThread implements Runnable {
@@ -423,21 +484,6 @@ public class ModelImpl implements Model {
         System.out.println("!!!!!!!! updateHashCodes TOTAL FILES: " + songs.size());
         System.out.println("!!!!!!!! updateHashCodes TOTAL SECONDS: " + (total/1000));
         System.out.println("!!!!!!!! updateHashCodes AVERAGE MILLISECONDS: " + ((double)total/songs.size()));
-    }
-
-    class Hash {
-
-        public final byte[] bytes;
-
-        Hash(byte[] bytes) {
-            this.bytes = bytes;
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(bytes);
-        }
-
     }
 
     private byte[] rawMP3(File file) {
@@ -480,8 +526,8 @@ public class ModelImpl implements Model {
         return size + 10;
     }
 
-    private ArrayList<Song> listSongs(File directory) {
-        ArrayList<Song> ret = new ArrayList<>();
+    private List<SongImpl> listSongs(File directory) {
+        ArrayList<SongImpl> ret = new ArrayList<>();
 
         if (!directory.exists()) {
             System.out.println("Directory does not exist: " + directory);
@@ -495,7 +541,7 @@ public class ModelImpl implements Model {
             if (file.isDirectory()) {
                 ret.addAll(listSongs(file));
             } else {
-                Song song = tryToReadSong(file);
+                SongImpl song = tryToReadSong(file);
                 if (song == null) continue;
                 ret.add(song);
             }
@@ -505,9 +551,9 @@ public class ModelImpl implements Model {
     }
 
     @Nullable
-    private Song tryToReadSong(File file) {
+    private SongImpl tryToReadSong(File file) {
         return file.getName().toLowerCase().endsWith(".mp3")
-            ? readSongMetadata(nextId(), file)
+            ? readSongMetadata(file)
             : null;
     }
 
@@ -516,13 +562,24 @@ public class ModelImpl implements Model {
     }
 
     @NonNull
-    private SongImpl readSongMetadata(int id, File file) {
+    private SongImpl readSongMetadata(File file) {
+        Map<String, String> map = readMp3Metadata(file);
+        Integer duration = null;
+        String durationStr = map.get("duration");
+        if (durationStr != null)
+            duration = Integer.parseInt(durationStr);
+        return new SongImpl(nextId(), mp3Hash(file), map.get("name"), map.get("artist"), map.get("genre"), duration, file);
+    }
+
+    private Map<String, String> readMp3Metadata(File mp3) {
+        Map<String, String> ret = new HashMap<>();
+
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(file.getPath());
+        mmr.setDataSource(mp3.getPath());
 
         String name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if (name == null || name.trim().isEmpty())
-            name = file.getName().substring(0, file.getName().length() - 4);
+            name = mp3.getName().substring(0, mp3.getName().length() - 4);
         else
             name = name.trim();
 
@@ -533,19 +590,20 @@ public class ModelImpl implements Model {
             artist = artist.trim();
 
         String genre = formatSongGenre(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
+        String duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 
-        String durationStr = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        Integer duration = null;
-        if (durationStr != null)
-            duration = Integer.parseInt(durationStr);
+        ret.put("name", name);
+        ret.put("artist", artist);
+        ret.put("genre", genre);
+        ret.put("duration", duration);
 
-        return new SongImpl(id, name, artist, genre, duration, file);
+        return ret;
     }
 
     @Override
-    public void setStateListener(StateListener listener) {
-        this.listener = listener;
-        updateListener();
+    public void addStateListener(StateListener listener) {
+        this.listeners.add(listener);
+        updateListeners(); // TODO update only the new listener
     }
 
     private String formatSongGenre(String genreRaw) {

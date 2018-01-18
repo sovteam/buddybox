@@ -7,20 +7,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import buddybox.api.Artist;
-import buddybox.api.VisibleState;
+import buddybox.api.State;
 
 public class ArtistsFragment extends Fragment {
 
@@ -82,7 +80,7 @@ public class ArtistsFragment extends Fragment {
         }
     }
 
-    public void updateState(VisibleState state) {
+    public void updateState(State state) {
         artists = state.artists;
         Collections.sort(artists, new Comparator<Artist>() { @Override public int compare(Artist artistA, Artist artistB) {
             return artistA.name.compareTo(artistB.name);

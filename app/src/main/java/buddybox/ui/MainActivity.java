@@ -35,7 +35,7 @@ import buddybox.api.Play;
 import buddybox.api.Playable;
 import buddybox.api.Playlist;
 import buddybox.api.Song;
-import buddybox.api.VisibleState;
+import buddybox.api.State;
 import buddybox.impl.SongImpl;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
@@ -45,8 +45,8 @@ import buddybox.ui.notification.NotificationPlayPauseReceiver;
 import buddybox.ui.notification.NotificationSkipNextReceiver;
 import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
-import static buddybox.CoreSingleton.dispatch;
-import static buddybox.CoreSingleton.setStateListener;
+import static buddybox.ModelSingleton.dispatch;
+import static buddybox.ModelSingleton.setStateListener;
 import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.api.Sampler.LOVED_VIEWED;
 import static buddybox.api.Sampler.SAMPLER_DELETE;
@@ -187,12 +187,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setStateListener(new Model.StateListener() { @Override public void update(VisibleState state) {
+        setStateListener(new Model.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }
 
-    private void updateState(VisibleState state) {
+    private void updateState(State state) {
         updateLibraryState(state);
         updateSamplerState(state);
         updateLovedState(state);
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.newLovedSongsCount)).setText(countNewLoved == 0 ? "" : Integer.toString(countNewLoved));
     }
 
-    private void updateLovedState(VisibleState state) {
+    private void updateLovedState(State state) {
         lovedPlayables.updateRecent(state.lovedPlaylist);
         lovedPlaylist = state.lovedPlaylist;
 
@@ -223,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateSamplerState(VisibleState state) {
+    private void updateSamplerState(State state) {
         if (state.availableMemorySize < 10*1024) {
             findViewById(R.id.samplerLowMemory).setVisibility(View.VISIBLE);
             findViewById(R.id.samplerEmpty).setVisibility(View.INVISIBLE);
@@ -377,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
         // TODO add main notification
     }
 
-    private void updateLibraryState(VisibleState state) {
+    private void updateLibraryState(State state) {
         Song songPlaying = state.songPlaying;
         View playingBar = findViewById(R.id.playingBar);
 
@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
         return mainNotification;
     }
 
-    private void updateMainNotification(VisibleState state) {
+    private void updateMainNotification(State state) {
         NotificationCompat.Builder notification = mainNotification();
         notification.mActions.clear();
 

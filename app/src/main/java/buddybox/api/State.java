@@ -3,7 +3,7 @@ package buddybox.api;
 import java.util.List;
 import java.util.Map;
 
-public class VisibleState {
+public class State {
 
     // Sharing
     public final int buddyCount;
@@ -34,8 +34,7 @@ public class VisibleState {
     public final long availableMemorySize;
     public final List<Artist> artists;
 
-
-    public VisibleState(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Map<Song, Playlist> playlistBySong, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -49,9 +48,9 @@ public class VisibleState {
         this.lovedPlaylist = lovedPlaylist;
 
         this.recentPlaylist = recent;
+        this.artists = artists;
         this.playlists = playlists;
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;
-        this.artists = artists;
     }
 }

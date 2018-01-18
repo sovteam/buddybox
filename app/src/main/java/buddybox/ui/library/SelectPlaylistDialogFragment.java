@@ -9,13 +9,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 import buddybox.api.AddSongToPlaylist;
-import buddybox.api.Playlist;
-import buddybox.api.Song;
 
-import static buddybox.CoreSingleton.dispatch;
+import static buddybox.ModelSingleton.dispatch;
 
 public class SelectPlaylistDialogFragment extends DialogFragment {
     private ArrayList<String> list;
