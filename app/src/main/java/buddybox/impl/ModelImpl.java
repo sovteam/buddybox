@@ -255,27 +255,7 @@ public class ModelImpl implements Model {
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                Playlist playlist = recentPlaylist();
-                State state = new State(
-                        1,
-                        null,
-                        currentSongIndex == null
-                                ? null
-                                : isSampling
-                                    ? samplerPlaylist().song(0)
-                                    : playlist.song(currentSongIndex),
-                        null,
-                        isPaused,
-                        null,
-                        isSampling,
-                        samplerPlaylist(),
-                        lovedPlaylist(),
-                        playlists(),
-                        null,
-                        1,
-                        getAvailableMemorySize(),
-                        playlist,
-                        artists());
+                State state = getState();
                 for (StateListener listener : listeners) {
                     updateListener(listener, state);
                 }
@@ -284,8 +264,37 @@ public class ModelImpl implements Model {
         handler.post(runnable);
     }
 
+    private void updateListener(StateListener listener) {
+        updateListener(listener, getState());
+    }
+
     private void updateListener(StateListener listener, State state) {
         listener.update(state);
+    }
+
+    private State getState() {
+        Playlist current = recentPlaylist();
+        Playlist sampler = samplerPlaylist();
+        return new State(
+                1,
+                null,
+                currentSongIndex == null
+                    ? null
+                    : isSampling
+                        ? sampler.song(0)
+                        : current.song(currentSongIndex),
+                null,
+                isPaused,
+                null,
+                isSampling,
+                sampler,
+                lovedPlaylist(),
+                playlists(),
+                null,
+                1,
+                getAvailableMemorySize(),
+                current,
+                artists());
     }
 
     private List<Playlist> playlists() {
@@ -608,7 +617,7 @@ public class ModelImpl implements Model {
     @Override
     public void addStateListener(StateListener listener) {
         this.listeners.add(listener);
-        updateListeners(); // TODO update only the new listener
+        updateListener(listener);
     }
 
     private String formatSongGenre(String genreRaw) {
