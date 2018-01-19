@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import buddybox.api.Play;
-import buddybox.api.Playable;
 import buddybox.api.Playlist;
 import buddybox.api.State;
 
@@ -28,6 +27,7 @@ public class PlaylistsFragment extends Fragment {
     private View view;
     private PlaylistsArrayAdapter playlistsAdapter;
     private List<Playlist> playlists;
+    private Playlist playlistPlaying;
 
     public PlaylistsFragment() { }
 
@@ -43,7 +43,6 @@ public class PlaylistsFragment extends Fragment {
         // List playlists
         ListView list = (ListView) view.findViewById(R.id.playlists);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            System.out.println(">>> Play playlist");
             dispatch(new Play(playlists.get(i), 0));
         }});
         playlistsAdapter = new PlaylistsArrayAdapter();
@@ -51,13 +50,12 @@ public class PlaylistsFragment extends Fragment {
 
         // If state was updated before fragment creation
         if (playlists != null)
-            updatePlaylists(null);
+            updatePlaylists();
 
         return view;
     }
 
     private class PlaylistsArrayAdapter extends ArrayAdapter<Playlist> {
-        private Playlist playlistPlaying;
 
         PlaylistsArrayAdapter() {
             super(getActivity(), -1, new ArrayList<Playlist>());
@@ -86,25 +84,24 @@ public class PlaylistsFragment extends Fragment {
             return rowView;
         }
 
-        void updateState(State state) {
+        void updateState() {
             clear();
             addAll(playlists);
-            if (state != null)
-                playlistPlaying = state.playlistPlaying;
         }
-
     }
 
     public void updateState(State state) {
         playlists = state.playlists;
+        playlistPlaying = state.playlistPlaying;
+
         if (playlistsAdapter == null)
             return;
 
-        updatePlaylists(state);
+        updatePlaylists();
     }
 
-    private void updatePlaylists(State state) {
-        playlistsAdapter.updateState(state);
+    private void updatePlaylists() {
+        playlistsAdapter.updateState();
         if (playlists.isEmpty()) {
             view.findViewById(R.id.playlists_empty).setVisibility(View.VISIBLE);
             view.findViewById(R.id.playlists).setVisibility(View.INVISIBLE);

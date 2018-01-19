@@ -30,6 +30,7 @@ public class RecentFragment extends Fragment {
     private PlayablesArrayAdapter playables;
     private View view;
     private List<Playlist> playlists;
+    private Song songPlaying;
 
     public RecentFragment(){}
 
@@ -52,14 +53,12 @@ public class RecentFragment extends Fragment {
 
         // If state was updated before fragment creation
         if (recentPlaylist != null)
-            updatePlaylist(null);
+            updatePlaylist();
 
         return view;
     }
 
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
-        private Song songPlaying;
-
         PlayablesArrayAdapter() {
             super(getActivity(), -1, new ArrayList<Playable>());
         }
@@ -94,11 +93,9 @@ public class RecentFragment extends Fragment {
             return rowView;
         }
 
-        void updateState(State state) {
+        void updateState() {
             clear();
             addAll(recentPlaylist.songs);
-            if (state != null)
-                songPlaying = state.songPlaying;
         }
     }
 
@@ -120,17 +117,18 @@ public class RecentFragment extends Fragment {
     }
 
     public void updateState(State state) {
+        songPlaying = state.songPlaying;
         recentPlaylist = state.recentPlaylist;
         playlists = state.playlists;
 
         if (playables == null)
             return;
 
-        updatePlaylist(state);
+        updatePlaylist();
     }
 
-    private void updatePlaylist(State state) {
-        playables.updateState(state);
+    private void updatePlaylist() {
+        playables.updateState();
         if (recentPlaylist.songs.isEmpty()) {
             view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
             view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
