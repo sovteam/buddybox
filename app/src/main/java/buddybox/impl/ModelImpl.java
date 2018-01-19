@@ -283,7 +283,7 @@ public class ModelImpl implements Model {
                     : isSampling
                         ? sampler.song(0)
                         : current.song(currentSongIndex),
-                null,
+                currentPlaylist,
                 isPaused,
                 null,
                 isSampling,
@@ -303,7 +303,7 @@ public class ModelImpl implements Model {
             playlists = new ArrayList<>();
             playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
             playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
-            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(2, 3)));
+            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(0, 4)));
         }
         return playlists;
     }

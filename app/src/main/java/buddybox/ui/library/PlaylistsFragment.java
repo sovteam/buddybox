@@ -1,5 +1,6 @@
 package buddybox.ui.library;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -15,8 +16,12 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import buddybox.api.Play;
+import buddybox.api.Playable;
 import buddybox.api.Playlist;
 import buddybox.api.State;
+
+import static buddybox.ModelSingleton.dispatch;
 
 public class PlaylistsFragment extends Fragment {
 
@@ -39,19 +44,21 @@ public class PlaylistsFragment extends Fragment {
         ListView list = (ListView) view.findViewById(R.id.playlists);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             System.out.println(">>> Play playlist");
-            //dispatch(new Play(playlists.song(0), i));
+            dispatch(new Play(playlists.get(i), 0));
         }});
         playlistsAdapter = new PlaylistsArrayAdapter();
         list.setAdapter(playlistsAdapter);
 
         // If state was updated before fragment creation
         if (playlists != null)
-            updatePlaylists();
+            updatePlaylists(null);
 
         return view;
     }
 
     private class PlaylistsArrayAdapter extends ArrayAdapter<Playlist> {
+        private Playlist playlistPlaying;
+
         PlaylistsArrayAdapter() {
             super(getActivity(), -1, new ArrayList<Playlist>());
         }
@@ -63,20 +70,27 @@ public class PlaylistsFragment extends Fragment {
                     : convertView;
 
             Playlist item = getItem(position);
-            setText(rowView, android.R.id.text1, item.name());
-            setText(rowView, android.R.id.text2, item.subtitle() + " - " + item.duration()); // TODO remove duration
+            TextView text1 = (TextView) rowView.findViewById(android.R.id.text1);
+            TextView text2 = (TextView) rowView.findViewById(android.R.id.text2);
+            text1.setText(item.name());
+            text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
+
+            if (item == playlistPlaying) {
+                text1.setTextColor(Color.parseColor("#43a047"));
+                text2.setTextColor(Color.parseColor("#43a047"));
+            } else {
+                text1.setTextColor(Color.WHITE);
+                text2.setTextColor(Color.WHITE);
+            }
 
             return rowView;
         }
 
-        private void setText(View rowView, int id, String value) {
-            TextView textView = (TextView) rowView.findViewById(id);
-            textView.setText(value);
-        }
-
-        void update(List<Playlist> playlists) {
+        void updateState(State state) {
             clear();
             addAll(playlists);
+            if (state != null)
+                playlistPlaying = state.playlistPlaying;
         }
 
     }
@@ -86,11 +100,11 @@ public class PlaylistsFragment extends Fragment {
         if (playlistsAdapter == null)
             return;
 
-        updatePlaylists();
+        updatePlaylists(state);
     }
 
-    private void updatePlaylists() {
-        playlistsAdapter.update(playlists);
+    private void updatePlaylists(State state) {
+        playlistsAdapter.updateState(state);
         if (playlists.isEmpty()) {
             view.findViewById(R.id.playlists_empty).setVisibility(View.VISIBLE);
             view.findViewById(R.id.playlists).setVisibility(View.INVISIBLE);

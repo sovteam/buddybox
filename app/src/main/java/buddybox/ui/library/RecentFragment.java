@@ -1,5 +1,6 @@
 package buddybox.ui.library;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -51,12 +52,14 @@ public class RecentFragment extends Fragment {
 
         // If state was updated before fragment creation
         if (recentPlaylist != null)
-            updatePlaylist();
+            updatePlaylist(null);
 
         return view;
     }
 
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
+        private Song songPlaying;
+
         PlayablesArrayAdapter() {
             super(getActivity(), -1, new ArrayList<Playable>());
         }
@@ -68,8 +71,18 @@ public class RecentFragment extends Fragment {
                     : convertView;
 
             Playable item = getItem(position);
-            setText(rowView, R.id.text1, item.name());
-            setText(rowView, R.id.text2, item.subtitle() + " " + item.duration()); // TODO remove duration
+            TextView text1 = (TextView) rowView.findViewById(R.id.text1);
+            TextView text2 = (TextView) rowView.findViewById(R.id.text2);
+            text1.setText(item.name());
+            text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
+
+            if (item == songPlaying) {
+                text1.setTextColor(Color.parseColor("#43a047"));
+                text2.setTextColor(Color.parseColor("#43a047"));
+            } else {
+                text1.setTextColor(Color.WHITE);
+                text2.setTextColor(Color.WHITE);
+            }
 
             rowView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -81,14 +94,11 @@ public class RecentFragment extends Fragment {
             return rowView;
         }
 
-        private void setText(View rowView, int id, String value) {
-            TextView textView = (TextView) rowView.findViewById(id);
-            textView.setText(value);
-        }
-
-        void updateRecent(Playlist recent) {
+        void updateState(State state) {
             clear();
-            addAll(recent.songs);
+            addAll(recentPlaylist.songs);
+            if (state != null)
+                songPlaying = state.songPlaying;
         }
     }
 
@@ -116,11 +126,11 @@ public class RecentFragment extends Fragment {
         if (playables == null)
             return;
 
-        updatePlaylist();
+        updatePlaylist(state);
     }
 
-    private void updatePlaylist() {
-        playables.updateRecent(recentPlaylist);
+    private void updatePlaylist(State state) {
+        playables.updateState(state);
         if (recentPlaylist.songs.isEmpty()) {
             view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
             view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
