@@ -14,6 +14,7 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:tabIndicatorColor="#FFFFFF"
             app:tabMode="fixed"
             app:tabGravity="fill"
             android:background="@color/secondary_text_default_material_light" />

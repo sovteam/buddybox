@@ -349,19 +349,19 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 2000);
         findViewById(R.id.frameLoved).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.lovedNavbarBtn)).setImageResource(R.drawable.ic_loved_blue);
     }
 
     private void sharingActivate() {
         findViewById(R.id.frameSharing).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.sharingText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((TextView) findViewById(R.id.sharingText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.sharingNavbarBtn)).setImageResource(R.drawable.ic_sharing_blue);
     }
 
     private void samplerActivate() {
         findViewById(R.id.frameSampler).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.samplerText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((TextView) findViewById(R.id.samplerText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.samplerNavbarBtn)).setImageResource(R.drawable.ic_whatshot_blue);
 
         // TODO remove main notification"
@@ -371,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void libraryActivate() {
         findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.libraryText)).setTextColor(Color.parseColor("#03a9f4"));
+        ((TextView) findViewById(R.id.libraryText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.libraryNavbarBtn)).setImageResource(R.drawable.ic_library_music_blue);
 
         // TODO add main notification

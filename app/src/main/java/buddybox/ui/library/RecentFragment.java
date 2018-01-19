@@ -76,8 +76,8 @@ public class RecentFragment extends Fragment {
             text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
 
             if (item == songPlaying) {
-                text1.setTextColor(Color.parseColor("#43a047"));
-                text2.setTextColor(Color.parseColor("#43a047"));
+                text1.setTextColor(Color.parseColor("#81c784"));
+                text2.setTextColor(Color.parseColor("#81c784"));
             } else {
                 text1.setTextColor(Color.WHITE);
                 text2.setTextColor(Color.WHITE);
