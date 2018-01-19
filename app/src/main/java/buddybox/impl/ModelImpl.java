@@ -301,9 +301,9 @@ public class ModelImpl implements Model {
         if (playlists == null) {
             List<SongImpl> songs = new ArrayList<>(allSongs.values());
             playlists = new ArrayList<>();
-            playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
-            playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
-            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(0, 4)));
+//            playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
+//            playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
+//            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(0, 4)));
         }
         return playlists;
     }
@@ -444,6 +444,7 @@ public class ModelImpl implements Model {
     }
 
     private List<File> listMp3Files(File directory) {
+        System.out.println(">>> Directory: " + directory);
         List<File> ret = new ArrayList<>();
 
         if (!directory.exists()) {
@@ -452,6 +453,9 @@ public class ModelImpl implements Model {
         }
 
         File[] files = directory.listFiles();
+        if (files == null)
+            return ret;
+
         for (File file : files) {
             if (file.isDirectory())
                 ret.addAll(listMp3Files(file));
