@@ -8,6 +8,8 @@ import buddybox.sim.ModelSim;
 
 public class BuddyBoxApp extends Application {
 
+    //TODO Check for storage permission.
+
     private static boolean USE_SIMULATOR = false;
 
     @Override
