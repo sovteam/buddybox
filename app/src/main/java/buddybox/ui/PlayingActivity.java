@@ -53,10 +53,11 @@ public class PlayingActivity extends AppCompatActivity {
 
     private void updateState(State state) {
         Song playing = state.songPlaying;
-        ((TextView)findViewById(R.id.playingSongName)).setText(playing.name);
-        ((TextView)findViewById(R.id.playingSongArtist)).setText(playing.artist);
-        ((TextView)findViewById(R.id.playingSongGenre)).setText(playing.genre);
-
+        if (playing != null) {
+            ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
+            ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
+            ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
+        }
         ((ImageButton)findViewById(R.id.playingPlayPause)).setImageResource(state.isPaused ? R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
     }
 }
