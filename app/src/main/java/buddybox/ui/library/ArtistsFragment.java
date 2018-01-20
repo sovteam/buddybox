@@ -17,8 +17,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import buddybox.api.Artist;
-import buddybox.api.State;
+import buddybox.core.Artist;
+import buddybox.core.State;
 
 public class ArtistsFragment extends Fragment {
 
@@ -82,6 +82,9 @@ public class ArtistsFragment extends Fragment {
 
     public void updateState(State state) {
         artists = state.artists;
+        if (artists == null)
+            return;
+
         Collections.sort(artists, new Comparator<Artist>() { @Override public int compare(Artist artistA, Artist artistB) {
             return artistA.name.compareTo(artistB.name);
         }});

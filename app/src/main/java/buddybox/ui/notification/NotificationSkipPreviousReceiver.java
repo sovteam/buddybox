@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import static buddybox.ModelSingleton.dispatch;
-import static buddybox.api.Play.SKIP_PREVIOUS;
+import static buddybox.core.events.Play.SKIP_PREVIOUS;
 
 public class NotificationSkipPreviousReceiver extends BroadcastReceiver {
     @Override

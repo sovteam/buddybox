@@ -16,11 +16,11 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import buddybox.api.Play;
-import buddybox.api.Playable;
-import buddybox.api.Playlist;
-import buddybox.api.Song;
-import buddybox.api.State;
+import buddybox.core.events.Play;
+import buddybox.core.Playable;
+import buddybox.core.Playlist;
+import buddybox.core.Song;
+import buddybox.core.State;
 
 import static buddybox.ModelSingleton.dispatch;
 
@@ -121,7 +121,7 @@ public class RecentFragment extends Fragment {
         recentPlaylist = state.recentPlaylist;
         playlists = state.playlists;
 
-        if (playables == null)
+        if (playables == null || recentPlaylist == null)
             return;
 
         updatePlaylist();

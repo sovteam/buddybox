@@ -1,16 +1,22 @@
 package buddybox.ui;
 
+import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
@@ -30,13 +36,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import buddybox.api.Model;
-import buddybox.api.Play;
-import buddybox.api.Playable;
-import buddybox.api.Playlist;
-import buddybox.api.Song;
-import buddybox.api.State;
-import buddybox.impl.SongImpl;
+import buddybox.core.Model;
+import buddybox.core.events.Permission;
+import buddybox.core.events.Play;
+import buddybox.core.Playable;
+import buddybox.core.Playlist;
+import buddybox.core.events.SamplerDelete;
+import buddybox.core.events.SamplerHate;
+import buddybox.core.events.SamplerLove;
+import buddybox.core.Song;
+import buddybox.core.State;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
@@ -45,17 +54,15 @@ import buddybox.ui.notification.NotificationPlayPauseReceiver;
 import buddybox.ui.notification.NotificationSkipNextReceiver;
 import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
-import static buddybox.ModelSingleton.dispatch;
-import static buddybox.ModelSingleton.setStateListener;
-import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.api.Sampler.LOVED_VIEWED;
-import static buddybox.api.Sampler.SAMPLER_DELETE;
-import static buddybox.api.Sampler.SAMPLER_HATE;
-import static buddybox.api.Sampler.SAMPLER_LOVE;
-import static buddybox.api.Sampler.SAMPLER_START;
-import static buddybox.api.Sampler.SAMPLER_STOP;
+import static buddybox.core.Dispatcher.dispatch;
+import static buddybox.ModelSingleton.addStateListener;
+import static buddybox.core.events.Permission.WRITE_EXTERNAL_STORAGE;
+import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Sampler.LOVED_VIEWED;
+import static buddybox.core.events.Sampler.SAMPLER_START;
+import static buddybox.core.events.Sampler.SAMPLER_STOP;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
 
     private LovedPlayablesArrayAdapter lovedPlayables;
     private Playlist lovedPlaylist;
@@ -66,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
     // Library Pager
     private TabLayout tabLayout;
     private ViewPager viewPager;
+
+    private Song sampling;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,19 +128,55 @@ public class MainActivity extends AppCompatActivity {
 
         // Sampler
         findViewById(R.id.hateIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SAMPLER_HATE);
+            dispatch(new SamplerHate(sampling));
         }});
 
         findViewById(R.id.loveIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SAMPLER_LOVE);
+            dispatch(new SamplerLove(sampling));
         }});
 
         findViewById(R.id.deleteIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SAMPLER_DELETE);
+            dispatch(new SamplerDelete(sampling));
+        }});
+
+        findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            getWriteExternalStoragePermission();
         }});
 
         navigateTo(R.id.frameLibrary);
+
+        getWriteExternalStoragePermission();
     }
+
+
+    private void getWriteExternalStoragePermission() {
+        if (Build.VERSION.SDK_INT < 23)
+            return;
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            dispatch(new Permission(WRITE_EXTERNAL_STORAGE, true));
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        int code = WRITE_EXTERNAL_STORAGE;
+        if (requestCode == code) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // permission was granted
+                System.out.println("<<< Permission Granted >>>");
+                dispatch(new Permission(code, true));
+            } else {
+                // permission denied
+                System.out.println("<<< Permission Denied >>>");
+                dispatch(new Permission(code, false));
+            }
+        }
+    }
+
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -187,12 +232,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setStateListener(new Model.StateListener() { @Override public void update(State state) {
+        addStateListener(new Model.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }
 
     private void updateState(State state) {
+        if (state.permissionWriteExternalStorage == null) {
+            // show loading
+            System.out.println("Loading");
+            return;
+        }
+
+        if (state.permissionWriteExternalStorage) {
+            findViewById(R.id.permission).setVisibility(View.INVISIBLE);
+        } else {
+            View p = findViewById(R.id.permission);
+            p.setVisibility(View.VISIBLE);
+            p.bringToFront();
+            return;
+        }
+
         updateLibraryState(state);
         updateSamplerState(state);
         updateLovedState(state);
@@ -224,6 +284,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateSamplerState(State state) {
+        if (state.isSampling)
+            sampling = state.songPlaying;
+        else
+            sampling = null;
         if (state.availableMemorySize < 10*1024) {
             findViewById(R.id.samplerLowMemory).setVisibility(View.VISIBLE);
             findViewById(R.id.samplerEmpty).setVisibility(View.INVISIBLE);
@@ -283,9 +347,9 @@ public class MainActivity extends AppCompatActivity {
             View rowView = super.getView(position, convertView, parent);
             TextView text1 = (TextView) rowView.findViewById(android.R.id.text1);
             TextView text2 = (TextView) rowView.findViewById(android.R.id.text2);
-            Playable item = getItem(position);
+            Song item = (Song)getItem(position);
 
-            if (((SongImpl)item).isLovedViewed()) {
+            if (item.isLovedViewed()) {
                 text1.setTextColor(Color.WHITE);
                 text2.setTextColor(Color.WHITE);
                 text1.setTypeface(null, Typeface.NORMAL);
@@ -306,6 +370,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateTo(int frame) {
+        boolean isSampling = findViewById(R.id.frameSampler).getVisibility() == View.VISIBLE;
+
         if (frame == R.id.frameLibrary) {
             libraryActivate();
         } else {
@@ -320,7 +386,8 @@ public class MainActivity extends AppCompatActivity {
             findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
             ((TextView) findViewById(R.id.samplerText)).setTextColor(Color.parseColor("#FFFFFF"));
             ((ImageView) findViewById(R.id.samplerNavbarBtn)).setImageResource(R.drawable.ic_whatshot);
-            dispatch(SAMPLER_STOP);
+            if (isSampling)
+                dispatch(SAMPLER_STOP);
         }
 
         if (frame == R.id.frameLoved) {

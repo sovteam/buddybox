@@ -16,9 +16,9 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import buddybox.api.Play;
-import buddybox.api.Playlist;
-import buddybox.api.State;
+import buddybox.core.events.Play;
+import buddybox.core.Playlist;
+import buddybox.core.State;
 
 import static buddybox.ModelSingleton.dispatch;
 

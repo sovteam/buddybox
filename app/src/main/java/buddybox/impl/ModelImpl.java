@@ -26,26 +26,30 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import buddybox.api.AddSongToPlaylist;
-import buddybox.api.Artist;
-import buddybox.api.CreatePlaylist;
-import buddybox.api.Hash;
-import buddybox.api.Model;
-import buddybox.api.Play;
-import buddybox.api.Playlist;
-import buddybox.api.Song;
-import buddybox.api.State;
+import buddybox.core.events.AddSongToPlaylist;
+import buddybox.core.Artist;
+import buddybox.core.events.CreatePlaylist;
+import buddybox.core.Dispatcher;
+import buddybox.core.Hash;
+import buddybox.core.events.LibraryUpdated;
+import buddybox.core.events.LovedUpdated;
+import buddybox.core.Model;
+import buddybox.core.events.Permission;
+import buddybox.core.events.Play;
+import buddybox.core.Playlist;
+import buddybox.core.events.SamplerDelete;
+import buddybox.core.events.SamplerHate;
+import buddybox.core.events.SamplerLove;
+import buddybox.core.events.SamplerUpdated;
+import buddybox.core.Song;
+import buddybox.core.State;
 
-import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.api.Play.SKIP_NEXT;
-import static buddybox.api.Play.SKIP_PREVIOUS;
-import static buddybox.api.Play.FINISHED_PLAYING;
-import static buddybox.api.Sampler.LOVED_VIEWED;
-import static buddybox.api.Sampler.SAMPLER_DELETE;
-import static buddybox.api.Sampler.SAMPLER_HATE;
-import static buddybox.api.Sampler.SAMPLER_LOVE;
-import static buddybox.api.Sampler.SAMPLER_START;
-import static buddybox.api.Sampler.SAMPLER_STOP;
+import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Play.SKIP_NEXT;
+import static buddybox.core.events.Play.SKIP_PREVIOUS;
+import static buddybox.core.events.Play.FINISHED_PLAYING;
+
+import static buddybox.core.events.Sampler.*;
 
 public class ModelImpl implements Model {
 
@@ -59,42 +63,33 @@ public class ModelImpl implements Model {
     private File musicDirectory;
     private Playlist currentPlaylist;
     private Integer currentSongIndex;
-    private ArrayList<Artist> artists;
-
     private File samplerDirectory;
+
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
-
     private int nextId;
+
     private HashMap<String, String> genreMap;
     private ArrayList<Playlist> playlists;
-    private HashMap<Hash, SongImpl> allSongs = new HashMap<>();
+    private Playlist allSongs;
+    private List<Artist> allArtists;
     private boolean isPaused;
+    private Boolean hasPermissionWriteExternalStorage;
+    private List<Song> lovedSongs;
 
     public ModelImpl(Context context) {
         this.context = context;
 
         //System.out.println(Database.initDatabase(context));
 
-        setAppFolders();
-        synchronizeLibrary();
+        Dispatcher.addListener(new Dispatcher.Listener() { @Override public void onEvent(Dispatcher.Event event) {
+            handle(event);
+        }});
     }
 
-    private void setAppFolders() {
-        samplerDirectory = this.context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
-        if (samplerDirectory != null)
-            if (!samplerDirectory.exists() && !samplerDirectory.mkdirs())
-                System.out.println("Unable to create folder: " + samplerDirectory);
+    private void handle(Dispatcher.Event event) {
+        System.out.println("@@@ Event class " + event.getClass());
 
-        musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
-        if (!musicDirectory.exists())
-            if (!musicDirectory.mkdirs())
-                System.out.println("Unable to create folder: " + musicDirectory);
-    }
-
-    @Override
-    synchronized
-    public void dispatch(Event event) {
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
@@ -102,26 +97,68 @@ public class ModelImpl implements Model {
 
         if (event.getClass() == Play.class) play((Play) event);
 
+
+        // Sampler Events
         if (event == SAMPLER_START) samplerStart();
         if (event == SAMPLER_STOP) samplerStop();
-        if (event == SAMPLER_LOVE) samplerLove();
-        if (event == SAMPLER_HATE) samplerHate();
-        if (event == SAMPLER_DELETE) samplerDelete();
+
+        if (event.getClass() == SamplerLove.class)
+            samplerLove((SamplerLove) event);
+
+        if (event.getClass() == SamplerHate.class)
+            samplerHate((SamplerHate) event);
+
+        if (event.getClass() == SamplerDelete.class)
+            samplerDelete((SamplerDelete) event);
 
         if (event == LOVED_VIEWED) lovedViewed();
 
+        if (event.getClass() == SamplerUpdated.class)
+            samplerUpdate((SamplerUpdated) event);
+
+        if (event.getClass() == Permission.class)
+            updatePermission((Permission) event);
 
         if (event.getClass() == AddSongToPlaylist.class)
             addSongToPlaylist((AddSongToPlaylist) event);
-        if (event.getClass() == CreatePlaylist.class) createPlaylist((CreatePlaylist) event);
+
+        if (event.getClass() == CreatePlaylist.class)
+            createPlaylist((CreatePlaylist) event);
+
+        if (event.getClass() == LibraryUpdated.class)
+            updateLibrary((LibraryUpdated) event);
+
+        if (event.getClass() == LovedUpdated.class)
+            updateLoved((LovedUpdated) event);
+
 
         //if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
         updateListeners();
     }
 
+    private void updateLoved(LovedUpdated event) {
+        System.out.println(">>> Model Update Loved" + event.loved.size());
+        lovedSongs = event.loved;
+    }
+
+    private void samplerUpdate(SamplerUpdated event) {
+        samplerPlaylist = new Playlist(666, "Sampler", event.samples);
+    }
+
+    private void updateLibrary(LibraryUpdated event) {
+        allArtists = event.allArtists;
+        allSongs = event.allSongs;
+    }
+
+    private void updatePermission(Permission event) {
+        if (event.code == Permission.WRITE_EXTERNAL_STORAGE) {
+            hasPermissionWriteExternalStorage = event.granted;
+        }
+    }
+
     private void finishedPlaying() {
         if (isSampling)
-            doPlay(samplerPlaylist(), 0);
+            doPlay(samplerPlaylist, 0);
         else
             skip(+1);
     }
@@ -154,61 +191,32 @@ public class ModelImpl implements Model {
     }
 
     private void lovedViewed() {
-        System.out.println(">>> Loved VIEWED");
+        // TODO move to Sampler?
+        System.out.println(">>> Model Loved VIEWED");
         for (Song song : lovedPlaylist().songs) {
             if (!song.isLovedViewed())
                 song.setLovedViewed();
         }
     }
 
-    private void samplerHate() {
-        System.out.println(">>> Sampler HATE");
-
-        // TODO register song hated
-        samplerNextSong(false);
+    private void samplerHate(SamplerHate event) {
+        System.out.println(">>> Sampler HATE sample");
+        removeSample(event.song);
     }
 
-    private void samplerLove() {
-        System.out.println(">>> Sampler LOVE");
-
-        // TODO persist song loved
-        SongImpl lovedSong = samplerPlaylist.song(0);
-        allSongs.put(lovedSong.hash, lovedSong);
-        lovedSong.setLoved();
-
-        samplerNextSong(true);
+    private void samplerLove(SamplerLove event) {
+        System.out.println(">>> Model LOVE sample");
+        removeSample(event.song);
     }
 
-    private void samplerDelete() {
-        System.out.println(">>> Sampler delete");
-
-        // TODO register song deleted
-        samplerNextSong(false);
+    private void samplerDelete(SamplerDelete event) {
+        System.out.println(">>> Model DELETE sample");
+        removeSample(event.song);
     }
 
-    private void samplerNextSong(boolean moveSongToLibrary) {
-        if (samplerPlaylist.isEmpty())
-            return;
-
-        SongImpl song = samplerPlaylist.song(0);
-        samplerPlaylist.removeSong(0);
-
-        if (moveSongToLibrary) {
-            // TODO define folder for loved ones
-            File newFile = new File(musicDirectory + File.separator + song.file.getName());
-            if (!newFile.exists())
-                newFile.mkdirs();
-            boolean moved = song.file.renameTo(newFile);
-            if (moved) {
-                allSongs.put(song.hash, song);
-                song.file = newFile; // TODO switch to immutable, update relativePath
-                System.out.println(">>> LOVE move file " + song.name);
-            }
-        } else if (!song.file.delete())
-            System.out.println("Unable to delete file: " + song.file);
-
-        if (!samplerPlaylist.isEmpty())
-            doPlay(samplerPlaylist, 0);
+    private void removeSample(Song song) {
+        int idx = samplerPlaylist.songs.indexOf(song);
+        samplerPlaylist.removeSong(idx);
     }
 
     private void samplerStop() {
@@ -223,15 +231,9 @@ public class ModelImpl implements Model {
 
     private void samplerStart() {
         isSampling = true;
-        doPlay(samplerPlaylist(), 0);
+        doPlay(samplerPlaylist, 0);
     }
 
-    @NonNull
-    private Playlist samplerPlaylist() {
-        if (samplerPlaylist == null)
-            samplerPlaylist = new Playlist(666, "Sampler", listSongs(samplerDirectory));
-        return samplerPlaylist;
-    }
 
     private void skip(int step) {
         doPlay(currentPlaylist, currentPlaylist.songAfter(currentSongIndex, step));
@@ -273,66 +275,44 @@ public class ModelImpl implements Model {
     }
 
     private State getState() {
-        Playlist current = recentPlaylist();
-        Playlist sampler = samplerPlaylist();
+        System.out.println("!!! isSampling " + isSampling);
         return new State(
                 1,
                 null,
-                currentSongIndex == null
-                    ? null
-                    : isSampling
-                        ? sampler.song(0)
-                        : current.song(currentSongIndex),
+                isSampling
+                        ? samplerPlaylist.song(0)
+                        : currentSongIndex == null
+                            ? null
+                            : currentPlaylist.song(currentSongIndex),
                 currentPlaylist,
                 isPaused,
                 null,
                 isSampling,
-                sampler,
+                samplerPlaylist,
                 lovedPlaylist(),
                 playlists(),
                 null,
                 1,
                 getAvailableMemorySize(),
-                current,
-                artists());
+                allSongs,
+                allArtists,
+                hasPermissionWriteExternalStorage);
     }
 
     private List<Playlist> playlists() {
         if (playlists == null) {
-            List<SongImpl> songs = new ArrayList<>(allSongs.values());
             playlists = new ArrayList<>();
-//            playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
-//            playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
-//            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(0, 4)));
+            /*List<Song> songs = new ArrayList<>(allSongs.values());
+            playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
+            playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
+            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(0, 4)));*/
         }
         return playlists;
     }
 
-    private ArrayList<Artist> artists() {
-        if (artists == null) {
-            Map<String, Artist> artistsMap = new HashMap<>();
-            for (Song song : recentPlaylist().songs) {
-                Artist artist = artistsMap.get(song.artist);
-                if (artist == null) {
-                    artist = new Artist(song.artist);
-                    artistsMap.put(song.artist, artist);
-                }
-                artist.addSong(song);
-            }
-            artists = new ArrayList<>(artistsMap.values());
-        }
-        return artists;
-    }
-
     private Playlist lovedPlaylist() {
-        // Select loved songs
-        ArrayList<SongImpl> lovedSongs = new ArrayList<>();
-        for (SongImpl song : allSongs.values()) {
-            if (song.isLoved()) {
-                System.out.println(">> Love " + song.name);
-                lovedSongs.add(song);
-            }
-        }
+        if (lovedSongs == null)
+            lovedSongs = new ArrayList<>();
 
         // Sort by most recent loved
         Collections.sort(lovedSongs, new Comparator<Song>() { @Override public int compare(Song songA, Song songB) {
@@ -342,31 +322,22 @@ public class ModelImpl implements Model {
         return new Playlist(69, "Loved", lovedSongs);
     }
 
+    // TODO send to Library
     private long getAvailableMemorySize() {
-        StatFs stat = new StatFs(musicDirectory.getPath());
+        StatFs stat = new StatFs(musicDirectory().getPath());
         long blockSize = stat.getBlockSizeLong();
         long availableBlocks = stat.getAvailableBlocksLong();
         return availableBlocks * blockSize;
     }
 
-    private Playlist recentPlaylist() {
-        return new Playlist(0, "Recent", new ArrayList<>(allSongs.values()));
-    }
-
-    private void synchronizeLibrary() {
-        List<File> mp3Files = listMp3Files(musicDirectory);
-        Map<Hash, File> mp3Hashes = mp3Hashes(mp3Files);
-        createNewSongs(mp3Hashes);
-        markMissingSongs(mp3Hashes);
-        updateListeners();
-    }
-
-    private Map<Hash, File> mp3Hashes(List<File> mp3Files) {
-        Map<Hash, File> ret = new HashMap<>();
-        for (File mp3 : mp3Files) {
-            ret.put(mp3Hash(mp3), mp3);
+    private File musicDirectory() {
+        if (musicDirectory == null) {
+            musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+            if (!musicDirectory.exists())
+                if (!musicDirectory.mkdirs())
+                    System.out.println("Unable to create folder: " + musicDirectory);
         }
-        return ret;
+        return musicDirectory;
     }
 
     private Hash mp3Hash(File mp3) {
@@ -393,117 +364,6 @@ public class ModelImpl implements Model {
         return digest;
     }
 
-    private void markMissingSongs(Map<Hash, File> files) {
-        /** TODO
-         * Song.setFileMissing(hash);
-         * Song.setFileNotMissing(hash);
-         */
-        for (Hash hash : allSongs.keySet()) {
-            if (!files.containsKey(hash))
-                allSongs.get(hash).setMissing();
-            else
-                allSongs.get(hash).setNotMissing();
-        }
-    }
-
-    private void createNewSongs(Map<Hash, File> files) {
-        for (Hash hash : files.keySet()) {
-            if (hasMp3(hash))
-                updateSongPath(hash, files.get(hash).getPath());
-            else
-                createNewSong(hash, files.get(hash));
-        }
-    }
-
-    private void updateSongPath(Hash hash, String path) {
-        /** TODO
-         * Song.updatePath(hash, path);
-         */
-    }
-
-    private void createNewSong(Hash hash, File file) {
-        Map<String, String> map = readMp3Metadata(file);
-        /** TODO
-         * Song.create(hash, file.getPath, metadata);
-         */
-
-        Integer duration = null;
-        String durationStr = map.get("duration");
-        if (durationStr != null)
-            duration = Integer.parseInt(durationStr);
-
-        SongImpl song = new SongImpl(nextId(), hash, map.get("name"), map.get("artist"), map.get("genre"), duration, file);
-        allSongs.put(hash, song);
-    }
-
-    private boolean hasMp3(Hash hash) {
-        /** TODO
-         * return Song.exists(hash);
-         * */
-        return allSongs.containsKey(hash);
-    }
-
-    private List<File> listMp3Files(File directory) {
-        System.out.println(">>> Directory: " + directory);
-        List<File> ret = new ArrayList<>();
-
-        if (!directory.exists()) {
-            System.out.println("Directory does not exist: " + directory);
-            return ret;
-        }
-
-        File[] files = directory.listFiles();
-        if (files == null)
-            return ret;
-
-        for (File file : files) {
-            if (file.isDirectory())
-                ret.addAll(listMp3Files(file));
-            else if (isMP3(file))
-                ret.add(file);
-        }
-        return ret;
-    }
-
-    private boolean isMP3(File file) {
-        return file.getName().toLowerCase().endsWith(".mp3");
-    }
-
-    public class SongHashThread implements Runnable {
-
-        private final List<Song> songs;
-
-        public SongHashThread(List<Song> songs) {
-            this.songs = songs;
-        }
-
-        public void run() {
-            updateHashCodes(songs);
-        }
-
-    }
-
-    private void updateHashCodes(List<Song> songs) {
-        Long start = System.currentTimeMillis();
-        for (Song song : songs) {
-            try {
-                // Hash of raw mp3 less header
-                Long now = System.currentTimeMillis();
-                byte[] raw = rawMP3(((SongImpl) song).file);
-                if (raw != null) {
-                    MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                    byte[] hashBytes = Arrays.copyOf(digest.digest(raw), 16); // 128 bits is enough
-                    Hash hash = new Hash(hashBytes);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        long total = System.currentTimeMillis() - start;
-        System.out.println("!!!!!!!! updateHashCodes TOTAL FILES: " + songs.size());
-        System.out.println("!!!!!!!! updateHashCodes TOTAL SECONDS: " + (total/1000));
-        System.out.println("!!!!!!!! updateHashCodes AVERAGE MILLISECONDS: " + ((double)total/songs.size()));
-    }
 
     private byte[] rawMP3(File file) {
         byte[] ret = null;
@@ -545,8 +405,8 @@ public class ModelImpl implements Model {
         return size + 10;
     }
 
-    private List<SongImpl> listSongs(File directory) {
-        ArrayList<SongImpl> ret = new ArrayList<>();
+    private List<Song> listSongs(File directory) {
+        ArrayList<Song> ret = new ArrayList<>();
 
         if (!directory.exists()) {
             System.out.println("Directory does not exist: " + directory);
@@ -560,7 +420,7 @@ public class ModelImpl implements Model {
             if (file.isDirectory()) {
                 ret.addAll(listSongs(file));
             } else {
-                SongImpl song = tryToReadSong(file);
+                Song song = tryToReadSong(file);
                 if (song == null) continue;
                 ret.add(song);
             }
@@ -569,7 +429,7 @@ public class ModelImpl implements Model {
     }
 
     @Nullable
-    private SongImpl tryToReadSong(File file) {
+    private Song tryToReadSong(File file) {
         return file.getName().toLowerCase().endsWith(".mp3")
             ? readSongMetadata(file)
             : null;
@@ -580,13 +440,13 @@ public class ModelImpl implements Model {
     }
 
     @NonNull
-    private SongImpl readSongMetadata(File file) {
+    private Song readSongMetadata(File file) {
         Map<String, String> map = readMp3Metadata(file);
         Integer duration = null;
         String durationStr = map.get("duration");
         if (durationStr != null)
             duration = Integer.parseInt(durationStr);
-        return new SongImpl(nextId(), mp3Hash(file), map.get("name"), map.get("artist"), map.get("genre"), duration, file);
+        return new Song(nextId(), mp3Hash(file), map.get("name"), map.get("artist"), map.get("genre"), duration, file.getPath(), file);
     }
 
     private Map<String, String> readMp3Metadata(File mp3) {

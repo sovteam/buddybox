@@ -11,7 +11,7 @@ import android.widget.EditText;
 
 import com.adalbertosoares.buddybox.R;
 
-import buddybox.api.CreatePlaylist;
+import buddybox.core.events.CreatePlaylist;
 
 import static buddybox.ModelSingleton.dispatch;
 

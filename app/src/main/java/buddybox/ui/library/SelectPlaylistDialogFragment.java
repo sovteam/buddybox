@@ -10,7 +10,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import buddybox.api.AddSongToPlaylist;
+import buddybox.core.events.AddSongToPlaylist;
 
 import static buddybox.ModelSingleton.dispatch;
 

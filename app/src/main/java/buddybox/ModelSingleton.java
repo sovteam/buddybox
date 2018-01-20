@@ -1,6 +1,7 @@
 package buddybox;
 
-import buddybox.api.Model;
+import buddybox.core.Dispatcher;
+import buddybox.core.Model;
 
 public class ModelSingleton {
 
@@ -11,12 +12,12 @@ public class ModelSingleton {
         INSTANCE = instance;
     }
 
-    public static void dispatch(Model.Event event) {
+    public static void dispatch(Dispatcher.Event event) {
         System.out.println(">>> Dispatch Event Type: " +  event.type);
-        INSTANCE.dispatch(event);
+        Dispatcher.dispatch(event);
     }
 
-    public static void setStateListener(Model.StateListener listener) {
+    public static void addStateListener(Model.StateListener listener) {
         INSTANCE.addStateListener(listener);
     }
 

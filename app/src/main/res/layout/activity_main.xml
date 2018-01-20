@@ -5,6 +5,9 @@
     android:layout_height="match_parent"
     tools:context="buddybox.ui.MainActivity">
 
+    <include layout="@layout/permission_write_external_storage"
+        android:id="@+id/permission" />
+
     <include layout="@layout/navbar"
         android:id="@+id/includeNavbar" />
 

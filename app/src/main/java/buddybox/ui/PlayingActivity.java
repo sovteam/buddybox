@@ -8,15 +8,15 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import buddybox.api.Model;
-import buddybox.api.Song;
-import buddybox.api.State;
+import buddybox.core.Model;
+import buddybox.core.Song;
+import buddybox.core.State;
 
 import static buddybox.ModelSingleton.dispatch;
-import static buddybox.ModelSingleton.setStateListener;
-import static buddybox.api.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.api.Play.SKIP_NEXT;
-import static buddybox.api.Play.SKIP_PREVIOUS;
+import static buddybox.ModelSingleton.addStateListener;
+import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Play.SKIP_NEXT;
+import static buddybox.core.events.Play.SKIP_PREVIOUS;
 
 public class PlayingActivity extends AppCompatActivity {
 
@@ -46,7 +46,7 @@ public class PlayingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setStateListener(new Model.StateListener() { @Override public void update(State state) {
+        addStateListener(new Model.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }
