@@ -61,7 +61,6 @@ public class Sampler {
         event.song.setLoved();
         SongUtils.moveToLibrary(event.song);
         loved.add(event.song);
-        dispatch(new LovedUpdated(loved));
         dispatch(new SongAdded(event.song));
     }
 

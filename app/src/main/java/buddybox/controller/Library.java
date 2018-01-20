@@ -63,8 +63,8 @@ public class Library {
         dispatch(new LibraryUpdated(allSongs(), artists()));
     }
 
-    private static Playlist allSongs() {
-        return new Playlist(0, "Recent", new ArrayList<>(songByHash.values()));
+    private static List<Song> allSongs() {
+        return new ArrayList<>(songByHash.values());
     }
 
     private static ArrayList<Artist> artists() {

@@ -43,6 +43,7 @@ import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.SongAdded;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
@@ -63,7 +64,6 @@ public class ModelImpl implements Model {
     private File musicDirectory;
     private Playlist currentPlaylist;
     private Integer currentSongIndex;
-    private File samplerDirectory;
 
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
@@ -71,11 +71,10 @@ public class ModelImpl implements Model {
 
     private HashMap<String, String> genreMap;
     private ArrayList<Playlist> playlists;
-    private Playlist allSongs;
+    private List<Song> allSongs;
     private List<Artist> allArtists;
     private boolean isPaused;
     private Boolean hasPermissionWriteExternalStorage;
-    private List<Song> lovedSongs;
 
     public ModelImpl(Context context) {
         this.context = context;
@@ -128,17 +127,9 @@ public class ModelImpl implements Model {
         if (event.getClass() == LibraryUpdated.class)
             updateLibrary((LibraryUpdated) event);
 
-        if (event.getClass() == LovedUpdated.class)
-            updateLoved((LovedUpdated) event);
-
-
         //if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
-        updateListeners();
-    }
 
-    private void updateLoved(LovedUpdated event) {
-        System.out.println(">>> Model Update Loved" + event.loved.size());
-        lovedSongs = event.loved;
+        updateListeners();
     }
 
     private void samplerUpdate(SamplerUpdated event) {
@@ -294,9 +285,13 @@ public class ModelImpl implements Model {
                 null,
                 1,
                 getAvailableMemorySize(),
-                allSongs,
+                playlistAllSongs(),
                 allArtists,
                 hasPermissionWriteExternalStorage);
+    }
+
+    private Playlist playlistAllSongs() {
+        return new Playlist(0, "Recent", new ArrayList<>(allSongs));
     }
 
     private List<Playlist> playlists() {
@@ -311,8 +306,12 @@ public class ModelImpl implements Model {
     }
 
     private Playlist lovedPlaylist() {
-        if (lovedSongs == null)
-            lovedSongs = new ArrayList<>();
+        List<Song> lovedSongs = new ArrayList<>();
+
+        for (Song song : allSongs) {
+            if (song.isLoved())
+                lovedSongs.add(song);
+        }
 
         // Sort by most recent loved
         Collections.sort(lovedSongs, new Comparator<Song>() { @Override public int compare(Song songA, Song songB) {
@@ -481,7 +480,6 @@ public class ModelImpl implements Model {
     @Override
     public void addStateListener(StateListener listener) {
         this.listeners.add(listener);
-        updateListener(listener);
     }
 
     private String formatSongGenre(String genreRaw) {
