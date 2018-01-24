@@ -1,6 +1,8 @@
 package buddybox.impl;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.os.Handler;
@@ -31,8 +33,6 @@ import buddybox.core.Artist;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.Dispatcher;
 import buddybox.core.Hash;
-import buddybox.core.events.LibraryUpdated;
-import buddybox.core.events.LovedUpdated;
 import buddybox.core.Model;
 import buddybox.core.events.Permission;
 import buddybox.core.events.Play;
@@ -43,6 +43,8 @@ import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.SongFound;
+import buddybox.core.events.SongMissing;
 import buddybox.impl.db.DatabaseHelper;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
@@ -124,21 +126,46 @@ public class ModelImpl implements Model {
         if (event.getClass() == CreatePlaylist.class)
             createPlaylist((CreatePlaylist) event);
 
-        if (event.getClass() == LibraryUpdated.class)
-            updateLibrary((LibraryUpdated) event);
+        if (event.getClass() == SongFound.class)
+            addFound((SongFound)event);
 
-        //if (event.getClass() == SongAdded.class) addSong((SongAdded)event);
+        if (event.getClass() == SongMissing.class)
+            songMissing((SongMissing)event);
 
         updateListeners();
+    }
+
+    private void songMissing(SongMissing event) {
+
+    }
+
+    private void addFound(SongFound event) {
+        ContentValues newSong = new ContentValues(2);
+        newSong.put("HASH", event.song.hash.bytes);
+        newSong.put("NAME", event.song.name);
+        newSong.put("GENRE", event.song.genre);
+        newSong.put("ARTIST", event.song.artist);
+        newSong.put("DURATION", event.song.duration);
+        newSong.put("FILE_LENGTH", event.song.fileLength);
+        newSong.put("LAST_MODIFIED", event.song.lastModified);
+        DatabaseHelper.getInstance(context).getReadableDatabase().insert("SONGS", null, newSong);
     }
 
     private void samplerUpdate(SamplerUpdated event) {
         samplerPlaylist = new Playlist(666, "Sampler", event.samples);
     }
 
-    private void updateLibrary(LibraryUpdated event) {
-        allArtists = event.allArtists;
-        allSongs = event.allSongs;
+    private ArrayList<Artist> artists() {
+        Map<String, Artist> artistsMap = new HashMap<>();
+        for (Song song : allSongs) {
+            Artist artist = artistsMap.get(song.artist);
+            if (artist == null) {
+                artist = new Artist(song.artist);
+                artistsMap.put(song.artist, artist);
+            }
+            artist.addSong(song);
+        }
+        return new ArrayList<>(artistsMap.values());
     }
 
     private void updatePermission(Permission event) {
@@ -257,10 +284,6 @@ public class ModelImpl implements Model {
         handler.post(runnable);
     }
 
-    private void updateListener(StateListener listener) {
-        updateListener(listener, getState());
-    }
-
     private void updateListener(StateListener listener, State state) {
         listener.update(state);
     }
@@ -286,12 +309,31 @@ public class ModelImpl implements Model {
                 1,
                 getAvailableMemorySize(),
                 playlistAllSongs(),
-                allArtists,
+                artists(),
                 hasPermissionWriteExternalStorage);
     }
 
     private Playlist playlistAllSongs() {
         return new Playlist(0, "Recent", new ArrayList<>(allSongs));
+    }
+
+    private List<Song> allSongs() {
+        if (allSongs == null) {
+            allSongs = new ArrayList<>();
+            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
+            while(cursor.moveToNext()) {
+                /*Song song = new Song(
+                    cursor.getString(0)
+                    cursor.getString(1)
+                    cursor.getString(2)
+                    cursor.getString(3)
+                    cursor.getString(4)
+                    cursor.getString(5));
+                allSongs.add(song)*/
+            }
+            cursor.close();
+        }
+        return allSongs;
     }
 
     private List<Playlist> playlists() {
@@ -339,324 +381,8 @@ public class ModelImpl implements Model {
         return musicDirectory;
     }
 
-    private Hash mp3Hash(File mp3) {
-        MessageDigest sha256 = getMessageDigest();
-        if (sha256 == null)
-            throw new RuntimeException("Missing SHA-256 algorithm");
-
-        Hash ret = null;
-        byte[] raw = rawMP3(mp3);
-        if (raw != null) {
-            byte[] hashBytes = Arrays.copyOf(sha256.digest(raw), 16); // 128 bits is enough
-            ret = new Hash(hashBytes);
-        }
-        return ret;
-    }
-
-    private MessageDigest getMessageDigest() {
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return digest;
-    }
-
-
-    private byte[] rawMP3(File file) {
-        byte[] ret = null;
-        try {
-            InputStream in = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
-            in.mark(10);
-            int headerEnd = readID3v2Header(in);
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-            int nRead;
-            byte[] data = new byte[16384];
-            while ((nRead = in.read(data, 0, data.length)) != -1) {
-                buffer.write(data, 0, nRead);
-            }
-            buffer.flush();
-
-            ret = buffer.toByteArray();
-            int end = ret.length;
-            if (end > 128 && ret[end-128] == 84 && ret[end-127] == 65 && ret[end-126] == 71) // Detect TAG from ID3v1
-                end -= 129;
-
-            ret = Arrays.copyOfRange(ret, headerEnd, end); // Discard header (ID3 v2) and last 128 bytes (ID3 v1)
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-        return ret;
-    }
-
-    private int readID3v2Header (InputStream in) throws IOException {
-        byte[] id3header = new byte[4];
-        int size = -10;
-        in.read(id3header, 0, 3);
-        // Look for ID3v2
-        if (id3header[0] == 'I' && id3header[1] == 'D' && id3header[2] == '3') {
-            in.read(id3header, 0, 3);
-            in.read(id3header, 0, 4);
-            size = (id3header[0] << 21) + (id3header[1] << 14) + (id3header[2] << 7) + id3header[3];
-        }
-        return size + 10;
-    }
-
-    private List<Song> listSongs(File directory) {
-        ArrayList<Song> ret = new ArrayList<>();
-
-        if (!directory.exists()) {
-            System.out.println("Directory does not exist: " + directory);
-            return ret;
-        }
-
-        File[] files = directory.listFiles();
-        if (files == null) return ret;
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                ret.addAll(listSongs(file));
-            } else {
-                Song song = tryToReadSong(file);
-                if (song == null) continue;
-                ret.add(song);
-            }
-        }
-        return ret;
-    }
-
-    @Nullable
-    private Song tryToReadSong(File file) {
-        return file.getName().toLowerCase().endsWith(".mp3")
-            ? readSongMetadata(file)
-            : null;
-    }
-
-    private int nextId() {
-        return nextId++;
-    }
-
-    @NonNull
-    private Song readSongMetadata(File file) {
-        Map<String, String> map = readMp3Metadata(file);
-        Integer duration = null;
-        String durationStr = map.get("duration");
-        if (durationStr != null)
-            duration = Integer.parseInt(durationStr);
-        return new Song(nextId(), mp3Hash(file), map.get("name"), map.get("artist"), map.get("genre"), duration, file.getPath(), file);
-    }
-
-    private Map<String, String> readMp3Metadata(File mp3) {
-        Map<String, String> ret = new HashMap<>();
-
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(mp3.getPath());
-
-        String name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-        if (name == null || name.trim().isEmpty())
-            name = mp3.getName().substring(0, mp3.getName().length() - 4);
-        else
-            name = name.trim();
-
-        String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-        if (artist == null || artist.trim().isEmpty())
-            artist = UNKNOWN_ARTIST;
-        else
-            artist = artist.trim();
-
-        String genre = formatSongGenre(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
-        String duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-
-        ret.put("name", name);
-        ret.put("artist", artist);
-        ret.put("genre", genre);
-        ret.put("duration", duration);
-
-        return ret;
-    }
-
     @Override
     public void addStateListener(StateListener listener) {
         this.listeners.add(listener);
-    }
-
-    private String formatSongGenre(String genreRaw) {
-        if (genreRaw == null)
-            return UNKNOWN_GENRE;
-
-        String formatGenre = genreRaw.trim();
-        if (formatGenre.matches("[0-9]+")) {
-            formatGenre = getGenre(formatGenre);
-        } else {
-            // Try to find a code between parenthesis
-            Matcher m = Pattern.compile("\\(([0-9]+)\\)+").matcher(formatGenre);
-            while (m.find()) {
-                formatGenre = getGenre(m.group(1));
-            }
-        }
-        if (formatGenre == null)
-            return UNKNOWN_GENRE;
-        return formatGenre;
-    }
-    
-    private String getGenre(String key) {
-        return genreMap().get(key);
-    }
-
-    private Map<String, String> genreMap() {
-        if (genreMap == null) {
-            genreMap = new HashMap<>();
-            genreMap.put("0", "Blues");
-            genreMap.put("1", "Classic Rock");
-            genreMap.put("2", "Country");
-            genreMap.put("3", "Dance");
-            genreMap.put("4", "Disco");
-            genreMap.put("5", "Funk");
-            genreMap.put("6", "Grunge");
-            genreMap.put("7", "Hip-Hop");
-            genreMap.put("8", "Jazz");
-            genreMap.put("9", "Metal");
-            genreMap.put("10", "New Age");
-            genreMap.put("11", "Oldies");
-            genreMap.put("12", "Other");
-            genreMap.put("13", "Pop");
-            genreMap.put("14", "R&B");
-            genreMap.put("15", "Rap");
-            genreMap.put("16", "Reggae");
-            genreMap.put("17", "Rock");
-            genreMap.put("18", "Techno");
-            genreMap.put("19", "Industrial");
-            genreMap.put("20", "Alternative");
-            genreMap.put("21", "Ska");
-            genreMap.put("22", "Death Metal");
-            genreMap.put("23", "Pranks");
-            genreMap.put("24", "Soundtrack");
-            genreMap.put("25", "Euro-Techno");
-            genreMap.put("26", "Ambient");
-            genreMap.put("27", "Trip-Hop");
-            genreMap.put("28", "Vocal");
-            genreMap.put("29", "Jazz+Funk");
-            genreMap.put("30", "Fusion");
-            genreMap.put("31", "Trance");
-            genreMap.put("32", "Classical");
-            genreMap.put("33", "Instrumental");
-            genreMap.put("34", "Acid");
-            genreMap.put("35", "House");
-            genreMap.put("36", "Game");
-            genreMap.put("37", "Sound Clip");
-            genreMap.put("38", "Gospel");
-            genreMap.put("39", "Noise");
-            genreMap.put("40", "Alternative Rock");
-            genreMap.put("41", "Bass");
-            genreMap.put("42", "Soul");
-            genreMap.put("43", "Punk");
-            genreMap.put("44", "Space");
-            genreMap.put("45", "Meditative");
-            genreMap.put("46", "Instrumental Pop");
-            genreMap.put("47", "Instrumental Rock");
-            genreMap.put("48", "Ethnic");
-            genreMap.put("49", "Gothic");
-            genreMap.put("50", "Darkwave");
-            genreMap.put("51", "Techno-Industrial");
-            genreMap.put("52", "Electronic");
-            genreMap.put("53", "Pop-Folk");
-            genreMap.put("54", "Eurodance");
-            genreMap.put("55", "Dream");
-            genreMap.put("56", "Southern Rock");
-            genreMap.put("57", "Comedy");
-            genreMap.put("58", "Cult");
-            genreMap.put("59", "Gangsta");
-            genreMap.put("60", "Top 40");
-            genreMap.put("61", "Christian Rap");
-            genreMap.put("62", "Pop/Funk");
-            genreMap.put("63", "Jungle");
-            genreMap.put("64", "Native US");
-            genreMap.put("65", "Cabaret");
-            genreMap.put("66", "New Wave");
-            genreMap.put("67", "Psychadelic");
-            genreMap.put("68", "Rave");
-            genreMap.put("69", "Showtunes");
-            genreMap.put("70", "Trailer");
-            genreMap.put("71", "Lo-Fi");
-            genreMap.put("72", "Tribal");
-            genreMap.put("73", "Acid Punk");
-            genreMap.put("74", "Acid Jazz");
-            genreMap.put("75", "Polka");
-            genreMap.put("76", "Retro");
-            genreMap.put("77", "Musical");
-            genreMap.put("78", "Rock & Roll");
-            genreMap.put("79", "Hard Rock");
-            genreMap.put("80", "Folk");
-            genreMap.put("81", "Folk-Rock");
-            genreMap.put("82", "National Folk");
-            genreMap.put("83", "Swing");
-            genreMap.put("84", "Fast Fusion");
-            genreMap.put("85", "Bebob");
-            genreMap.put("86", "Latin");
-            genreMap.put("87", "Revival");
-            genreMap.put("88", "Celtic");
-            genreMap.put("89", "Bluegrass");
-            genreMap.put("90", "Avantgarde");
-            genreMap.put("91", "Gothic Rock");
-            genreMap.put("92", "Progressive Rock");
-            genreMap.put("93", "Psychedelic Rock");
-            genreMap.put("94", "Symphonic Rock");
-            genreMap.put("95", "Slow Rock");
-            genreMap.put("96", "Big Band");
-            genreMap.put("97", "Chorus");
-            genreMap.put("98", "Easy Listening");
-            genreMap.put("99", "Acoustic");
-            genreMap.put("100", "Humour");
-            genreMap.put("101", "Speech");
-            genreMap.put("102", "Chanson");
-            genreMap.put("103", "Opera");
-            genreMap.put("104", "Chamber Music");
-            genreMap.put("105", "Sonata");
-            genreMap.put("106", "Symphony");
-            genreMap.put("107", "Booty Bass");
-            genreMap.put("108", "Primus");
-            genreMap.put("109", "Porn Groove");
-            genreMap.put("110", "Satire");
-            genreMap.put("111", "Slow Jam");
-            genreMap.put("112", "Club");
-            genreMap.put("113", "Tango");
-            genreMap.put("114", "Samba");
-            genreMap.put("115", "Folklore");
-            genreMap.put("116", "Ballad");
-            genreMap.put("117", "Power Ballad");
-            genreMap.put("118", "Rhythmic Soul");
-            genreMap.put("119", "Freestyle");
-            genreMap.put("120", "Duet");
-            genreMap.put("121", "Punk Rock");
-            genreMap.put("122", "Drum Solo");
-            genreMap.put("123", "Acapella");
-            genreMap.put("124", "Euro-House");
-            genreMap.put("125", "Dance Hall");
-            genreMap.put("126", "Goa");
-            genreMap.put("127", "Drum & Bass");
-            genreMap.put("128", "Club - House");
-            genreMap.put("129", "Hardcore");
-            genreMap.put("130", "Terror");
-            genreMap.put("131", "Indie");
-            genreMap.put("132", "BritPop");
-            genreMap.put("133", "Negerpunk");
-            genreMap.put("134", "Polsk Punk");
-            genreMap.put("135", "Beat");
-            genreMap.put("136", "Christian Gangsta Rap");
-            genreMap.put("137", "Heavy Metal");
-            genreMap.put("138", "Black Metal");
-            genreMap.put("139", "Crossover");
-            genreMap.put("140", "Contemporary Christian");
-            genreMap.put("141", "Christian Rock");
-            genreMap.put("142", "Merengue");
-            genreMap.put("143", "Salsa");
-            genreMap.put("144", "Thrash Metal");
-            genreMap.put("145", "Anime");
-            genreMap.put("146", "JPop");
-            genreMap.put("147", "Synthpop");
-        }
-        return genreMap;
     }
 }

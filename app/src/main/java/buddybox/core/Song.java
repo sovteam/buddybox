@@ -4,29 +4,32 @@ import java.io.File;
 
 public class Song implements Playable {
 
-    public final int id;
     public final Hash hash;
     public final String name;
     public final String artist;
     public final String genre;
     public final Integer duration;
+
     public boolean isMissing = false;
 
     public Long loved;
     public Boolean lovedViewed;
-    public String relativePath;
-    public File file;
 
-    public Song(int id, Hash hash, String name, String artist, String genre, Integer duration, String relativePath, File file
-    ) {
-        this.id = id;
+    public String relativePath;
+    public final long fileLength;
+    public final long lastModified;
+
+
+    public Song(Hash hash, String name, String artist, String genre, Integer duration, String relativePath,
+                long fileLength, long lastModified) {
         this.hash = hash;
         this.name = name;
         this.artist = artist;
         this.genre = genre;
         this.duration = duration;
         this.relativePath = relativePath;
-        this.file = file;
+        this.fileLength = fileLength;
+        this.lastModified = lastModified;
     }
 
     @Override public String name() { return name; }

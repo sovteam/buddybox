@@ -22,7 +22,6 @@ import static buddybox.ModelSingleton.dispatch;
 public class Sampler {
     private static Context context;
     private static List<Song> samples;
-    private static List<Song> loved = new ArrayList<>();
 
     public static void init(Context context) {
         Sampler.context = context;
@@ -58,15 +57,21 @@ public class Sampler {
 
     private static void samplerLove(SamplerLove event) {
         System.out.println(">>> Sampler Love Song " + event.song.name);
-        event.song.setLoved();
-        SongUtils.moveToLibrary(event.song);
-        loved.add(event.song);
-        dispatch(new SongAdded(event.song));
+        event.song.setLoved(); // TODO db >> model
+
+        File newFile = new File(SongUtils.musicFolder(), event.song.relativePath); // TODO check relativePath of sampler song
+        File currentFile = new File(event.song.relativePath);
+        boolean moved = currentFile.renameTo(newFile);
+        if (!moved)
+            System.out.println("File could not be moved to music folder");
+
+        dispatch(new SongAdded(event.song)); // TODO remove
     }
 
     private static void deleteSong(Song song) {
-        if (song.file.delete())
-            System.out.println("Unable to delete file: " + song.file.getPath());
+        File file = new File(samplerDirectory(), song.relativePath);
+        if (file.delete())
+            System.out.println("Unable to delete file: " + file.getPath());
     }
 
     private static void updateSamplerLibrary() {

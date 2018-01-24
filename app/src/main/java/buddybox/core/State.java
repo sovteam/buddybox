@@ -28,8 +28,8 @@ public class State {
     public final Playlist lovedPlaylist;
 
     // Library
-    public final Boolean permissionWriteExternalStorage;
-    public final Playlist recentPlaylist;
+    public final Boolean hasWriteExternalStoragePermission;
+    public final Playlist allSongsPlaylist;
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
     public final long availableMemorySize;
@@ -50,11 +50,11 @@ public class State {
         this.samplerPlaylist = samplerPlaylist;
         this.lovedPlaylist = lovedPlaylist;
 
-        this.recentPlaylist = recent;
+        this.allSongsPlaylist = recent;
         this.artists = artists;
         this.playlists = playlists;
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;
-        this.permissionWriteExternalStorage = permissionWriteExternalStorage;
+        this.hasWriteExternalStoragePermission = permissionWriteExternalStorage;
     }
 }

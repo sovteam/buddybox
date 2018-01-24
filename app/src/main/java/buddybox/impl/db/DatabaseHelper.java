@@ -10,14 +10,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static DatabaseHelper INSTANCE;
 
-    private static final String DATABASE_NAME = "buddybox_database_v0";
+    private static final String DATABASE_NAME = "buddybox_database_v1";
     private static final int DATABASE_VERSION = 1;
 
     public static synchronized DatabaseHelper getInstance(Context context) {
-        if (INSTANCE == null) {
-            System.out.println("$$$$$$$$$$$$$$$ instantiate DB");
+        if (INSTANCE == null)
             INSTANCE = new DatabaseHelper(context.getApplicationContext());
-        }
+
         return INSTANCE;
     }
 
@@ -37,15 +36,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = INSTANCE.getReadableDatabase();
 
         db.execSQL("CREATE TABLE IF NOT EXISTS SONGS (" +
-                "HASH TEXT PRIMARY KEY," +
+                "HASH BLOB PRIMARY KEY," +
                 "NAME TEXT," +
                 "ARTIST TEXT," +
                 "GENRE TEXT," +
-                "DURATION INTEGER)");
+                "DURATION INTEGER," +
+                "FILE_LENGTH INTEGER," +
+                "LAST_MODIFIED INTEGER)");
 
         System.out.println(">> inserts");
         ContentValues vals = new ContentValues(2);
-        vals.put("HASH", "A0");
+        vals.put("HASH", new byte[]{47});
         vals.put("NAME", "A1");
         vals.put("GENRE", "A2");
         vals.put("ARTIST", "A3");
@@ -53,7 +54,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert("SONGS", null, vals);
 
         ContentValues vals2 = new ContentValues(2);
-        vals.put("HASH", "B0");
+        vals.put("HASH", new byte[]{48});
         vals.put("NAME", "B1");
         vals.put("GENRE", "B2");
         vals.put("ARTIST", "B3");

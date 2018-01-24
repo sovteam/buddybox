@@ -238,13 +238,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void updateState(State state) {
-        if (state.permissionWriteExternalStorage == null) {
+        if (state.hasWriteExternalStoragePermission == null) {
             // show loading
             System.out.println("Loading");
             return;
         }
 
-        if (state.permissionWriteExternalStorage) {
+        if (state.hasWriteExternalStoragePermission) {
             findViewById(R.id.permission).setVisibility(View.INVISIBLE);
         } else {
             View p = findViewById(R.id.permission);

@@ -118,7 +118,7 @@ public class RecentFragment extends Fragment {
 
     public void updateState(State state) {
         songPlaying = state.songPlaying;
-        recentPlaylist = state.recentPlaylist;
+        recentPlaylist = state.allSongsPlaylist;
         playlists = state.playlists;
 
         if (playables == null || recentPlaylist == null)

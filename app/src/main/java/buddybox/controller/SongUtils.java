@@ -30,7 +30,7 @@ public class SongUtils {
     private static Map<String, String> genreByCode;
     private static File musicFolder;
 
-    private static File musicFolder() {
+    public static File musicFolder() {
         if (musicFolder == null) {
             musicFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
             if (!musicFolder.exists())
@@ -45,20 +45,9 @@ public class SongUtils {
 
         List<Song> ret = new ArrayList<>();
         for (File mp3 : mp3Files) {
-            ret.add(createSong(mp3));
+            ret.add(readSong(mp3));
         }
         return ret;
-    }
-
-    private static Song createSong(File mp3) {
-        Map<String, String> metadata = readMp3Metadata(mp3);
-
-        Integer duration = null;
-        String durationStr = metadata.get("duration");
-        if (durationStr != null)
-            duration = Integer.parseInt(durationStr);
-
-        return new Song(0, mp3Hash(mp3), metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3);
     }
 
     private static Hash mp3Hash(File mp3) {
@@ -75,15 +64,6 @@ public class SongUtils {
         return ret;
     }
 
-    private static MessageDigest getMessageDigest() {
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return digest;
-    }
 
     public static byte[] rawMP3(File file) {
         byte[] ret = null;
@@ -361,14 +341,25 @@ public class SongUtils {
         return genreByCode;
     }
 
-    public static boolean moveToLibrary(Song song) {
-        File newFile = new File(musicFolder() + File.separator + song.file.getName());
-        boolean ret = song.file.renameTo(newFile);
-        if (ret) {
-            song.file = newFile;
-            song.relativePath = newFile.getPath();
+    private static MessageDigest getMessageDigest() {
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
-        return ret;
+        return digest;
     }
 
+    public static Song readSong(File mp3) {
+        Map<String, String> metadata = SongUtils.readMp3Metadata(mp3);
+        Hash hash = SongUtils.mp3Hash(mp3);
+
+        Integer duration = null;
+        String durationStr = metadata.get("duration");
+        if (durationStr != null)
+            duration = Integer.parseInt(durationStr);
+
+        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified());
+    }
 }
