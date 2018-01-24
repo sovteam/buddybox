@@ -14,7 +14,6 @@ import buddybox.core.Dispatcher;
 import buddybox.core.Hash;
 import buddybox.core.events.LibraryUpdated;
 import buddybox.core.events.Permission;
-import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.events.SongAdded;
 
@@ -114,14 +113,14 @@ public class Library {
 
     private static void createNewSongs(Map<Hash, File> files) {
         for (Hash hash : files.keySet()) {
-            if (hashMp3(hash))
+            if (hasMp3(hash))
                 updateSongPath(hash, files.get(hash).getPath());
             else
                 createNewSong(hash, files.get(hash));
         }
     }
 
-    private static boolean hashMp3(Hash hash) {
+    private static boolean hasMp3(Hash hash) {
         /** TODO
          * return Song.exists(hash);
          * */

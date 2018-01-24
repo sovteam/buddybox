@@ -43,7 +43,7 @@ import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.SongAdded;
+import buddybox.impl.db.DatabaseHelper;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
@@ -79,7 +79,7 @@ public class ModelImpl implements Model {
     public ModelImpl(Context context) {
         this.context = context;
 
-        //System.out.println(Database.initDatabase(context));
+        System.out.println(DatabaseHelper.getInstance(context));
 
         Dispatcher.addListener(new Dispatcher.Listener() { @Override public void onEvent(Dispatcher.Event event) {
             handle(event);

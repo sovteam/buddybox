@@ -363,8 +363,6 @@ public class SongUtils {
 
     public static boolean moveToLibrary(Song song) {
         File newFile = new File(musicFolder() + File.separator + song.file.getName());
-        if (!newFile.exists())
-            newFile.mkdirs();
         boolean ret = song.file.renameTo(newFile);
         if (ret) {
             song.file = newFile;
