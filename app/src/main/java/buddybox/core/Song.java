@@ -21,7 +21,7 @@ public class Song implements Playable {
 
 
     public Song(Hash hash, String name, String artist, String genre, Integer duration, String relativePath,
-                long fileLength, long lastModified) {
+                long fileLength, long lastModified, Boolean isMissing) {
         this.hash = hash;
         this.name = name;
         this.artist = artist;
@@ -30,6 +30,7 @@ public class Song implements Playable {
         this.relativePath = relativePath;
         this.fileLength = fileLength;
         this.lastModified = lastModified;
+        this.isMissing = isMissing;
     }
 
     @Override public String name() { return name; }

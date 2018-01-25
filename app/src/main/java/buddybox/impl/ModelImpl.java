@@ -3,30 +3,17 @@ package buddybox.impl;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
@@ -56,9 +43,6 @@ import static buddybox.core.events.Sampler.*;
 
 public class ModelImpl implements Model {
 
-    private static final String UNKNOWN_GENRE = "Unknown Genre";
-    private static final String UNKNOWN_ARTIST = "Unknown Artist";
-
     private final Context context;
     private final Handler handler = new Handler();
     private List<StateListener> listeners = new ArrayList<>();
@@ -69,14 +53,12 @@ public class ModelImpl implements Model {
 
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
-    private int nextId;
 
-    private HashMap<String, String> genreMap;
     private ArrayList<Playlist> playlists;
     private List<Song> allSongs;
-    private List<Artist> allArtists;
+
     private boolean isPaused;
-    private Boolean hasPermissionWriteExternalStorage;
+    private Boolean hasWriteExternalStoragePermission;
 
     public ModelImpl(Context context) {
         this.context = context;
@@ -127,7 +109,7 @@ public class ModelImpl implements Model {
             createPlaylist((CreatePlaylist) event);
 
         if (event.getClass() == SongFound.class)
-            addFound((SongFound)event);
+            songFound((SongFound)event);
 
         if (event.getClass() == SongMissing.class)
             songMissing((SongMissing)event);
@@ -136,19 +118,53 @@ public class ModelImpl implements Model {
     }
 
     private void songMissing(SongMissing event) {
-
+        ContentValues values = new ContentValues();
+        values.put("IS_MISSING", true);
+        DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", values, "HASH=?", new String[]{event.song.hash.toString()});
+        event.song.setMissing();
     }
 
-    private void addFound(SongFound event) {
-        ContentValues newSong = new ContentValues(2);
-        newSong.put("HASH", event.song.hash.bytes);
-        newSong.put("NAME", event.song.name);
-        newSong.put("GENRE", event.song.genre);
-        newSong.put("ARTIST", event.song.artist);
-        newSong.put("DURATION", event.song.duration);
-        newSong.put("FILE_LENGTH", event.song.fileLength);
-        newSong.put("LAST_MODIFIED", event.song.lastModified);
+    private void songFound(SongFound event) {
+        System.out.println("111 song found");
+
+        Song song = findSongByHash(event.song.hash);
+        if (song == null)
+            insertNewSong(event.song);
+        else
+            updateSong(event.song);
+
+        allSongs.add(event.song);
+    }
+
+    private Song findSongByHash(Hash hash) {
+        for (Song song : allSongs) {
+            if (song.hash.equals(hash))
+                return song;
+        }
+        return null;
+    }
+
+    private void insertNewSong(Song song) {
+        ContentValues newSong = songContents(song);
+        newSong.put("HASH", song.hash.toString());
         DatabaseHelper.getInstance(context).getReadableDatabase().insert("SONGS", null, newSong);
+    }
+
+    private void updateSong(Song song) {
+        DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", songContents(song), "HASH=?", new String[]{song.hash.toString()});
+    }
+
+    private ContentValues songContents(Song song) {
+        ContentValues ret = new ContentValues();
+        ret.put("NAME", song.name);
+        ret.put("GENRE", song.genre);
+        ret.put("ARTIST", song.artist);
+        ret.put("DURATION", song.duration);
+        ret.put("RELATIVE_PATH", song.relativePath);
+        ret.put("FILE_LENGTH", song.fileLength);
+        ret.put("LAST_MODIFIED", song.lastModified);
+        ret.put("IS_MISSING", song.isMissing ? 1 : 0);
+        return ret;
     }
 
     private void samplerUpdate(SamplerUpdated event) {
@@ -157,7 +173,7 @@ public class ModelImpl implements Model {
 
     private ArrayList<Artist> artists() {
         Map<String, Artist> artistsMap = new HashMap<>();
-        for (Song song : allSongs) {
+        for (Song song : allSongs()) {
             Artist artist = artistsMap.get(song.artist);
             if (artist == null) {
                 artist = new Artist(song.artist);
@@ -170,7 +186,7 @@ public class ModelImpl implements Model {
 
     private void updatePermission(Permission event) {
         if (event.code == Permission.WRITE_EXTERNAL_STORAGE) {
-            hasPermissionWriteExternalStorage = event.granted;
+            hasWriteExternalStoragePermission = event.granted;
         }
     }
 
@@ -288,8 +304,11 @@ public class ModelImpl implements Model {
         listener.update(state);
     }
 
+    private boolean hasWriteExternalStoragePermission() {
+        return hasWriteExternalStoragePermission != null && hasWriteExternalStoragePermission;
+    }
+
     private State getState() {
-        System.out.println("!!! isSampling " + isSampling);
         return new State(
                 1,
                 null,
@@ -310,26 +329,38 @@ public class ModelImpl implements Model {
                 getAvailableMemorySize(),
                 playlistAllSongs(),
                 artists(),
-                hasPermissionWriteExternalStorage);
+                hasWriteExternalStoragePermission());
     }
 
     private Playlist playlistAllSongs() {
-        return new Playlist(0, "Recent", new ArrayList<>(allSongs));
+        return new Playlist(0, "Recent", allSongsAvailable());
     }
+
+    private List<Song> allSongsAvailable() {
+        List<Song> ret = new ArrayList<>();
+        for (Song song : allSongs())
+           if (!song.isMissing)
+               ret.add(song);
+        return ret;
+    }
+
 
     private List<Song> allSongs() {
         if (allSongs == null) {
             allSongs = new ArrayList<>();
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
             while(cursor.moveToNext()) {
-                /*Song song = new Song(
-                    cursor.getString(0)
-                    cursor.getString(1)
-                    cursor.getString(2)
-                    cursor.getString(3)
-                    cursor.getString(4)
-                    cursor.getString(5));
-                allSongs.add(song)*/
+                Song song = new Song(
+                        new Hash(cursor.getString(cursor.getColumnIndex("HASH"))),
+                        cursor.getString(cursor.getColumnIndex("NAME")),
+                        cursor.getString(cursor.getColumnIndex("GENRE")),
+                        cursor.getString(cursor.getColumnIndex("ARTIST")),
+                        cursor.getInt(cursor.getColumnIndex("DURATION")),
+                        cursor.getString(cursor.getColumnIndex("RELATIVE_PATH")),
+                        cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),
+                        cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
+                        cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1);
+                allSongs.add(song);
             }
             cursor.close();
         }
@@ -350,7 +381,7 @@ public class ModelImpl implements Model {
     private Playlist lovedPlaylist() {
         List<Song> lovedSongs = new ArrayList<>();
 
-        for (Song song : allSongs) {
+        for (Song song : allSongs()) {
             if (song.isLoved())
                 lovedSongs.add(song);
         }

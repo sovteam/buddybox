@@ -32,7 +32,7 @@ public class Library {
         boolean needsSync = Library.state == null;
         Library.state = state;
         if (needsSync)
-            synchronizeLibrary();
+            startSynchronizingLibrary();
     }
 
     synchronized
@@ -40,12 +40,25 @@ public class Library {
         return Library.state;
     }
 
+    private static void startSynchronizingLibrary() {
+        Runnable runnable = new Runnable() { @Override public void run() {
+            synchronizeLibrary();
+        }};
+        Thread thread = new Thread(runnable, "Synchronize Library");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
     private static void synchronizeLibrary() {
+        System.out.println("222 sync lib");
         List<File> mp3Files = SongUtils.listLibraryMp3Files();
 
         Map<String, Song> songByPath = new HashMap<>();
-        for (Song song : getState().allSongsPlaylist.songs)
-            songByPath.put(song.relativePath, song);
+        for (Song song : getState().allSongsPlaylist.songs) {
+            System.out.println(">>> songByPath path " + song.relativePath);
+            if (!song.isMissing)
+                songByPath.put(song.relativePath, song);
+        }
 
         for (File mp3 : mp3Files) {
             Song song = songByPath.remove(mp3.getPath());
@@ -53,7 +66,9 @@ public class Library {
                 dispatch(new SongFound(SongUtils.readSong(mp3)));
         }
 
-        for (Song missing : songByPath.values())
+        for (Song missing : songByPath.values()) {
+            System.out.println("222 song missing " + missing.name);
             dispatch(new SongMissing(missing));
+        }
     }
 }

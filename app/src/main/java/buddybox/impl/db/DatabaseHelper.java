@@ -30,43 +30,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase sqLiteDatabase) {
+    public void onCreate(SQLiteDatabase db) {
         System.out.println("$$$$$$$$$$$$$$$$$ DB onCreate");
 
-        SQLiteDatabase db = INSTANCE.getReadableDatabase();
-
         db.execSQL("CREATE TABLE IF NOT EXISTS SONGS (" +
-                "HASH BLOB PRIMARY KEY," +
+                "HASH TEXT PRIMARY KEY," +
                 "NAME TEXT," +
                 "ARTIST TEXT," +
                 "GENRE TEXT," +
                 "DURATION INTEGER," +
+                "RELATIVE_PATH TEXT," +
                 "FILE_LENGTH INTEGER," +
-                "LAST_MODIFIED INTEGER)");
-
-        System.out.println(">> inserts");
-        ContentValues vals = new ContentValues(2);
-        vals.put("HASH", new byte[]{47});
-        vals.put("NAME", "A1");
-        vals.put("GENRE", "A2");
-        vals.put("ARTIST", "A3");
-        vals.put("DURATION", 1);
-        db.insert("SONGS", null, vals);
-
-        ContentValues vals2 = new ContentValues(2);
-        vals.put("HASH", new byte[]{48});
-        vals.put("NAME", "B1");
-        vals.put("GENRE", "B2");
-        vals.put("ARTIST", "B3");
-        vals.put("DURATION", 2);
-        db.insert("SONGS", null, vals2);
-
-        System.out.println(">> query");
-        Cursor c = db.query("SONGS", new String[]{"HASH", "NAME", "ARTIST", "GENRE", "DURATION"}, "HASH = ?", new String[]{"A0"}, null, null, "NAME");
-        c.moveToFirst();
-        System.out.println(">> query result HASH: " + c.getString(0) + " NAME: " + c.getString(1) + " GENRE: " + c.getString(2) + " ARTIST: " + c.getString(3) + " DURATION: " + c.getString(4));
-        // c.moveToNext();
-        c.close();
+                "LAST_MODIFIED INTEGER," +
+                "IS_MISSING BOOLEAN)");
     }
 
     @Override

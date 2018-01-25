@@ -360,6 +360,6 @@ public class SongUtils {
         if (durationStr != null)
             duration = Integer.parseInt(durationStr);
 
-        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified());
+        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false);
     }
 }
