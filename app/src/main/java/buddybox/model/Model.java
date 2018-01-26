@@ -21,7 +21,6 @@ import buddybox.core.events.CreatePlaylist;
 import buddybox.core.Dispatcher;
 import utils.Hash;
 import buddybox.core.IModel;
-import buddybox.core.events.Permission;
 import buddybox.core.events.Play;
 import buddybox.core.Playlist;
 import buddybox.core.events.SamplerDelete;
@@ -38,6 +37,8 @@ import static buddybox.core.events.Play.REPEAT_SONG;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
+import static buddybox.core.events.Library.SYNC_LIBRARY;
+import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 
 import static buddybox.core.events.Sampler.*;
 
@@ -61,7 +62,7 @@ public class Model implements IModel {
 
     private boolean isPaused;
     private boolean repeatSong = false;
-    private Boolean hasWriteExternalStoragePermission;
+    private boolean syncLibraryRequested = false;
 
     public Model(Context context) {
         this.context = context;
@@ -76,8 +77,6 @@ public class Model implements IModel {
     private void handle(Dispatcher.Event event) {
         Class<? extends Dispatcher.Event> cls = event.getClass();
         System.out.println("@@@ Event class " + cls);
-
-        if (cls == Permission.class) updatePermission((Permission) event);
 
         if (cls == SongFound.class)   songFound((SongFound)event);
         if (cls == SongMissing.class) songMissing((SongMissing)event);
@@ -100,9 +99,20 @@ public class Model implements IModel {
         if (cls == SamplerDelete.class)  samplerDelete((SamplerDelete) event);
         if (cls == SamplerLove.class)    samplerLove((SamplerLove) event);
 
+        if (event == SYNC_LIBRARY)          syncLibrary();
+        if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
+
         if (event == LOVED_VIEWED) lovedViewed();
 
         updateListeners();
+    }
+
+    private void syncLibraryStarted() {
+        syncLibraryRequested = false;
+    }
+
+    private void syncLibrary() {
+        syncLibraryRequested = true;
     }
 
     private void repeatSong() {
@@ -173,12 +183,6 @@ public class Model implements IModel {
             artist.addSong(song);
         }
         return new ArrayList<>(artistsByName.values());
-    }
-
-    private void updatePermission(Permission event) {
-        if (event.code == Permission.WRITE_EXTERNAL_STORAGE) {
-            hasWriteExternalStoragePermission = event.granted;
-        }
     }
 
     private void finishedPlaying() {
@@ -304,10 +308,6 @@ public class Model implements IModel {
         listener.update(state);
     }
 
-    private boolean hasWriteExternalStoragePermission() {
-        return hasWriteExternalStoragePermission != null && hasWriteExternalStoragePermission;
-    }
-
     private State getState() {
         return new State(
                 1,
@@ -330,7 +330,7 @@ public class Model implements IModel {
                 getAvailableMemorySize(),
                 playlistAllSongs(),
                 artists(),
-                hasWriteExternalStoragePermission());
+                syncLibraryRequested);
     }
 
     private Playlist playlistAllSongs() {

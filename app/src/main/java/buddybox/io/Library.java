@@ -14,6 +14,7 @@ import buddybox.core.events.SongMissing;
 import utils.Daemon;
 
 import static buddybox.core.Dispatcher.dispatch;
+import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 
 public class Library {
 
@@ -27,12 +28,9 @@ public class Library {
 
     synchronized
     private static void updateState(State state) {
-        if (!state.hasWriteExternalStoragePermission)
-            return;
-
-        boolean needsSync = Library.state == null;
+        boolean wasSyncing = Library.state != null && Library.state.syncLibraryPending;
         Library.state = state;
-        if (needsSync)
+        if (state.syncLibraryPending && !wasSyncing)
             startSynchronizingLibrary();
     }
 
@@ -42,9 +40,12 @@ public class Library {
     }
 
     private static void startSynchronizingLibrary() {
-        new Daemon("Library Sync") { @Override public void run() {
-            synchronizeLibrary();
-        }};
+        new Daemon("Library Sync") {
+            @Override
+            public void run() {
+                synchronizeLibrary();
+            }
+        };
     }
 
     private static void synchronizeLibrary() {
@@ -68,5 +69,6 @@ public class Library {
             System.out.println("222 song missing " + missing.name);
             dispatch(new SongMissing(missing));
         }
+        dispatch(SYNC_LIBRARY_FINISHED);
     }
 }

@@ -28,7 +28,6 @@ public class State {
     public final Playlist lovedPlaylist;
 
     // Library
-    public final Boolean hasWriteExternalStoragePermission;
     public final Playlist allSongsPlaylist;
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
@@ -36,8 +35,9 @@ public class State {
     public final List<Artist> artists;
     public final boolean isSampling;
     public final boolean repeatSong;
+    public final boolean syncLibraryPending;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Boolean repeatSong, Map<Song, Playlist> playlistBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, Boolean permissionWriteExternalStorage) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Boolean repeatSong, Map<Song, Playlist> playlistBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -57,6 +57,6 @@ public class State {
         this.playlists = playlists;
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;
-        this.hasWriteExternalStoragePermission = permissionWriteExternalStorage;
+        this.syncLibraryPending = syncLibraryRequested;
     }
 }

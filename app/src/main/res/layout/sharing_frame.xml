@@ -68,4 +68,23 @@
         android:id="@+id/textView16"
         android:layout_below="@+id/button4"
         android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sync Library"
+        android:id="@+id/syncLibrary"
+        android:layout_below="@+id/textView16"
+        android:layout_alignParentEnd="true" />
+
+    <ProgressBar
+        android:id="@+id/syncLibrarySpinner"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/syncLibrary"
+        android:layout_alignEnd="@+id/syncLibrary"
+        android:layout_alignBottom="@+id/syncLibrary"
+        android:layout_alignStart="@+id/syncLibrary" />
+
 </RelativeLayout>

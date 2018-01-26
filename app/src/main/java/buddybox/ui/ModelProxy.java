@@ -21,4 +21,7 @@ public class ModelProxy {
         INSTANCE.addStateListener(listener);
     }
 
+    public static boolean isInitialized() {
+        return INSTANCE != null;
+    }
 }

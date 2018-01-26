@@ -57,7 +57,7 @@ public class Sampler {
 
         File newFile = new File(SongUtils.musicFolder(), event.song.relativePath); // TODO check relativePath of sampler song
         File currentFile = new File(event.song.relativePath);
-        boolean moved = currentFile.renameTo(newFile);
+        boolean moved = currentFile.renameTo(newFile); // TODO copy file
         if (moved) {
             dispatch(new SongAdded(event.song)); // TODO remove
             event.song.setLoved();

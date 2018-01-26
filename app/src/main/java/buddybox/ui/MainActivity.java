@@ -36,8 +36,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import buddybox.ModelSim;
 import buddybox.core.IModel;
-import buddybox.core.events.Permission;
 import buddybox.core.events.Play;
 import buddybox.core.Playable;
 import buddybox.core.Playlist;
@@ -46,6 +46,10 @@ import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.io.Library;
+import buddybox.io.Player;
+import buddybox.io.Sampler;
+import buddybox.model.Model;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
@@ -56,13 +60,16 @@ import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.ui.ModelProxy.addStateListener;
-import static buddybox.core.events.Permission.WRITE_EXTERNAL_STORAGE;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
+import static buddybox.core.events.Library.SYNC_LIBRARY;
 
 public class MainActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
+
+    private static boolean USE_SIMULATOR = false;
+    private static final int WRITE_EXTERNAL_STORAGE = 1;
 
     private LovedPlayablesArrayAdapter lovedPlayables;
     private Playlist lovedPlaylist;
@@ -75,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private ViewPager viewPager;
 
     private Song sampling;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -140,24 +148,44 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }});
 
         findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            getWriteExternalStoragePermission();
+            checkWriteExternalStoragePermission();
+        }});
+
+        // Sharing
+        findViewById(R.id.syncLibrary).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SYNC_LIBRARY);
         }});
 
         navigateTo(R.id.frameLibrary);
 
-        getWriteExternalStoragePermission();
+        checkWriteExternalStoragePermission();
     }
 
+    private void initApp() {
+        findViewById(R.id.permission).setVisibility(View.INVISIBLE);
 
-    private void getWriteExternalStoragePermission() {
-        if (Build.VERSION.SDK_INT < 23)
-            return;
+        ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
+        Player.init(this);
+        Library.init();
+        Sampler.init(this);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            dispatch(new Permission(WRITE_EXTERNAL_STORAGE, true));
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE);
+        dispatch(SYNC_LIBRARY);
+    }
+
+    private void checkWriteExternalStoragePermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                // Request permission to write
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_EXTERNAL_STORAGE);
+
+                View p = findViewById(R.id.permission);
+                p.setVisibility(View.VISIBLE);
+                p.bringToFront();
+
+                return;
+            }
         }
+        initApp();
     }
 
     @Override
@@ -168,11 +196,10 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // permission was granted
                 System.out.println("<<< Permission Granted >>>");
-                dispatch(new Permission(code, true));
+                initApp();
             } else {
                 // permission denied
                 System.out.println("<<< Permission Denied >>>");
-                dispatch(new Permission(code, false));
             }
         }
     }
@@ -232,24 +259,18 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     @Override
     protected void onResume() {
         super.onResume();
-        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
-        }});
+
+        if (ModelProxy.isInitialized())
+            addStateListener(new IModel.StateListener() { @Override public void update(State state) {
+                updateState(state);
+            }});
     }
 
     private void updateState(State state) {
-        if (state.hasWriteExternalStoragePermission) {
-            findViewById(R.id.permission).setVisibility(View.INVISIBLE);
-        } else {
-            View p = findViewById(R.id.permission);
-            p.setVisibility(View.VISIBLE);
-            p.bringToFront();
-            return;
-        }
-
         updateLibraryState(state);
         updateSamplerState(state);
         updateLovedState(state);
+        updateSharing(state);
 
         // Update new samplers count
         int samplerCount = state.samplerPlaylist == null ? 0 : state.samplerPlaylist.size();
@@ -262,6 +283,16 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                 countNewLoved++;
         }
         ((TextView)findViewById(R.id.newLovedSongsCount)).setText(countNewLoved == 0 ? "" : Integer.toString(countNewLoved));
+    }
+
+    private void updateSharing(State state) {
+        if (state.syncLibraryPending) {
+            findViewById(R.id.syncLibrarySpinner).setVisibility(View.VISIBLE);
+            findViewById(R.id.syncLibrary).setVisibility(View.GONE);
+        } else {
+            findViewById(R.id.syncLibrarySpinner).setVisibility(View.GONE);
+            findViewById(R.id.syncLibrary).setVisibility(View.VISIBLE);
+        }
     }
 
     private void updateLovedState(State state) {
