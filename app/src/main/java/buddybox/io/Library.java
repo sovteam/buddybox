@@ -1,4 +1,4 @@
-package buddybox.controller;
+package buddybox.io;
 
 import java.io.File;
 import java.util.HashMap;

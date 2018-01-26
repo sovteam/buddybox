@@ -2,9 +2,9 @@ package buddybox;
 
 import android.app.Application;
 
-import buddybox.controller.Library;
-import buddybox.controller.Player;
-import buddybox.controller.Sampler;
+import buddybox.io.Library;
+import buddybox.io.Player;
+import buddybox.io.Sampler;
 import buddybox.model.Model;
 import buddybox.ui.ModelProxy;
 

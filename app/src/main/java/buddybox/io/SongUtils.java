@@ -1,4 +1,4 @@
-package buddybox.controller;
+package buddybox.io;
 
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;

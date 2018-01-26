@@ -40,6 +40,8 @@ import static buddybox.core.events.Play.FINISHED_PLAYING;
 
 import static buddybox.core.events.Sampler.*;
 
+/** The Model is modified only through dispatched events, handled sequentially.
+ * Only the Model handles the database. */
 public class Model implements IModel {
 
     private final Context context;
