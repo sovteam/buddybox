@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+
     package="com.adalbertosoares.buddybox">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -23,23 +24,12 @@
 
         <activity
             android:name="buddybox.ui.PlayingActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
 
-        <receiver
-            android:name="buddybox.ui.notification.NotificationDismissedReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name="buddybox.ui.notification.NotificationSkipNextReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name="buddybox.ui.notification.NotificationSkipPreviousReceiver"
-            android:exported="false" />
+        <receiver android:name="buddybox.ui.notification.NotificationDismissedReceiver"    android:exported="false" />
+        <receiver android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"    android:exported="false" />
+        <receiver android:name="buddybox.ui.notification.NotificationSkipNextReceiver"     android:exported="false" />
+        <receiver android:name="buddybox.ui.notification.NotificationSkipPreviousReceiver" android:exported="false" />
 
     </application>
 
