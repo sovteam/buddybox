@@ -102,15 +102,26 @@ public class RecentFragment extends Fragment {
     private void openSelectPlaylistDialog(Song song) {
         SelectPlaylistDialogFragment frag = new SelectPlaylistDialogFragment();
 
-        //TODO remove playlists that song already belongs
-        ArrayList<String> list = new ArrayList<>();
-        for (Playlist playlist : playlists) {
-            list.add(playlist.name);
+        // Select playlists song is not associated
+        List<Playlist> playlistsForSong = new ArrayList<>();
+        for (Playlist playlist : playlists){
+            if (!playlist.hasSong(song))
+                playlistsForSong.add(playlist);
+        }
+
+        // Get playlists infos to bundle
+        long[] playlistIds = new long[playlistsForSong.size()];
+        ArrayList<String> playlistNames = new ArrayList<>();
+        for (int i = 0; i < playlistsForSong.size(); i++) {
+            Playlist playlist = playlistsForSong.get(i);
+            playlistIds[i] = playlist.id;
+            playlistNames.add(playlist.name);
         }
 
         Bundle args = new Bundle();
-        args.putString("songId", song.name); // TODO switch to songId
-        args.putStringArrayList("playlists", list);
+        args.putString("songHash", song.hash.toString());
+        args.putStringArrayList("playlistsNames", playlistNames);
+        args.putLongArray("playlistsIds", playlistIds);
         frag.setArguments(args);
 
         frag.show(getFragmentManager(), "Select Playlist");

@@ -4,11 +4,11 @@ import java.util.List;
 
 public class Playlist implements Playable {
 
-    private final int id;
+    public final long id;
     public final String name;
-    public final List<Song> songs;
+    public List<Song> songs;
 
-    public Playlist(int id, String name, List<Song> songs) {
+    public Playlist(long id, String name, List<Song> songs) {
         this.id = id;
         this.name = name;
         this.songs = songs;
@@ -70,5 +70,13 @@ public class Playlist implements Playable {
         if (songIndex > this.songs.size())
             return;
         this.songs.remove(songIndex);
+    }
+
+    public void addSong(Song song) {
+        songs.add(song);
+    }
+
+    public boolean hasSong(Song song) {
+        return songs.contains(song);
     }
 }

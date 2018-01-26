@@ -3,13 +3,13 @@ package buddybox.core.events;
 import buddybox.core.Dispatcher;
 
 public class AddSongToPlaylist extends Dispatcher.Event {
-    private final String songId;
-    private final String playlistName;
+    public final String songHash;
+    public final Long playlistId;
 
-    public AddSongToPlaylist(String songId, String playlistName) {
-        super("AddSongToPlaylist songId: " + songId + ", playlist: " + playlistName);
-        this.songId = songId;
-        this.playlistName = playlistName;
+    public AddSongToPlaylist(String songHash, Long playlistId) {
+        super("AddSongToPlaylist songId: " + songHash + ", playlist: " + playlistId);
+        this.songHash = songHash;
+        this.playlistId = playlistId;
     }
 
 }

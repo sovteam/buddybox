@@ -3,12 +3,12 @@ package buddybox.core.events;
 import buddybox.core.Dispatcher;
 
 public class CreatePlaylist extends Dispatcher.Event {
-    private final String playlistName;
-    private final String songId;
+    public final String playlistName;
+    public final String songHash;
 
-    public CreatePlaylist(String playlistName, String songId) {
-        super("CreatePlaylist playlistName: " + playlistName + ", songId: " + songId);
+    public CreatePlaylist(String playlistName, String songHash) {
+        super("CreatePlaylist playlistName: " + playlistName + ", songHash: " + songHash);
         this.playlistName = playlistName;
-        this.songId = songId;
+        this.songHash = songHash;
     }
 }

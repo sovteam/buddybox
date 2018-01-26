@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
@@ -57,8 +58,10 @@ public class Model implements IModel {
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
 
-    private ArrayList<Playlist> playlists;
     private List<Song> allSongs;
+    private Map<String, Song> songsByHash;
+    private ArrayList<Playlist> playlists;
+    private HashMap<Long, Playlist> playlistsById;
 
     private boolean isPaused;
     private boolean repeatSong = false;
@@ -135,7 +138,12 @@ public class Model implements IModel {
         else
             updateSong(event.song);
 
-        allSongs.add(event.song);
+        addSong(event.song);
+    }
+
+    private void addSong(Song song) {
+        allSongs.add(song);
+        songsByHash.put(song.hash.toString(), song);
     }
 
     private Song findSongByHash(Hash hash) {
@@ -198,30 +206,37 @@ public class Model implements IModel {
     }
 
     private void createPlaylist(CreatePlaylist event) {
-        /* TODO implement
-         * String name = playlistName.trim();
-         * if (name.isEmpty()) {
-         *      Toast("Playlist name can\'t be empty");
-         *      return;
-         * }
-         * Playlist playlist = Playlist.findByName(name);
-         * if (playlist != null)
-         *      playlist.addSong(songId);
-         * else
-         *      Playlist.create(event.playlistName, [Song.findById(event.songId)]);
-         */
-        System.out.println("@@@ Dispatched Event: createPlaylist");
+        // Creates playlist
+        ContentValues contents = new ContentValues();
+        contents.put("NAME", event.playlistName);
+        long playlistId = DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLISTS", null, contents);
+
+        // Associates songs with playlist
+        associateSongToPlaylist(event.songHash, playlistId);
+
+        // Add new playlist
+        List<Song> songs = new ArrayList<>();
+        songs.add(songsByHash.get(event.songHash));
+        Playlist playlist = new Playlist(playlistId, event.playlistName, songs);
+        addPlaylist(playlist);
+
+        System.out.println("@@@ Dispatched Event: createPlaylist. Song: " +event.songHash + ", playlist: " + event.playlistName);
     }
 
     private void addSongToPlaylist(AddSongToPlaylist event) {
-        /*TODO implement
-        * Playlist playlist = Playlist.findByName(event.playlist);
-        * if (playlist == null)
-        *   Playlist.create(event.playlistName, [Song.findById(event.songId)]);
-        * else
-        *   playlist.addSong(songId);
-        * */
-        System.out.println("@@@ Dispatched Event: addSongToPlaylist");
+        associateSongToPlaylist(event.songHash, event.playlistId);
+
+        Playlist playlist = playlistsById.get(event.playlistId);
+        playlist.addSong(songsByHash.get(event.songHash));
+
+        System.out.println("@@@ Dispatched Event: addSongToPlaylist. Playlist id: " + event.playlistId + ", song: " + event.songHash);
+    }
+
+    private void associateSongToPlaylist(String songHash, long playlistId) {
+        ContentValues playlistSong = new ContentValues();
+        playlistSong.put("PLAYLIST_ID", playlistId);
+        playlistSong.put("SONG_HASH", songHash);
+        DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLIST_SONG", null, playlistSong);
     }
 
     private void lovedViewed() {
@@ -349,6 +364,7 @@ public class Model implements IModel {
     private List<Song> allSongs() {
         if (allSongs == null) {
             allSongs = new ArrayList<>();
+            songsByHash = new HashMap<>();
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
             while(cursor.moveToNext()) {
                 Song song = new Song(
@@ -361,7 +377,7 @@ public class Model implements IModel {
                         cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1);
-                allSongs.add(song);
+                addSong(song);
             }
             cursor.close();
         }
@@ -371,12 +387,34 @@ public class Model implements IModel {
     private List<Playlist> playlists() {
         if (playlists == null) {
             playlists = new ArrayList<>();
-            /*List<Song> songs = new ArrayList<>(allSongs.values());
-            playlists.add(new Playlist(10, "My Rock", songs.subList(0, 1)));
-            playlists.add(new Playlist(11, "70\'s", songs.subList(1, 3)));
-            playlists.add(new Playlist(12, "Pagode do Tadeu", songs.subList(0, 4)));*/
+            playlistsById = new HashMap<>();
+            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM PLAYLISTS", null);
+            while(cursor.moveToNext()) {
+                long playlistId = cursor.getLong(cursor.getColumnIndex("ID"));
+                List<Song> songs = queryPlaylistSongs(playlistId);
+                Playlist playlist = new Playlist(playlistId, cursor.getString(cursor.getColumnIndex("NAME")), songs);
+                addPlaylist(playlist);
+            }
+            cursor.close();
         }
         return playlists;
+    }
+
+    synchronized
+    private void addPlaylist(Playlist playlist) {
+        playlists.add(playlist);
+        playlistsById.put(playlist.id, playlist);
+    }
+
+    private List<Song> queryPlaylistSongs(long playlistId) {
+        List<Song> songs = new ArrayList<>();
+        Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().query("PLAYLIST_SONG", new String[]{"SONG_HASH"}, "PLAYLIST_ID=?", new String[]{Long.toString(playlistId)}, null, null, null);
+        while(cursor.moveToNext()) {
+            String hash = cursor.getString(cursor.getColumnIndex("SONG_HASH"));
+            songs.add(songsByHash.get(hash));
+        }
+        cursor.close();
+        return songs;
     }
 
     private Playlist lovedPlaylist() {

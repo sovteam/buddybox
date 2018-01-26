@@ -29,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        System.out.println("$$$$$$$$$$$$$$$$$ DB onCreate");
+        System.out.println(">>> DB onCreate >>> CREATE TABLES");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS SONGS (" +
                 "HASH TEXT PRIMARY KEY," +
@@ -41,6 +41,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FILE_LENGTH INTEGER," +
                 "LAST_MODIFIED INTEGER," +
                 "IS_MISSING BOOLEAN)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLISTS (ID INTEGER PRIMARY KEY, NAME TEXT UNIQUE)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLIST_SONG (" +
+                "SONG_HASH TEXT," +
+                "PLAYLIST_ID INTEGER," +
+                "PRIMARY KEY (SONG_HASH, PLAYLIST_ID)," +
+                "FOREIGN KEY(SONG_HASH) REFERENCES SONGS(HASH)," +
+                "FOREIGN KEY(PLAYLIST_ID) REFERENCES PLAYLISTS(ID))");
 
     }
 
