@@ -1,4 +1,4 @@
-package buddybox.impl;
+package buddybox.model;
 
 import java.io.File;
 

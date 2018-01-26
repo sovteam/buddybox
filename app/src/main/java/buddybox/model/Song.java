@@ -1,4 +1,4 @@
-package buddybox.impl;
+package buddybox.model;
 
 public class Song {
 

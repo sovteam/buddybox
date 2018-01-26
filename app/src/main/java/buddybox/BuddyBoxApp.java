@@ -5,7 +5,7 @@ import android.app.Application;
 import buddybox.controller.Library;
 import buddybox.controller.Player;
 import buddybox.controller.Sampler;
-import buddybox.impl.Model;
+import buddybox.model.Model;
 import buddybox.ui.ModelSingleton;
 
 public class BuddyBoxApp extends Application {

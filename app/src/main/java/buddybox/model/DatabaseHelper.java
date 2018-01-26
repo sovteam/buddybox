@@ -1,4 +1,4 @@
-package buddybox.impl;
+package buddybox.model;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
