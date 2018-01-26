@@ -38,7 +38,7 @@ public class Library {
 
     synchronized
     private static State getState() {
-        return Library.state;
+        return state;
     }
 
     private static void startSynchronizingLibrary() {
