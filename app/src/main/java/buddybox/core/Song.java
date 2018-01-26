@@ -1,7 +1,5 @@
 package buddybox.core;
 
-import java.io.File;
-
 public class Song implements Playable {
 
     public final Hash hash;
