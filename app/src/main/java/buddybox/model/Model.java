@@ -161,7 +161,7 @@ public class Model implements IModel {
         ret.put("GENRE", song.genre);
         ret.put("ARTIST", song.artist);
         ret.put("DURATION", song.duration);
-        ret.put("RELATIVE_PATH", song.relativePath);
+        ret.put("FILE_PATH", song.filePath);
         ret.put("FILE_LENGTH", song.fileLength);
         ret.put("LAST_MODIFIED", song.lastModified);
         ret.put("IS_MISSING", song.isMissing ? 1 : 0);
@@ -357,7 +357,7 @@ public class Model implements IModel {
                         cursor.getString(cursor.getColumnIndex("GENRE")),
                         cursor.getString(cursor.getColumnIndex("ARTIST")),
                         cursor.getInt(cursor.getColumnIndex("DURATION")),
-                        cursor.getString(cursor.getColumnIndex("RELATIVE_PATH")),
+                        cursor.getString(cursor.getColumnIndex("FILE_PATH")),
                         cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1);

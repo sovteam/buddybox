@@ -55,8 +55,8 @@ public class Sampler {
     private static void samplerLove(SamplerLove event) {
         System.out.println(">>> Sampler Love Song " + event.song.name);
 
-        File newFile = new File(SongUtils.musicFolder(), event.song.relativePath); // TODO check relativePath of sampler song
-        File currentFile = new File(event.song.relativePath);
+        File newFile = new File(SongUtils.musicFolder(), event.song.filePath); // TODO check filePath of sampler song
+        File currentFile = new File(event.song.filePath);
         boolean moved = currentFile.renameTo(newFile); // TODO copy file
         if (moved) {
             dispatch(new SongAdded(event.song)); // TODO remove
@@ -68,7 +68,7 @@ public class Sampler {
     }
 
     private static void deleteSong(Song song) {
-        File file = new File(samplerDirectory(), song.relativePath);
+        File file = new File(samplerDirectory(), song.filePath);
         if (file.delete())
             System.out.println("Unable to delete file: " + file.getPath());
     }

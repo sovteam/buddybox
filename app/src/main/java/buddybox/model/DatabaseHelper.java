@@ -37,10 +37,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "ARTIST TEXT," +
                 "GENRE TEXT," +
                 "DURATION INTEGER," +
-                "RELATIVE_PATH TEXT," +
+                "FILE_PATH TEXT," +
                 "FILE_LENGTH INTEGER," +
                 "LAST_MODIFIED INTEGER," +
                 "IS_MISSING BOOLEAN)");
+
     }
 
     @Override

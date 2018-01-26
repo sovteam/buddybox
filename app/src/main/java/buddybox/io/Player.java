@@ -45,7 +45,7 @@ public class Player {
         }
 
         try {
-            Uri myUri = Uri.parse(state.songPlaying.relativePath);
+            Uri myUri = Uri.parse(state.songPlaying.filePath);
             mediaPlayer.pause();
             mediaPlayer.reset();
             mediaPlayer.setDataSource(context, myUri);

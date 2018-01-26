@@ -54,9 +54,9 @@ public class Library {
 
         Map<String, Song> songByPath = new HashMap<>();
         for (Song song : getState().allSongsPlaylist.songs) {
-            System.out.println(">>> songByPath path " + song.relativePath);
+            System.out.println(">>> songByPath path " + song.filePath);
             if (!song.isMissing)
-                songByPath.put(song.relativePath, song);
+                songByPath.put(song.filePath, song);
         }
 
         for (File mp3 : mp3Files) {

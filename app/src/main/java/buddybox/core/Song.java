@@ -12,22 +12,26 @@ public class Song implements Playable {
 
     public boolean isMissing = false;
 
+    // sampler
+    public boolean isSample;
     public Long loved;
     public Boolean lovedViewed;
+    public Long hated;
+    public Long deleted;
 
-    public String relativePath;
+    public String filePath;
     public final long fileLength;
     public final long lastModified;
 
 
-    public Song(Hash hash, String name, String artist, String genre, Integer duration, String relativePath,
+    public Song(Hash hash, String name, String artist, String genre, Integer duration, String filePath,
                 long fileLength, long lastModified, Boolean isMissing) {
         this.hash = hash;
         this.name = name;
         this.artist = artist;
         this.genre = genre;
         this.duration = duration;
-        this.relativePath = relativePath;
+        this.filePath = filePath;
         this.fileLength = fileLength;
         this.lastModified = lastModified;
         this.isMissing = isMissing;

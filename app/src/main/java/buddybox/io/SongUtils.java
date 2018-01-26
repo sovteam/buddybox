@@ -44,9 +44,8 @@ public class SongUtils {
         List<File> mp3Files = listMp3Files(folder);
 
         List<Song> ret = new ArrayList<>();
-        for (File mp3 : mp3Files) {
+        for (File mp3 : mp3Files)
             ret.add(readSong(mp3));
-        }
         return ret;
     }
 
