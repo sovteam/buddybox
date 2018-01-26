@@ -5,7 +5,7 @@ import android.app.Application;
 import buddybox.controller.Library;
 import buddybox.controller.Player;
 import buddybox.controller.Sampler;
-import buddybox.impl.ModelImpl;
+import buddybox.impl.Model;
 import buddybox.ui.ModelSingleton;
 
 public class BuddyBoxApp extends Application {
@@ -17,7 +17,7 @@ public class BuddyBoxApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        ModelSingleton.init(USE_SIMULATOR ? new ModelSim() : new ModelImpl(this));
+        ModelSingleton.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
         Player.init(this);
         Library.init();
         Sampler.init(this);

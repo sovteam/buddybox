@@ -1,13 +1,13 @@
 package buddybox.ui;
 
 import buddybox.core.Dispatcher;
-import buddybox.core.Model;
+import buddybox.core.IModel;
 
 public class ModelSingleton {
 
-    private static Model INSTANCE;
+    private static IModel INSTANCE;
 
-    public static void init(Model instance) {
+    public static void init(IModel instance) {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = instance;
     }
@@ -17,7 +17,7 @@ public class ModelSingleton {
         Dispatcher.dispatch(event);
     }
 
-    public static void addStateListener(Model.StateListener listener) {
+    public static void addStateListener(IModel.StateListener listener) {
         INSTANCE.addStateListener(listener);
     }
 

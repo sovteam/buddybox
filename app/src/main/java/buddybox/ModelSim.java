@@ -5,12 +5,12 @@ import android.os.Handler;
 import java.util.Arrays;
 
 import buddybox.core.Hash;
-import buddybox.core.Model;
+import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 
-public class ModelSim implements Model {
+public class ModelSim implements IModel {
 
     private StateListener listener;
     private int count = 0;

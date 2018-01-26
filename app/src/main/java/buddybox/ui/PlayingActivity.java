@@ -8,7 +8,7 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import buddybox.core.Model;
+import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
 
@@ -46,7 +46,7 @@ public class PlayingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        addStateListener(new Model.StateListener() { @Override public void update(State state) {
+        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }

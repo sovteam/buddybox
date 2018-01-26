@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import buddybox.ui.ModelSingleton;
-import buddybox.core.Model;
+import buddybox.core.IModel;
 import buddybox.core.State;
 import buddybox.core.Song;
 import buddybox.core.events.SongFound;
@@ -19,7 +19,7 @@ public class Library {
     private static State state;
 
     public static void init() {
-        ModelSingleton.addStateListener(new Model.StateListener() { @Override public void update(State state) {
+        ModelSingleton.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }

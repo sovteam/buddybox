@@ -5,7 +5,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
-import buddybox.core.Model;
+import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
 
@@ -26,7 +26,7 @@ public class Player {
             dispatch(FINISHED_PLAYING);
         }});
 
-        addStateListener(new Model.StateListener() { @Override public void update(State state) {
+        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }

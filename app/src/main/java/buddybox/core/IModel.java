@@ -1,6 +1,6 @@
 package buddybox.core;
 
-public interface Model {
+public interface IModel {
 
     void addStateListener(StateListener listener);
 

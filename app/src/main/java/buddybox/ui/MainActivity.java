@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import buddybox.core.Model;
+import buddybox.core.IModel;
 import buddybox.core.events.Permission;
 import buddybox.core.events.Play;
 import buddybox.core.Playable;
@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     @Override
     protected void onResume() {
         super.onResume();
-        addStateListener(new Model.StateListener() { @Override public void update(State state) {
+        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }

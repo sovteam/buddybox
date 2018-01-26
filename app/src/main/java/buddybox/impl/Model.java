@@ -20,7 +20,7 @@ import buddybox.core.Artist;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.Dispatcher;
 import buddybox.core.Hash;
-import buddybox.core.Model;
+import buddybox.core.IModel;
 import buddybox.core.events.Permission;
 import buddybox.core.events.Play;
 import buddybox.core.Playlist;
@@ -41,7 +41,7 @@ import static buddybox.core.events.Play.FINISHED_PLAYING;
 
 import static buddybox.core.events.Sampler.*;
 
-public class ModelImpl implements Model {
+public class Model implements IModel {
 
     private final Context context;
     private final Handler handler = new Handler();
@@ -60,7 +60,7 @@ public class ModelImpl implements Model {
     private boolean isPaused;
     private Boolean hasWriteExternalStoragePermission;
 
-    public ModelImpl(Context context) {
+    public Model(Context context) {
         this.context = context;
 
         System.out.println(DatabaseHelper.getInstance(context));
