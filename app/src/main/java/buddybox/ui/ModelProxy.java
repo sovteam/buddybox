@@ -3,7 +3,7 @@ package buddybox.ui;
 import buddybox.core.Dispatcher;
 import buddybox.core.IModel;
 
-public class ModelSingleton {
+public class ModelProxy {
 
     private static IModel INSTANCE;
 

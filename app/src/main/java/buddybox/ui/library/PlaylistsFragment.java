@@ -20,7 +20,7 @@ import buddybox.core.events.Play;
 import buddybox.core.Playlist;
 import buddybox.core.State;
 
-import static buddybox.ui.ModelSingleton.dispatch;
+import static buddybox.ui.ModelProxy.dispatch;
 
 public class PlaylistsFragment extends Fragment {
 

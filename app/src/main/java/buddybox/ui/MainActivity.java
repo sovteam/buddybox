@@ -55,7 +55,7 @@ import buddybox.ui.notification.NotificationSkipNextReceiver;
 import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
 import static buddybox.core.Dispatcher.dispatch;
-import static buddybox.ui.ModelSingleton.addStateListener;
+import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.core.events.Permission.WRITE_EXTERNAL_STORAGE;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;

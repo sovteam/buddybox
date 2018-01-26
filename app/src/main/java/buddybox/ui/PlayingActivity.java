@@ -12,8 +12,8 @@ import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
 
-import static buddybox.ui.ModelSingleton.dispatch;
-import static buddybox.ui.ModelSingleton.addStateListener;
+import static buddybox.ui.ModelProxy.dispatch;
+import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;

@@ -12,7 +12,7 @@ import java.util.Collections;
 
 import buddybox.core.events.AddSongToPlaylist;
 
-import static buddybox.ui.ModelSingleton.dispatch;
+import static buddybox.ui.ModelProxy.dispatch;
 
 public class SelectPlaylistDialogFragment extends DialogFragment {
     private ArrayList<String> list;

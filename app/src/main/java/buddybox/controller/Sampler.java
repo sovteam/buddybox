@@ -14,7 +14,7 @@ import buddybox.core.events.SamplerUpdated;
 import buddybox.core.Song;
 import buddybox.core.events.SongAdded;
 
-import static buddybox.ui.ModelSingleton.dispatch;
+import static buddybox.ui.ModelProxy.dispatch;
 
 public class Sampler {
     private static Context context;
