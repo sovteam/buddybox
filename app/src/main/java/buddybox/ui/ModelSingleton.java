@@ -1,4 +1,4 @@
-package buddybox;
+package buddybox.ui;
 
 import buddybox.core.Dispatcher;
 import buddybox.core.Model;

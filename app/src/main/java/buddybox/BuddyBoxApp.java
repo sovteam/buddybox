@@ -6,7 +6,7 @@ import buddybox.controller.Library;
 import buddybox.controller.Player;
 import buddybox.controller.Sampler;
 import buddybox.impl.ModelImpl;
-import buddybox.sim.ModelSim;
+import buddybox.ui.ModelSingleton;
 
 public class BuddyBoxApp extends Application {
 

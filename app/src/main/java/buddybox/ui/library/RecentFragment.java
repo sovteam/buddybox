@@ -22,7 +22,7 @@ import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 
-import static buddybox.ModelSingleton.dispatch;
+import static buddybox.ui.ModelSingleton.dispatch;
 
 public class RecentFragment extends Fragment {
 

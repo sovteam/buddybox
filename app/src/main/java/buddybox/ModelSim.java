@@ -1,4 +1,4 @@
-package buddybox.sim;
+package buddybox;
 
 import android.os.Handler;
 

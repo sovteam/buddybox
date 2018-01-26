@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import buddybox.ModelSingleton;
+import buddybox.ui.ModelSingleton;
 import buddybox.core.Model;
 import buddybox.core.State;
 import buddybox.core.Song;

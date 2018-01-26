@@ -13,7 +13,7 @@ import com.adalbertosoares.buddybox.R;
 
 import buddybox.core.events.CreatePlaylist;
 
-import static buddybox.ModelSingleton.dispatch;
+import static buddybox.ui.ModelSingleton.dispatch;
 
 public class CreatePlaylistDialogFragment extends DialogFragment {
 

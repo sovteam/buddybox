@@ -4,20 +4,17 @@ import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import buddybox.core.Dispatcher;
-import buddybox.core.events.LovedUpdated;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
 import buddybox.core.Song;
-import buddybox.core.State;
 import buddybox.core.events.SongAdded;
 
-import static buddybox.ModelSingleton.dispatch;
+import static buddybox.ui.ModelSingleton.dispatch;
 
 public class Sampler {
     private static Context context;
