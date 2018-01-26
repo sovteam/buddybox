@@ -1,4 +1,4 @@
-package buddybox.core;
+package utils;
 
 import android.util.Base64;
 

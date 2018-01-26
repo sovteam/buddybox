@@ -19,7 +19,7 @@ import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.Dispatcher;
-import buddybox.core.Hash;
+import utils.Hash;
 import buddybox.core.IModel;
 import buddybox.core.events.Permission;
 import buddybox.core.events.Play;

@@ -4,7 +4,7 @@ import android.os.Handler;
 
 import java.util.Arrays;
 
-import buddybox.core.Hash;
+import utils.Hash;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;

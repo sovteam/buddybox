@@ -1,5 +1,7 @@
 package buddybox.core;
 
+import utils.Hash;
+
 public class Song implements Playable {
 
     public final Hash hash;
