@@ -32,7 +32,6 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
-import buddybox.impl.db.DatabaseHelper;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
