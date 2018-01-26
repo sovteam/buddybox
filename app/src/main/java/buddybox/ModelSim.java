@@ -9,6 +9,9 @@ import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import utils.Daemon;
+
+import static utils.Utils.sleepQuietly;
 
 public class ModelSim implements IModel {
 
@@ -17,24 +20,14 @@ public class ModelSim implements IModel {
     private Handler handler = new Handler();
 
     {
-        new Thread(){ {setDaemon(true);}
-            @Override public void run() {
-                while(true) {
-                    sleepABit();
-                    handler.post(new Runnable() { @Override public void run() {
+        new Daemon("Simulator") { @Override public void run() {
+            while (true) {
+                sleepQuietly(3000);
+                handler.post(new Runnable() { @Override public void run() {
                         updateListener();
                     }});
-                }
             }
-        }.start();
-    }
-
-    private void sleepABit() {
-        try {
-            Thread.sleep(3000);
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        }
+        }};
     }
 
     @Override

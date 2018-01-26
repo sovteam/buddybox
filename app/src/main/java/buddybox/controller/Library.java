@@ -11,6 +11,7 @@ import buddybox.core.State;
 import buddybox.core.Song;
 import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
+import utils.Daemon;
 
 import static buddybox.core.Dispatcher.dispatch;
 
@@ -41,12 +42,9 @@ public class Library {
     }
 
     private static void startSynchronizingLibrary() {
-        Runnable runnable = new Runnable() { @Override public void run() {
+        new Daemon("Library Sync") { @Override public void run() {
             synchronizeLibrary();
         }};
-        Thread thread = new Thread(runnable, "Synchronize Library");
-        thread.setDaemon(true);
-        thread.start();
     }
 
     private static void synchronizeLibrary() {
