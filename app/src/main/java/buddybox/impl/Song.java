@@ -1,6 +1,6 @@
-package buddybox.api;
+package buddybox.impl;
 
-public class Song implements Playable {
+public class Song {
 
     public final int id;
     public final Hash hash;
@@ -24,9 +24,9 @@ public class Song implements Playable {
         this.relativePath = relativePath;
     }
 
-    @Override public String name() { return name; }
-    @Override public String subtitle() { return artist; }
-    @Override public String duration() {
+    public String name() { return name; }
+    public String subtitle() { return artist; }
+    public String duration() {
         int minutes = duration / 1000 / 60;
         int seconds = duration / 1000 % 60;
         return  minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);

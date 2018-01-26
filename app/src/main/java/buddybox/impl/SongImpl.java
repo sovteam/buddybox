@@ -2,9 +2,6 @@ package buddybox.impl;
 
 import java.io.File;
 
-import buddybox.api.Hash;
-import buddybox.api.Song;
-
 public class SongImpl extends Song {
 
     // TODO remove SongImpl

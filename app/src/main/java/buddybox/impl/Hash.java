@@ -1,4 +1,4 @@
-package buddybox.api;
+package buddybox.impl;
 
 import java.util.Arrays;
 
