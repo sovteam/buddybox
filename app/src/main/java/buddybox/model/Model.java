@@ -70,48 +70,32 @@ public class Model implements IModel {
     }
 
     private void handle(Dispatcher.Event event) {
-        System.out.println("@@@ Event class " + event.getClass());
+        Class<? extends Dispatcher.Event> cls = event.getClass();
+        System.out.println("@@@ Event class " + cls);
+
+        if (cls == Permission.class) updatePermission((Permission) event);
+
+        if (cls == SongFound.class)   songFound((SongFound)event);
+        if (cls == SongMissing.class) songMissing((SongMissing)event);
+
+        if (cls == Play.class) play((Play)event);
 
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
         if (event == FINISHED_PLAYING) finishedPlaying();
 
-        if (event.getClass() == Play.class) play((Play) event);
+        if (cls == CreatePlaylist.class)    createPlaylist((CreatePlaylist) event);
+        if (cls == AddSongToPlaylist.class) addSongToPlaylist((AddSongToPlaylist) event);
 
-
-        // Sampler Events
-        if (event == SAMPLER_START) samplerStart();
-        if (event == SAMPLER_STOP) samplerStop();
-
-        if (event.getClass() == SamplerLove.class)
-            samplerLove((SamplerLove) event);
-
-        if (event.getClass() == SamplerHate.class)
-            samplerHate((SamplerHate) event);
-
-        if (event.getClass() == SamplerDelete.class)
-            samplerDelete((SamplerDelete) event);
+        if (cls == SamplerUpdated.class) samplerUpdate((SamplerUpdated) event);
+        if (event == SAMPLER_START)      samplerStart();
+        if (event == SAMPLER_STOP)       samplerStop();
+        if (cls == SamplerHate.class)    samplerHate((SamplerHate) event);
+        if (cls == SamplerDelete.class)  samplerDelete((SamplerDelete) event);
+        if (cls == SamplerLove.class)    samplerLove((SamplerLove) event);
 
         if (event == LOVED_VIEWED) lovedViewed();
-
-        if (event.getClass() == SamplerUpdated.class)
-            samplerUpdate((SamplerUpdated) event);
-
-        if (event.getClass() == Permission.class)
-            updatePermission((Permission) event);
-
-        if (event.getClass() == AddSongToPlaylist.class)
-            addSongToPlaylist((AddSongToPlaylist) event);
-
-        if (event.getClass() == CreatePlaylist.class)
-            createPlaylist((CreatePlaylist) event);
-
-        if (event.getClass() == SongFound.class)
-            songFound((SongFound)event);
-
-        if (event.getClass() == SongMissing.class)
-            songMissing((SongMissing)event);
 
         updateListeners();
     }
@@ -136,10 +120,9 @@ public class Model implements IModel {
     }
 
     private Song findSongByHash(Hash hash) {
-        for (Song song : allSongs) {
+        for (Song song : allSongs)
             if (song.hash.equals(hash))
                 return song;
-        }
         return null;
     }
 
@@ -171,16 +154,16 @@ public class Model implements IModel {
     }
 
     private ArrayList<Artist> artists() {
-        Map<String, Artist> artistsMap = new HashMap<>();
+        Map<String, Artist> artistsByName = new HashMap<>();
         for (Song song : allSongs()) {
-            Artist artist = artistsMap.get(song.artist);
+            Artist artist = artistsByName.get(song.artist);
             if (artist == null) {
                 artist = new Artist(song.artist);
-                artistsMap.put(song.artist, artist);
+                artistsByName.put(song.artist, artist);
             }
             artist.addSong(song);
         }
-        return new ArrayList<>(artistsMap.values());
+        return new ArrayList<>(artistsByName.values());
     }
 
     private void updatePermission(Permission event) {
