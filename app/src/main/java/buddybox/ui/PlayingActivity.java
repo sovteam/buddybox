@@ -13,7 +13,6 @@ import buddybox.core.Song;
 import buddybox.core.State;
 
 import static buddybox.ui.ModelProxy.dispatch;
-import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
@@ -46,7 +45,7 @@ public class PlayingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
+        ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }});
     }

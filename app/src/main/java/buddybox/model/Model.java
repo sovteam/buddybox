@@ -284,6 +284,10 @@ public class Model implements IModel {
         handler.post(runnable);
     }
 
+    private void updateListener(StateListener listener) {
+        updateListener(listener, getState());
+    }
+
     private void updateListener(StateListener listener, State state) {
         listener.update(state);
     }
@@ -399,5 +403,6 @@ public class Model implements IModel {
     @Override
     public void addStateListener(StateListener listener) {
         this.listeners.add(listener);
+        updateListener(listener);
     }
 }
