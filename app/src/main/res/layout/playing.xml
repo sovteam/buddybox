@@ -110,6 +110,18 @@
             android:scaleType="fitCenter"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/playingPlayPause" />
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/repeatSong"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_repeat_one"
+            android:scaleType="fitCenter"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/skipPrevious"
+            android:layout_marginRight="10dp"
+            android:padding="8dp" />
     </RelativeLayout>
 
 </LinearLayout>

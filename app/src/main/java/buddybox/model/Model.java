@@ -34,6 +34,7 @@ import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Play.REPEAT_SONG;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
@@ -59,6 +60,7 @@ public class Model implements IModel {
     private List<Song> allSongs;
 
     private boolean isPaused;
+    private boolean repeatSong = false;
     private Boolean hasWriteExternalStoragePermission;
 
     public Model(Context context) {
@@ -85,6 +87,7 @@ public class Model implements IModel {
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
+        if (event == REPEAT_SONG) repeatSong();
         if (event == FINISHED_PLAYING) finishedPlaying();
 
         if (cls == CreatePlaylist.class)    createPlaylist((CreatePlaylist) event);
@@ -100,6 +103,10 @@ public class Model implements IModel {
         if (event == LOVED_VIEWED) lovedViewed();
 
         updateListeners();
+    }
+
+    private void repeatSong() {
+        repeatSong = !repeatSong;
     }
 
     private void songMissing(SongMissing event) {
@@ -177,8 +184,13 @@ public class Model implements IModel {
     private void finishedPlaying() {
         if (isSampling)
             doPlay(samplerPlaylist, 0);
-        else
-            skip(+1);
+        else {
+            if (repeatSong)
+                doPlay(currentPlaylist, currentSongIndex);
+            else
+                skip(+1);
+        }
+
     }
 
     private void createPlaylist(CreatePlaylist event) {
@@ -307,6 +319,7 @@ public class Model implements IModel {
                             : currentPlaylist.song(currentSongIndex),
                 currentPlaylist,
                 isPaused,
+                repeatSong,
                 null,
                 isSampling,
                 samplerPlaylist,

@@ -56,6 +56,6 @@ public class ModelSim implements IModel {
         Song song = new Song(new Hash(new byte[]{13}), "Song " + count, "Artist " + count, "Genre " + count, 11, null, 1, 1, false);
 
         boolean isPaused = count % 2 == 0;
-        this.listener.update(new State(1, null, song, null, isPaused, null, false, null, null, null, null, 1, count * 1024, recent, null, true));
+        this.listener.update(new State(1, null, song, null, isPaused, false, null, false, null, null, null, null, 1, count * 1024, recent, null, true));
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
@@ -16,6 +17,7 @@ import static buddybox.ui.ModelProxy.dispatch;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
+import static buddybox.core.events.Play.REPEAT_SONG;
 
 public class PlayingActivity extends AppCompatActivity {
 
@@ -40,6 +42,10 @@ public class PlayingActivity extends AppCompatActivity {
         findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(SKIP_PREVIOUS);
         }});
+
+        findViewById(R.id.repeatSong).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(REPEAT_SONG);
+        }});
     }
 
     @Override
@@ -57,6 +63,10 @@ public class PlayingActivity extends AppCompatActivity {
             ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
             ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
         }
+
+        ((ImageView) findViewById(R.id.repeatSong)).setImageResource(
+                state.repeatSong ? R.drawable.ic_repeat_one_blue : R.drawable.ic_repeat_one);
+
         ((ImageButton)findViewById(R.id.playingPlayPause)).setImageResource(state.isPaused ? R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
     }
 }
