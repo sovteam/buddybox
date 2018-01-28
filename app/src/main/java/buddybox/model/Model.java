@@ -456,4 +456,9 @@ public class Model implements IModel {
         this.listeners.add(listener);
         updateListener(listener);
     }
+
+    @Override
+    public void removeStateListener(StateListener listener) {
+        this.listeners.remove(listener);
+    }
 }

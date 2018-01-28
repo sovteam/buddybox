@@ -16,9 +16,11 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import buddybox.core.IModel;
 import buddybox.core.events.Play;
 import buddybox.core.Playlist;
 import buddybox.core.State;
+import buddybox.ui.ModelProxy;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -28,6 +30,7 @@ public class PlaylistsFragment extends Fragment {
     private PlaylistsArrayAdapter playlistsAdapter;
     private List<Playlist> playlists;
     private Playlist playlistPlaying;
+    private IModel.StateListener listener;
 
     public PlaylistsFragment() { }
 
@@ -52,7 +55,18 @@ public class PlaylistsFragment extends Fragment {
         if (playlists != null)
             updatePlaylists();
 
+        listener = new IModel.StateListener() { @Override public void update(State state) {
+            updateState(state);
+        }};
+        ModelProxy.addStateListener(listener);
+
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ModelProxy.removeStateListener(listener);
     }
 
     private class PlaylistsArrayAdapter extends ArrayAdapter<Playlist> {

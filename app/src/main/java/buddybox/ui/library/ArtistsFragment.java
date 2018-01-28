@@ -18,13 +18,16 @@ import java.util.Comparator;
 import java.util.List;
 
 import buddybox.core.Artist;
+import buddybox.core.IModel;
 import buddybox.core.State;
+import buddybox.ui.ModelProxy;
 
 public class ArtistsFragment extends Fragment {
 
     private ArtistsArrayAdapter artistsAdapter;
     private View view;
     private List<Artist> artists;
+    private IModel.StateListener listener;
 
     public ArtistsFragment() {}
 
@@ -48,7 +51,18 @@ public class ArtistsFragment extends Fragment {
         if (artists != null)
             updateArtists();
 
+        listener = new IModel.StateListener() { @Override public void update(State state) {
+            updateState(state);
+        }};
+        ModelProxy.addStateListener(listener);
+
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ModelProxy.removeStateListener(listener);
     }
 
     private class ArtistsArrayAdapter extends ArrayAdapter<Artist> {

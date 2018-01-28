@@ -2,7 +2,9 @@ package buddybox;
 
 import android.os.Handler;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import utils.Hash;
 import buddybox.core.IModel;
@@ -15,7 +17,7 @@ import static utils.Utils.sleepQuietly;
 
 public class ModelSim implements IModel {
 
-    private StateListener listener;
+    private List<StateListener> listeners = new ArrayList<>();
     private int count = 0;
     private Handler handler = new Handler();
 
@@ -32,9 +34,14 @@ public class ModelSim implements IModel {
 
     @Override
     public void addStateListener(StateListener listener) {
-        this.listener = listener;
+        listeners.add(listener);
         updateListener();
 
+    }
+
+    @Override
+    public void removeStateListener(StateListener listener) {
+        listeners.remove(listener);
     }
 
     private void updateListener() {
@@ -56,6 +63,7 @@ public class ModelSim implements IModel {
         Song song = new Song(new Hash(new byte[]{13}), "Song " + count, "Artist " + count, "Genre " + count, 11, null, 1, 1, false);
 
         boolean isPaused = count % 2 == 0;
-        this.listener.update(new State(1, null, song, null, isPaused, false, null, false, null, null, null, null, 1, count * 1024, recent, null, false));
+        for (StateListener listener : listeners)
+            listener.update(new State(1, null, song, null, isPaused, false, null, false, null, null, null, null, 1, count * 1024, recent, null, false));
     }
 }

@@ -16,11 +16,14 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import buddybox.core.IModel;
 import buddybox.core.events.Play;
 import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.ui.ModelProxy;
+import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -31,6 +34,7 @@ public class RecentFragment extends Fragment {
     private View view;
     private List<Playlist> playlists;
     private Song songPlaying;
+    private IModel.StateListener listener;
 
     public RecentFragment(){}
 
@@ -55,7 +59,18 @@ public class RecentFragment extends Fragment {
         if (recentPlaylist != null)
             updatePlaylist();
 
+        listener = new IModel.StateListener() { @Override public void update(State state) {
+            updateState(state);
+        }};
+        ModelProxy.addStateListener(listener);
+
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ModelProxy.removeStateListener(listener);
     }
 
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {

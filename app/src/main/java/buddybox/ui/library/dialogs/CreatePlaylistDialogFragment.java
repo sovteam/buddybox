@@ -1,4 +1,4 @@
-package buddybox.ui.library;
+package buddybox.ui.library.dialogs;
 
 import android.app.Dialog;
 import android.content.DialogInterface;

@@ -190,8 +190,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        int code = WRITE_EXTERNAL_STORAGE;
-        if (requestCode == code) {
+        if (requestCode == WRITE_EXTERNAL_STORAGE) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // permission was granted
@@ -203,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             }
         }
     }
-
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
@@ -261,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         super.onResume();
 
         if (ModelProxy.isInitialized())
-            addStateListener(new IModel.StateListener() { @Override public void update(State state) {
+            ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
                 updateState(state);
             }});
     }
@@ -482,16 +480,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
             updateMainNotification(state);
         }
-
-        // Update Library Content
-        Fragment fragRec = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("RECENT");
-        ((RecentFragment)fragRec).updateState(state);
-
-        Fragment fragArt = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("ARTISTS");
-        ((ArtistsFragment)fragArt).updateState(state);
-
-        Fragment fragPlaylists = ((ViewPagerAdapter)viewPager.getAdapter()).getFragment("PLAYLISTS");
-        ((PlaylistsFragment)fragPlaylists).updateState(state);
     }
 
     private NotificationCompat.Builder mainNotification() {
