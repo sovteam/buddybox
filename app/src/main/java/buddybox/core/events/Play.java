@@ -17,6 +17,7 @@ public class Play extends Dispatcher.Event {
     public static final Dispatcher.Event SKIP_NEXT = new Dispatcher.Event("SkipNext");
     public static final Dispatcher.Event SKIP_PREVIOUS = new Dispatcher.Event("SkipPrevious");
     public static final Dispatcher.Event REPEAT_SONG = new Dispatcher.Event("RepeatSong");
+    public static final Dispatcher.Event REPEAT_ALL = new Dispatcher.Event("RepeatAll");
 
 
     public static final Dispatcher.Event FINISHED_PLAYING = new Dispatcher.Event("FinishedPlaying");

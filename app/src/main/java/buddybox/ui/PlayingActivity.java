@@ -18,6 +18,7 @@ import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Play.REPEAT_SONG;
+import static buddybox.core.events.Play.REPEAT_ALL;
 
 public class PlayingActivity extends AppCompatActivity {
 
@@ -43,6 +44,10 @@ public class PlayingActivity extends AppCompatActivity {
             dispatch(SKIP_PREVIOUS);
         }});
 
+        findViewById(R.id.repeatAll).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(REPEAT_ALL);
+        }});
+
         findViewById(R.id.repeatSong).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(REPEAT_SONG);
         }});
@@ -66,6 +71,9 @@ public class PlayingActivity extends AppCompatActivity {
 
         ((ImageView) findViewById(R.id.repeatSong)).setImageResource(
                 state.repeatSong ? R.drawable.ic_repeat_one_blue : R.drawable.ic_repeat_one);
+
+        ((ImageView) findViewById(R.id.repeatAll)).setImageResource(
+                state.repeatAll ? R.drawable.ic_repeat_blue : R.drawable.ic_repeat);
 
         ((ImageButton)findViewById(R.id.playingPlayPause)).setImageResource(state.isPaused ? R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
     }

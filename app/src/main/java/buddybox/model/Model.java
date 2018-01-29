@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
@@ -34,6 +33,7 @@ import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Play.REPEAT_ALL;
 import static buddybox.core.events.Play.REPEAT_SONG;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
@@ -64,6 +64,7 @@ public class Model implements IModel {
     private HashMap<Long, Playlist> playlistsById;
 
     private boolean isPaused;
+    private boolean repeatAll = true;
     private boolean repeatSong = false;
     private boolean syncLibraryRequested = false;
 
@@ -90,6 +91,7 @@ public class Model implements IModel {
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
         if (event == REPEAT_SONG) repeatSong();
+        if (event == REPEAT_ALL) repeatAll();
         if (event == FINISHED_PLAYING) finishedPlaying();
 
         if (cls == CreatePlaylist.class)    createPlaylist((CreatePlaylist) event);
@@ -116,6 +118,11 @@ public class Model implements IModel {
 
     private void syncLibrary() {
         syncLibraryRequested = true;
+    }
+
+    private void repeatAll() {
+        System.out.println("repeatAll: " + !repeatAll);
+        repeatAll = !repeatAll;
     }
 
     private void repeatSong() {
@@ -283,8 +290,12 @@ public class Model implements IModel {
         doPlay(samplerPlaylist, 0);
     }
 
-
     private void skip(int step) {
+        if (step > 0 && currentPlaylist.isLastSong(currentSongIndex) && !repeatAll){
+            playPauseCurrent();
+            return;
+        }
+
         doPlay(currentPlaylist, currentPlaylist.songAfter(currentSongIndex, step));
     }
 
@@ -334,6 +345,7 @@ public class Model implements IModel {
                             : currentPlaylist.song(currentSongIndex),
                 currentPlaylist,
                 isPaused,
+                repeatAll,
                 repeatSong,
                 null,
                 isSampling,

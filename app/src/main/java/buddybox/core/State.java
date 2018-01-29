@@ -34,10 +34,11 @@ public class State {
     public final long availableMemorySize;
     public final List<Artist> artists;
     public final boolean isSampling;
+    public final boolean repeatAll;
     public final boolean repeatSong;
     public final boolean syncLibraryPending;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, Boolean repeatSong, Map<Song, Playlist> playlistBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, boolean repeatAll, Boolean repeatSong, Map<Song, Playlist> playlistBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -45,6 +46,7 @@ public class State {
         this.songPlaying = playing;
         this.playlistPlaying = playlistPlaying;
         this.isPaused = isPaused;
+        this.repeatAll = repeatAll;
         this.repeatSong = repeatSong;
         this.playlistBySong = playlistBySong;
 

@@ -20,13 +20,15 @@
         android:id="@+id/playingMaximize">
 
         <ImageView
+            android:id="@+id/imageView"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:src="@drawable/ic_expand_less"
-            android:background="@android:color/transparent"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/imageView" />
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/maximize_playing_song"
+            android:padding="10dp"
+            android:src="@drawable/ic_expand_less" />
 
         <TextView
             android:layout_width="match_parent"
@@ -41,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="Subtitle"
+            android:text="@string/subtitle"
             android:id="@+id/playingSubtitle"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"

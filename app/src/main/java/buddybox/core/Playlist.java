@@ -79,4 +79,8 @@ public class Playlist implements Playable {
     public boolean hasSong(Song song) {
         return songs.contains(song);
     }
+
+    public boolean isLastSong(Integer songIndex) {
+        return songs.size() == songIndex +1;
+    }
 }
