@@ -85,7 +85,7 @@ public class RecentFragment extends Fragment {
                     : convertView;
 
             Playable item = getItem(position);
-            TextView text1 = (TextView) rowView.findViewById(R.id.text1);
+            TextView text1 = (TextView) rowView.findViewById(R.id.songName);
             TextView text2 = (TextView) rowView.findViewById(R.id.text2);
             text1.setText(item.name());
             text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
@@ -98,7 +98,7 @@ public class RecentFragment extends Fragment {
                 text2.setTextColor(Color.WHITE);
             }
 
-            rowView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() {
+            rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     openSelectPlaylistDialog(recentPlaylist.songs.get(position));
@@ -146,9 +146,6 @@ public class RecentFragment extends Fragment {
         songPlaying = state.songPlaying;
         recentPlaylist = state.allSongsPlaylist;
         playlists = state.playlists;
-
-        if (playables == null || recentPlaylist == null)
-            return;
 
         updatePlaylist();
     }

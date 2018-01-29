@@ -1,15 +1,19 @@
 package buddybox.ui;
 
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
 import buddybox.core.IModel;
+import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 
@@ -63,10 +67,24 @@ public class PlayingActivity extends AppCompatActivity {
 
     private void updateState(State state) {
         Song playing = state.songPlaying;
-        if (playing != null) {
-            ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
-            ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
-            ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
+        if (playing == null)
+            return;
+
+        ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
+        ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
+        ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
+
+        // Show playlists that includes song playing
+        LinearLayout container = (LinearLayout)findViewById(R.id.playlistsChips);
+        container.removeAllViews();
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.setMargins(12,0,12,0);
+        for (Playlist p : state.playlistsBySong.get(playing.hash.toString())){
+            TextView chip = new TextView(this);
+            chip.setLayoutParams(params);
+            chip.setText(p.name());
+            chip.setBackgroundResource(R.drawable.shape_chip);
+            container.addView(chip);
         }
 
         ((ImageView) findViewById(R.id.repeatSong)).setImageResource(

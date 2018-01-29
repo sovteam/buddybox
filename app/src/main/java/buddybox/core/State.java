@@ -14,7 +14,7 @@ public class State {
     public final Song songPlaying;
     public final Playlist playlistPlaying;
     public final boolean isPaused;
-    public final Map<Song, Playlist> playlistBySong;
+    public final Map<String, List<Playlist>> playlistsBySong;
 
     // Editing
     // public final String songNameError;
@@ -38,7 +38,9 @@ public class State {
     public final boolean repeatSong;
     public final boolean syncLibraryPending;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, boolean repeatAll, Boolean repeatSong, Map<Song, Playlist> playlistBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested) {
+    public final Playlist selectedPlaylist;
+
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Playlist selectedPlaylist) {
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -48,7 +50,7 @@ public class State {
         this.isPaused = isPaused;
         this.repeatAll = repeatAll;
         this.repeatSong = repeatSong;
-        this.playlistBySong = playlistBySong;
+        this.playlistsBySong = playlistsBySong;
 
         this.isSampling = isSampling;
         this.samplerPlaylist = samplerPlaylist;
@@ -60,5 +62,6 @@ public class State {
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;
         this.syncLibraryPending = syncLibraryRequested;
+        this.selectedPlaylist = selectedPlaylist;
     }
 }

@@ -1,5 +1,6 @@
 package buddybox.ui.library;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,7 +21,11 @@ import buddybox.core.IModel;
 import buddybox.core.events.Play;
 import buddybox.core.Playlist;
 import buddybox.core.State;
+import buddybox.core.events.PlaylistSelected;
+import buddybox.ui.MainActivity;
 import buddybox.ui.ModelProxy;
+import buddybox.ui.PlayingActivity;
+import buddybox.ui.PlaylistActivity;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -46,7 +51,9 @@ public class PlaylistsFragment extends Fragment {
         // List playlists
         ListView list = (ListView) view.findViewById(R.id.playlists);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new Play(playlists.get(i), 0));
+            // dispatch(new Play(playlists.get(i), 0));
+            dispatch(new PlaylistSelected(playlists.get(i)));
+            startActivity(new Intent(getContext(), PlaylistActivity.class));
         }});
         playlistsAdapter = new PlaylistsArrayAdapter();
         list.setAdapter(playlistsAdapter);
@@ -107,9 +114,6 @@ public class PlaylistsFragment extends Fragment {
     public void updateState(State state) {
         playlists = state.playlists;
         playlistPlaying = state.playlistPlaying;
-
-        if (playlistsAdapter == null)
-            return;
 
         updatePlaylists();
     }

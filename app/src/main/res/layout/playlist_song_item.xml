@@ -6,17 +6,17 @@
     android:paddingLeft="16dp">
 
     <ImageView
+        android:id="@+id/songMore"
         android:layout_width="56dp"
         android:layout_height="match_parent"
-        android:id="@+id/songMore"
-        android:src="@drawable/ic_playlist_add"
-        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:contentDescription="Add to Playlist"
+        android:layout_alignParentTop="true"
         android:background="?selectableItemBackground"
         android:clickable="true"
+        android:contentDescription="Add to Playlist"
+        android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:paddingLeft="16dp" />
+        android:src="@drawable/ic_more_vert" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -33,14 +33,15 @@
             android:text="Item"
             android:singleLine="true" />
 
-        <TextView android:id="@+id/text2"
+        <TextView
+            android:id="@+id/songSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/songName"
             android:layout_alignStart="@+id/songName"
-            android:text="subtitle"
+            android:layout_below="@+id/songName"
             android:layout_marginBottom="8dp"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:text="subtitle" />
     </RelativeLayout>
 
 </RelativeLayout>

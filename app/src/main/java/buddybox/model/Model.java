@@ -19,6 +19,8 @@ import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.Dispatcher;
+import buddybox.core.events.DeletePlaylist;
+import buddybox.core.events.PlaylistSelected;
 import utils.Hash;
 import buddybox.core.IModel;
 import buddybox.core.events.Play;
@@ -67,9 +69,14 @@ public class Model implements IModel {
     private boolean repeatAll = true;
     private boolean repeatSong = false;
     private boolean syncLibraryRequested = false;
+    private Playlist selectedPlaylist;
+    private Map<String, List<Playlist>> playlistsBySong;
 
     public Model(Context context) {
         this.context = context;
+
+        DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLISTS");
+        DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLIST_SONG");
 
         System.out.println(DatabaseHelper.getInstance(context));
 
@@ -95,7 +102,10 @@ public class Model implements IModel {
         if (event == FINISHED_PLAYING) finishedPlaying();
 
         if (cls == CreatePlaylist.class)    createPlaylist((CreatePlaylist) event);
+        if (cls == DeletePlaylist.class)    deletePlaylist((DeletePlaylist) event);
+
         if (cls == AddSongToPlaylist.class) addSongToPlaylist((AddSongToPlaylist) event);
+        if (cls == PlaylistSelected.class)  playlistSelected((PlaylistSelected) event);
 
         if (cls == SamplerUpdated.class) samplerUpdate((SamplerUpdated) event);
         if (event == SAMPLER_START)      samplerStart();
@@ -110,6 +120,10 @@ public class Model implements IModel {
         if (event == LOVED_VIEWED) lovedViewed();
 
         updateListeners();
+    }
+
+    private void playlistSelected(PlaylistSelected event) {
+        selectedPlaylist = event.playlist;
     }
 
     private void syncLibraryStarted() {
@@ -218,32 +232,58 @@ public class Model implements IModel {
         contents.put("NAME", event.playlistName);
         long playlistId = DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLISTS", null, contents);
 
-        // Associates songs with playlist
-        associateSongToPlaylist(event.songHash, playlistId);
-
         // Add new playlist
-        List<Song> songs = new ArrayList<>();
-        songs.add(songsByHash.get(event.songHash));
-        Playlist playlist = new Playlist(playlistId, event.playlistName, songs);
-        addPlaylist(playlist);
+        addPlaylist(new Playlist(playlistId, event.playlistName, new ArrayList<Song>()));
+
+        // Associates songs with playlist
+        insertAssociationSongToPlaylist(event.songHash, playlistId);
 
         System.out.println("@@@ Dispatched Event: createPlaylist. Song: " +event.songHash + ", playlist: " + event.playlistName);
     }
 
-    private void addSongToPlaylist(AddSongToPlaylist event) {
-        associateSongToPlaylist(event.songHash, event.playlistId);
+    private void deletePlaylist(DeletePlaylist event) {
+        // delete from table
+        int rowsP = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLISTS", "ID=?", new String[]{Long.toString(event.playlistId)});
+        if (rowsP != 1) {
+            System.out.println("Unable to delete playlist in DB");
+            return;
+        }
 
         Playlist playlist = playlistsById.get(event.playlistId);
-        playlist.addSong(songsByHash.get(event.songHash));
 
+        // delete associations to songs
+        int rowsA = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=?", new String[]{Long.toString(event.playlistId)});
+        if (rowsA != playlist.songs.size()) {
+            System.out.println("Unable to delete all playlists-song associations");
+            return;
+        }
+
+        // remove playlist from maps
+        for (Song song : playlist.songs) {
+            String songHash = song.hash.toString();
+            List<Playlist> songPlaylists = playlistsBySong.get(songHash);
+            songPlaylists.remove(playlist);
+            playlistsBySong.put(songHash, songPlaylists);
+        }
+        playlists.remove(playlist);
+        playlistsById.remove(playlist.id);
+        selectedPlaylist = null;
+
+        System.out.println(">>> Playlist deleted: " + playlist.name);
+    }
+
+    private void addSongToPlaylist(AddSongToPlaylist event) {
+        insertAssociationSongToPlaylist(event.songHash, event.playlistId);
         System.out.println("@@@ Dispatched Event: addSongToPlaylist. Playlist id: " + event.playlistId + ", song: " + event.songHash);
     }
 
-    private void associateSongToPlaylist(String songHash, long playlistId) {
+    private void insertAssociationSongToPlaylist(String songHash, long playlistId) {
         ContentValues playlistSong = new ContentValues();
         playlistSong.put("PLAYLIST_ID", playlistId);
         playlistSong.put("SONG_HASH", songHash);
         DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLIST_SONG", null, playlistSong);
+
+        addSongToPlaylist(songHash, playlistId);
     }
 
     private void lovedViewed() {
@@ -347,7 +387,7 @@ public class Model implements IModel {
                 isPaused,
                 repeatAll,
                 repeatSong,
-                null,
+                playlistsBySong,
                 isSampling,
                 samplerPlaylist,
                 lovedPlaylist(),
@@ -357,7 +397,8 @@ public class Model implements IModel {
                 getAvailableMemorySize(),
                 playlistAllSongs(),
                 artists(),
-                syncLibraryRequested);
+                syncLibraryRequested,
+                selectedPlaylist);
     }
 
     private Playlist playlistAllSongs() {
@@ -400,33 +441,49 @@ public class Model implements IModel {
         if (playlists == null) {
             playlists = new ArrayList<>();
             playlistsById = new HashMap<>();
+
+            // Create playlist map
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM PLAYLISTS", null);
             while(cursor.moveToNext()) {
                 long playlistId = cursor.getLong(cursor.getColumnIndex("ID"));
-                List<Song> songs = queryPlaylistSongs(playlistId);
-                Playlist playlist = new Playlist(playlistId, cursor.getString(cursor.getColumnIndex("NAME")), songs);
+                Playlist playlist = new Playlist(playlistId, cursor.getString(cursor.getColumnIndex("NAME")), new ArrayList<Song>());
                 addPlaylist(playlist);
             }
             cursor.close();
+
+            // Associates songs to playlists
+            // Create playlists by song map
+            playlistsBySong = new HashMap<>();
+            Cursor cursorAssoc = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM PLAYLIST_SONG", null);
+            while(cursorAssoc.moveToNext()) {
+                String songHash = cursorAssoc.getString(cursorAssoc.getColumnIndex("SONG_HASH"));
+                Long playlistId = cursorAssoc.getLong(cursorAssoc.getColumnIndex("PLAYLIST_ID"));
+                addSongToPlaylist(songHash, playlistId);
+            }
+            cursorAssoc.close();
         }
         return playlists;
+    }
+
+    private void addSongToPlaylist(String songHash, Long playlistId) {
+        Song song = songsByHash.get(songHash);
+        Playlist playlist = playlistsById.get(playlistId);
+
+        playlist.addSong(song);
+
+        // add playlist to song map
+        List<Playlist> songPlaylists = playlistsBySong.get(songHash);
+        if (songPlaylists == null)
+            songPlaylists = new ArrayList<>();
+        songPlaylists.add(playlist);
+        playlistsBySong.put(songHash, songPlaylists);
     }
 
     synchronized
     private void addPlaylist(Playlist playlist) {
         playlists.add(playlist);
         playlistsById.put(playlist.id, playlist);
-    }
-
-    private List<Song> queryPlaylistSongs(long playlistId) {
-        List<Song> songs = new ArrayList<>();
-        Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().query("PLAYLIST_SONG", new String[]{"SONG_HASH"}, "PLAYLIST_ID=?", new String[]{Long.toString(playlistId)}, null, null, null);
-        while(cursor.moveToNext()) {
-            String hash = cursor.getString(cursor.getColumnIndex("SONG_HASH"));
-            songs.add(songsByHash.get(hash));
-        }
-        cursor.close();
-        return songs;
+        System.out.println("added new playlist");
     }
 
     private Playlist lovedPlaylist() {

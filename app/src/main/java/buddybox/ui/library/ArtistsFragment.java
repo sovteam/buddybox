@@ -102,8 +102,6 @@ public class ArtistsFragment extends Fragment {
         Collections.sort(artists, new Comparator<Artist>() { @Override public int compare(Artist artistA, Artist artistB) {
             return artistA.name.compareTo(artistB.name);
         }});
-        if (artistsAdapter == null)
-            return;
 
         updateArtists();
     }
