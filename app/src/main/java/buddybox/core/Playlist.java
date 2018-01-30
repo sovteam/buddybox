@@ -7,7 +7,7 @@ import java.util.List;
 public class Playlist implements Playable {
 
     public final long id;
-    public final String name;
+    public String name;
     public List<Song> songs;
     private List<Integer> shuffledSongs;
 
@@ -123,5 +123,9 @@ public class Playlist implements Playable {
             Collections.shuffle(shuffledSongs);
         }
         return shuffledSongs;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

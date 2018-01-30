@@ -22,6 +22,7 @@ import buddybox.core.Dispatcher;
 import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.RemoveSongFromPlaylist;
+import buddybox.core.events.SetPlaylistName;
 import utils.Hash;
 import buddybox.core.IModel;
 import buddybox.core.events.Play;
@@ -109,6 +110,7 @@ public class Model implements IModel {
         if (cls == DeletePlaylist.class)            deletePlaylist((DeletePlaylist) event);
         if (cls == AddSongToPlaylist.class)         addSongToPlaylist((AddSongToPlaylist) event);
         if (cls == RemoveSongFromPlaylist.class)    removeSongFromPlaylist((RemoveSongFromPlaylist) event);
+        if (cls == SetPlaylistName.class)           setPlaylistName((SetPlaylistName) event);
         if (cls == PlaylistSelected.class)          playlistSelected((PlaylistSelected) event);
 
         // sampler
@@ -122,12 +124,24 @@ public class Model implements IModel {
         if (event == LOVED_VIEWED) lovedViewed();
 
         // library
-        if (cls == SongFound.class)   songFound((SongFound)event);
-        if (cls == SongMissing.class) songMissing((SongMissing)event);
+        if (cls == SongFound.class)         songFound((SongFound)event);
+        if (cls == SongMissing.class)       songMissing((SongMissing)event);
         if (event == SYNC_LIBRARY)          syncLibrary();
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
         updateListeners();
+    }
+
+    private void setPlaylistName(SetPlaylistName event) {
+        ContentValues values = new ContentValues();
+        values.put("NAME", event.playlistName);
+        int rows = DatabaseHelper.getInstance(context).getReadableDatabase().update(
+                "PLAYLISTS",
+                values,
+                "ID=?",
+                new String[]{Long.toString(selectedPlaylist.id)});
+        if (rows == 1)
+            selectedPlaylist.setName(event.playlistName);
     }
 
     private void shuffle() {
