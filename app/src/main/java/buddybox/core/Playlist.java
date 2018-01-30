@@ -72,6 +72,10 @@ public class Playlist implements Playable {
         this.songs.remove(songIndex);
     }
 
+    public void removeSong(Song song) {
+        this.songs.remove(song);
+    }
+
     public void addSong(Song song) {
         songs.add(song);
     }

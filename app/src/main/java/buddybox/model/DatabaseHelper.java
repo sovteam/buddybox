@@ -47,14 +47,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLIST_SONG (" +
                 "SONG_HASH TEXT," +
                 "PLAYLIST_ID INTEGER," +
-                "PRIMARY KEY (SONG_HASH, PLAYLIST_ID)," +
+                "POSITION INTEGER NOT NULL," +
+                "PRIMARY KEY (SONG_HASH, PLAYLIST_ID, POSITION)," +
                 "FOREIGN KEY(SONG_HASH) REFERENCES SONGS(HASH)," +
                 "FOREIGN KEY(PLAYLIST_ID) REFERENCES PLAYLISTS(ID))");
 
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+    public void onUpgrade(SQLiteDatabase db, int i, int i1) {
 
     }
 }

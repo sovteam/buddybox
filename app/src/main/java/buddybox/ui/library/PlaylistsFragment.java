@@ -62,18 +62,19 @@ public class PlaylistsFragment extends Fragment {
         if (playlists != null)
             updatePlaylists();
 
-        listener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
-        }};
-        ModelProxy.addStateListener(listener);
-
         return view;
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        ModelProxy.removeStateListener(listener);
+    public void onResume() {
+        super.onResume();
+
+        if (ModelProxy.isInitialized()) {
+            listener = new IModel.StateListener() { @Override public void update(State state) {
+                updateState(state);
+            }};
+            ModelProxy.addStateListener(listener);
+        }
     }
 
     private class PlaylistsArrayAdapter extends ArrayAdapter<Playlist> {

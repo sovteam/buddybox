@@ -5,12 +5,22 @@ import buddybox.core.Playlist;
 
 public class Play extends Dispatcher.Event {
     public final int songIndex;
+    public final boolean isShuffle;
     public final Playlist playlist;
 
-    public Play(Playlist playlist, int songIndex) {
+    public Play(Playlist playlist, int songIndex, boolean isShuffle) {
         super ("Play");
         this.playlist = playlist;
         this.songIndex = songIndex;
+        this.isShuffle = isShuffle;
+    }
+
+    public Play(Playlist playlist, int songIndex) {
+        this(playlist, songIndex, false);
+    }
+
+    public Play(Playlist playlist, boolean isShuffle) {
+        this(playlist, 0, isShuffle);
     }
 
     public static final Dispatcher.Event PLAY_PAUSE_CURRENT = new Dispatcher.Event("PlayPauseCurrent");

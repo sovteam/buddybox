@@ -59,12 +59,19 @@ public class RecentFragment extends Fragment {
         if (recentPlaylist != null)
             updatePlaylist();
 
-        listener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
-        }};
-        ModelProxy.addStateListener(listener);
-
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (ModelProxy.isInitialized()) {
+            listener = new IModel.StateListener() { @Override public void update(State state) {
+                updateState(state);
+            }};
+            ModelProxy.addStateListener(listener);
+        }
     }
 
     @Override

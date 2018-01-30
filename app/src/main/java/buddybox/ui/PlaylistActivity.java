@@ -3,7 +3,6 @@ package buddybox.ui;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,14 +14,12 @@ import android.widget.TextView;
 import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
-import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -43,6 +40,7 @@ public class PlaylistActivity extends AppCompatActivity {
             finish();
         }});
         findViewById(R.id.playlistMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openPlaylistOptionsDialog(); }});
+        findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new Play(playlist, true)); }});
 
         // list playlist songs
         ListView list = (ListView) findViewById(R.id.playlistSongs);
@@ -73,7 +71,7 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @NonNull
         @Override
-        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = convertView == null
                     ? getLayoutInflater().inflate(R.layout.playlist_song_item, parent, false)
                     : convertView;
@@ -91,6 +89,10 @@ public class PlaylistActivity extends AppCompatActivity {
                 text1.setTextColor(Color.WHITE);
                 text2.setTextColor(Color.WHITE);
             }
+
+            rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+                openSongOptionsDialog(playlist.song(position));
+            }});
 
             return rowView;
         }
@@ -121,5 +123,15 @@ public class PlaylistActivity extends AppCompatActivity {
         args.putLong("playlistId", playlist.id);
         frag.setArguments(args);
         frag.show(getSupportFragmentManager(), "Playlist Options");
+    }
+
+
+    private void openSongOptionsDialog(Song song) {
+        PlaylistSongOptionsDialog frag = new PlaylistSongOptionsDialog();
+        Bundle args = new Bundle();
+        args.putLong("playlistId", playlist.id);
+        args.putString("songHash", song.hash.toString());
+        frag.setArguments(args);
+        frag.show(getSupportFragmentManager(), "Playlist Song Options");
     }
 }
