@@ -21,6 +21,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
 
+import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.ui.ModelProxy.dispatch;
 
 public class PlaylistActivity extends AppCompatActivity {
@@ -40,7 +41,7 @@ public class PlaylistActivity extends AppCompatActivity {
             finish();
         }});
         findViewById(R.id.playlistMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openPlaylistOptionsDialog(); }});
-        findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new Play(playlist, true)); }});
+        findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SHUFFLE_PLAY); }});
 
         // list playlist songs
         ListView list = (ListView) findViewById(R.id.playlistSongs);

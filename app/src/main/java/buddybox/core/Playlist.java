@@ -1,5 +1,7 @@
 package buddybox.core;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Playlist implements Playable {
@@ -7,6 +9,7 @@ public class Playlist implements Playable {
     public final long id;
     public final String name;
     public List<Song> songs;
+    private List<Integer> shuffledSongs;
 
     public Playlist(long id, String name, List<Song> songs) {
         this.id = id;
@@ -50,10 +53,17 @@ public class Playlist implements Playable {
             : songs.get(songIndex);
     }
 
-    public Integer songAfter(int songIndex, int step) {
-        return songs.size() == 0
-            ? null
-            : (songs.size() + songIndex + step) % songs.size();
+    public Integer songAfter(int songIndex, int step, boolean isShuffle) {
+        if (songs.size() == 0)
+            return null;
+
+        if (isShuffle) {
+            int sIndex = shuffledSongs().indexOf(songIndex);
+            int sNext = (songs.size() + sIndex + step) % songs.size();
+            return shuffledSongs().get(sNext);
+        }
+
+        return (songs.size() + songIndex + step) % songs.size();
     }
 
     public boolean isEmpty() {
@@ -73,18 +83,45 @@ public class Playlist implements Playable {
     }
 
     public void removeSong(Song song) {
-        this.songs.remove(song);
+        if (shuffledSongs != null) {
+            int songIndex = songs.indexOf(song);
+            shuffledSongs.remove(songIndex);
+        }
+        songs.remove(song);
     }
 
     public void addSong(Song song) {
         songs.add(song);
+        if (shuffledSongs != null) {
+            shuffledSongs.add(songs.size() -1);
+        }
     }
 
     public boolean hasSong(Song song) {
         return songs.contains(song);
     }
 
-    public boolean isLastSong(Integer songIndex) {
-        return songs.size() == songIndex +1;
+    public boolean isLastSong(Integer songIndex, boolean isShuffle) {
+        return isShuffle
+                ? shuffledSongs().indexOf(songIndex) +1 == shuffledSongs.size()
+                : songIndex +1 == songs.size();
+    }
+
+    public int firstShuffleIndex() {
+        return shuffledSongs(true).get(0);
+    }
+
+    private List<Integer> shuffledSongs() {
+        return shuffledSongs(false);
+    }
+
+    private List<Integer> shuffledSongs(Boolean reset) {
+        if (shuffledSongs == null || reset) {
+            shuffledSongs = new ArrayList<>();
+            for (int i = 0; i < size(); i++)
+                shuffledSongs.add(i);
+            Collections.shuffle(shuffledSongs);
+        }
+        return shuffledSongs;
     }
 }

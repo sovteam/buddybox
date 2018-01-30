@@ -12,11 +12,14 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
+import java.util.List;
+
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 
+import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.ui.ModelProxy.dispatch;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
@@ -55,6 +58,10 @@ public class PlayingActivity extends AppCompatActivity {
         findViewById(R.id.repeatSong).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(REPEAT_SONG);
         }});
+
+        findViewById(R.id.shuffle).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(SHUFFLE);
+        }});
     }
 
     @Override
@@ -79,13 +86,19 @@ public class PlayingActivity extends AppCompatActivity {
         container.removeAllViews();
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(12,0,12,0);
-        for (Playlist p : state.playlistsBySong.get(playing.hash.toString())){
-            TextView chip = new TextView(this);
-            chip.setLayoutParams(params);
-            chip.setText(p.name());
-            chip.setBackgroundResource(R.drawable.shape_chip);
-            container.addView(chip);
+        List<Playlist> playlists = state.playlistsBySong.get(playing.hash.toString());
+        if (playlists != null) {
+            for (Playlist p : playlists) {
+                TextView chip = new TextView(this);
+                chip.setLayoutParams(params);
+                chip.setText(p.name());
+                chip.setBackgroundResource(R.drawable.shape_chip);
+                container.addView(chip);
+            }
         }
+
+        ((ImageView) findViewById(R.id.shuffle)).setImageResource(
+                state.isShuffle ? R.drawable.ic_shuffle_blue : R.drawable.ic_shuffle);
 
         ((ImageView) findViewById(R.id.repeatSong)).setImageResource(
                 state.repeatSong ? R.drawable.ic_repeat_one_blue : R.drawable.ic_repeat_one);

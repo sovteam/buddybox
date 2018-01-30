@@ -39,8 +39,10 @@ public class State {
     public final boolean syncLibraryPending;
 
     public final Playlist selectedPlaylist;
+    public final boolean isShuffle;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Playlist selectedPlaylist) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Playlist selectedPlaylist) {
+        this.isShuffle = isShuffle;
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;

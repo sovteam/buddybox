@@ -124,6 +124,19 @@
             android:layout_toStartOf="@+id/playingPlayPause" android:contentDescription="TODO" />
 
         <ImageButton
+            android:id="@+id/shuffle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignTop="@+id/repeatAll"
+            android:layout_marginTop="20dp"
+            android:layout_toEndOf="@+id/repeatAll"
+            android:background="@android:color/transparent"
+            android:contentDescription="TODO"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_shuffle" />
+
+        <ImageButton
             android:id="@+id/repeatAll"
             android:layout_width="40dp"
             android:layout_height="40dp"

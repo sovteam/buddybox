@@ -38,6 +38,8 @@ import buddybox.core.events.SongMissing;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT_ALL;
 import static buddybox.core.events.Play.REPEAT_SONG;
+import static buddybox.core.events.Play.SHUFFLE;
+import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
@@ -93,11 +95,13 @@ public class Model implements IModel {
 
         // player
         if (cls == Play.class) play((Play)event);
+        if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
         if (event == REPEAT_SONG) repeatSong();
         if (event == REPEAT_ALL) repeatAll();
+        if (event == SHUFFLE) shuffle();
         if (event == FINISHED_PLAYING) finishedPlaying();
 
         // playlist
@@ -126,9 +130,20 @@ public class Model implements IModel {
         updateListeners();
     }
 
+    private void shuffle() {
+        isShuffle = !isShuffle;
+    }
+
+    private void shufflePlay() {
+        isShuffle = true;
+        currentPlaylist = selectedPlaylist;
+        doPlay(currentPlaylist, currentPlaylist.firstShuffleIndex());
+    }
+
     private void removeSongFromPlaylist(RemoveSongFromPlaylist event) {
         Song song = songsByHash.get(event.songHash);
         Playlist playlist = playlistsById.get(event.playlistId);
+        int songPosition = playlist.songs.indexOf(song);
 
         // update position-1 for relations.position > song index
         DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
@@ -136,7 +151,7 @@ public class Model implements IModel {
                         "SET POSITION = POSITION -1 " +
                         "WHERE PLAYLIST_ID = " + event.playlistId + " " +
                         "AND SONG_HASH = '" + event.songHash + "' " +
-                        "AND POSITION > " + playlist.songs.indexOf(song));
+                        "AND POSITION > " + songPosition);
 
         // delete from associations table
         DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(event.playlistId), event.songHash});
@@ -146,8 +161,12 @@ public class Model implements IModel {
         songPlaylists.remove(playlist);
         playlistsBySong.put(event.songHash, songPlaylists);
 
+        // keep playing the current song
+        if (currentPlaylist == playlist && currentSongIndex > songPosition)
+            currentSongIndex--;
+
         // remove from object
-        playlist.removeSong(songsByHash.get(event.songHash));
+        playlist.removeSong(song);
     }
 
     private void playlistSelected(PlaylistSelected event) {
@@ -270,14 +289,14 @@ public class Model implements IModel {
     }
 
     private void deletePlaylist(DeletePlaylist event) {
+        Playlist playlist = playlistsById.get(event.playlistId);
+
         // delete from table
         int rowsP = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLISTS", "ID=?", new String[]{Long.toString(event.playlistId)});
         if (rowsP != 1) {
             System.out.println("Unable to delete playlist in DB");
             return;
         }
-
-        Playlist playlist = playlistsById.get(event.playlistId);
 
         // delete associations to songs
         int rowsA = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=?", new String[]{Long.toString(event.playlistId)});
@@ -296,6 +315,11 @@ public class Model implements IModel {
         playlists.remove(playlist);
         playlistsById.remove(playlist.id);
         selectedPlaylist = null;
+
+        if (currentPlaylist == playlist) {
+            currentPlaylist = null;
+            currentSongIndex = null;
+        }
 
         System.out.println(">>> Playlist deleted: " + playlist.name);
     }
@@ -360,16 +384,15 @@ public class Model implements IModel {
     }
 
     private void skip(int step) {
-        if (step > 0 && currentPlaylist.isLastSong(currentSongIndex) && !repeatAll){
+        if (step > 0 && currentPlaylist.isLastSong(currentSongIndex, isShuffle) && !repeatAll) {
             playPauseCurrent();
             return;
         }
 
-        doPlay(currentPlaylist, currentPlaylist.songAfter(currentSongIndex, step));
+        doPlay(currentPlaylist, currentPlaylist.songAfter(currentSongIndex, step, isShuffle));
     }
 
     private void play(Play event) {
-        isShuffle = event.isShuffle;
         doPlay(event.playlist, event.songIndex);
     }
 
@@ -411,6 +434,7 @@ public class Model implements IModel {
                 currentSong(),
                 currentPlaylist,
                 isPaused,
+                isShuffle,
                 repeatAll,
                 repeatSong,
                 playlistsBySong,
