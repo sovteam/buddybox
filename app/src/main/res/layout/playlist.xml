@@ -18,7 +18,7 @@
             android:layout_alignParentTop="true"
             android:background="@android:color/transparent"
             android:contentDescription="TODO"
-            android:padding="10dp"
+            android:padding="16dp"
             android:src="@drawable/ic_arrow_back" />
 
         <TextView
@@ -62,11 +62,13 @@
         android:layout_marginTop="20dp"
         android:background="@drawable/rounded_background"
         android:backgroundTint="#01579b"
+        android:foreground="?attr/selectableItemBackground"
         android:text="Shuffle Play" />
 
     <ListView
         android:id="@+id/playlistSongs"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:footerDividersEnabled="false" />
 
 </LinearLayout>

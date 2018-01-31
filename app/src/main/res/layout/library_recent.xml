@@ -6,10 +6,11 @@
     <include layout="@layout/library_empty" />
 
     <ListView
+        android:id="@+id/recentPlayables"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:id="@+id/recentPlayables"
         android:choiceMode="singleChoice"
-        android:clickable="true" />
+        android:clickable="true"
+        android:footerDividersEnabled="false" />
 
 </RelativeLayout>

@@ -1,13 +1,13 @@
 package buddybox.ui;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
@@ -18,6 +18,7 @@ import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.PlaylistSelected;
 
 import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.ui.ModelProxy.dispatch;
@@ -88,11 +89,15 @@ public class PlayingActivity extends AppCompatActivity {
         params.setMargins(12,0,12,0);
         List<Playlist> playlists = state.playlistsBySong.get(playing.hash.toString());
         if (playlists != null) {
-            for (Playlist p : playlists) {
-                TextView chip = new TextView(this);
+            for (final Playlist p : playlists) {
+                final TextView chip = new TextView(this);
                 chip.setLayoutParams(params);
                 chip.setText(p.name());
-                chip.setBackgroundResource(R.drawable.shape_chip);
+                chip.setBackgroundResource(state.playlistPlaying == p ? R.drawable.shape_chip_green : R.drawable.shape_chip_grey);
+                chip.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
+                    dispatch(new PlaylistSelected(p));
+                    startActivity(new Intent(chip.getContext(), PlaylistActivity.class));
+                }});
                 container.addView(chip);
             }
         }

@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
@@ -149,6 +150,12 @@ public class Model implements IModel {
     }
 
     private void shufflePlay() {
+        if (selectedPlaylist.isEmpty()) {
+            if (currentPlaylist == selectedPlaylist && !isPaused)
+                playPauseCurrent();
+            return;
+        }
+
         isShuffle = true;
         currentPlaylist = selectedPlaylist;
         doPlay(currentPlaylist, currentPlaylist.firstShuffleIndex());
@@ -288,18 +295,38 @@ public class Model implements IModel {
     }
 
     private void createPlaylist(CreatePlaylist event) {
-        // Creates playlist
-        ContentValues contents = new ContentValues();
-        contents.put("NAME", event.playlistName);
-        long playlistId = DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLISTS", null, contents);
+        // Avoid playlists with same name
+        Playlist playlist = findPlaylistByName(event.playlistName);
 
-        // Add new playlist
-        addPlaylist(new Playlist(playlistId, event.playlistName, new ArrayList<Song>()));
+        if (playlist == null) {
+            // Creates playlist
+            ContentValues contents = new ContentValues();
+            contents.put("NAME", event.playlistName);
+            long playlistId = DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLISTS", null, contents);
+
+            if (playlistId == -1) {
+                System.out.println("Insert Playlist Error");
+                return;
+            }
+            playlist = new Playlist(playlistId, event.playlistName, new ArrayList<Song>());
+
+            // Add new playlist
+            addPlaylist(playlist);
+        } else {
+            // Avoid playlist with duplicated songs
+            if (playlist.hasSong(songsByHash.get(event.songHash)))
+                return;
+        }
 
         // Associates songs with playlist
-        insertAssociationSongToPlaylist(event.songHash, playlistId);
+        insertAssociationSongToPlaylist(event.songHash, playlist.id);
+    }
 
-        System.out.println("@@@ Dispatched Event: createPlaylist. Song: " +event.songHash + ", playlist: " + event.playlistName);
+    private Playlist findPlaylistByName(String name) {
+        for (Playlist p : playlists)
+            if (Objects.equals(p.name, name))
+                return p;
+        return null;
     }
 
     private void deletePlaylist(DeletePlaylist event) {

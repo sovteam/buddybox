@@ -55,6 +55,8 @@ public class PlaylistsFragment extends Fragment {
             dispatch(new PlaylistSelected(playlists.get(i)));
             startActivity(new Intent(getContext(), PlaylistActivity.class));
         }});
+        View footer = inflater.inflate(R.layout.list_footer, list, false);
+        list.addFooterView(footer);
         playlistsAdapter = new PlaylistsArrayAdapter();
         list.setAdapter(playlistsAdapter);
 

@@ -45,6 +45,8 @@ public class ArtistsFragment extends Fragment {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             System.out.println("GUI Artist click " + i);
         }});
+        View footer = inflater.inflate(R.layout.list_footer, list, false);
+        list.addFooterView(footer);
         artistsAdapter = new ArtistsArrayAdapter();
         list.setAdapter(artistsAdapter);
 
