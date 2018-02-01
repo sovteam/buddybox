@@ -13,8 +13,7 @@ import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
 
-import buddybox.core.events.CreatePlaylist;
-import buddybox.core.events.SetPlaylistName;
+import buddybox.core.events.PlaylistSetName;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -41,7 +40,7 @@ public class EditPlaylistDialog extends DialogFragment {
                             Toast.makeText(getContext(), "Playlist name can\'t be empty", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        dispatch(new SetPlaylistName(playlistName));
+                        dispatch(new PlaylistSetName(playlistName));
                         Toast.makeText(getContext(), "Playlist name saved", Toast.LENGTH_SHORT).show();
                     }
                 })

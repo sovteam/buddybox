@@ -12,31 +12,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
-import buddybox.core.events.AddSongToPlaylist;
 import buddybox.core.Artist;
-import buddybox.core.events.CreatePlaylist;
 import buddybox.core.Dispatcher;
-import buddybox.core.events.DeletePlaylist;
-import buddybox.core.events.PlaylistSelected;
-import buddybox.core.events.RemoveSongFromPlaylist;
-import buddybox.core.events.SetPlaylistName;
-import utils.Hash;
 import buddybox.core.IModel;
-import buddybox.core.events.Play;
 import buddybox.core.Playlist;
+import buddybox.core.Song;
+import buddybox.core.State;
+import buddybox.core.events.CreatePlaylist;
+import buddybox.core.events.DeletePlaylist;
+import buddybox.core.events.Play;
+import buddybox.core.events.PlaylistAddSong;
+import buddybox.core.events.PlaylistRemoveSong;
+import buddybox.core.events.PlaylistSelected;
+import buddybox.core.events.PlaylistSetName;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
-import buddybox.core.Song;
-import buddybox.core.State;
+import buddybox.core.events.SongDeleteRequest;
+import buddybox.core.events.SongDeleted;
 import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
+import utils.Hash;
 
+import static buddybox.core.events.Library.SYNC_LIBRARY;
+import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
+import static buddybox.core.events.Play.FINISHED_PLAYING;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT_ALL;
 import static buddybox.core.events.Play.REPEAT_SONG;
@@ -44,11 +51,9 @@ import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
-import static buddybox.core.events.Play.FINISHED_PLAYING;
-import static buddybox.core.events.Library.SYNC_LIBRARY;
-import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
-
-import static buddybox.core.events.Sampler.*;
+import static buddybox.core.events.Sampler.LOVED_VIEWED;
+import static buddybox.core.events.Sampler.SAMPLER_START;
+import static buddybox.core.events.Sampler.SAMPLER_STOP;
 
 /** The Model is modified only through dispatched events, handled sequentially.
  * Only the Model handles the database. */
@@ -65,18 +70,21 @@ public class Model implements IModel {
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
 
-    private List<Song> allSongs;
+    private Set<Song> allSongs;
     private Map<String, Song> songsByHash;
     private ArrayList<Playlist> playlists;
     private HashMap<Long, Playlist> playlistsById;
 
     private boolean isPaused;
+    private boolean isShuffle = false;
     private boolean repeatAll = true;
     private boolean repeatSong = false;
-    private boolean syncLibraryRequested = false;
+
     private Playlist selectedPlaylist;
     private Map<String, List<Playlist>> playlistsBySong;
-    private boolean isShuffle = false;
+
+    private boolean syncLibraryRequested = false;
+    private Song deleteSong;
 
     public Model(Context context) {
         this.context = context;
@@ -89,6 +97,8 @@ public class Model implements IModel {
         Dispatcher.addListener(new Dispatcher.Listener() { @Override public void onEvent(Dispatcher.Event event) {
             handle(event);
         }});
+
+        printDBSongs();
     }
 
     private void handle(Dispatcher.Event event) {
@@ -107,12 +117,12 @@ public class Model implements IModel {
         if (event == FINISHED_PLAYING) finishedPlaying();
 
         // playlist
-        if (cls == CreatePlaylist.class)            createPlaylist((CreatePlaylist) event);
-        if (cls == DeletePlaylist.class)            deletePlaylist((DeletePlaylist) event);
-        if (cls == AddSongToPlaylist.class)         addSongToPlaylist((AddSongToPlaylist) event);
-        if (cls == RemoveSongFromPlaylist.class)    removeSongFromPlaylist((RemoveSongFromPlaylist) event);
-        if (cls == SetPlaylistName.class)           setPlaylistName((SetPlaylistName) event);
-        if (cls == PlaylistSelected.class)          playlistSelected((PlaylistSelected) event);
+        if (cls == CreatePlaylist.class)        createPlaylist((CreatePlaylist) event);
+        if (cls == DeletePlaylist.class)        deletePlaylist((DeletePlaylist) event);
+        if (cls == PlaylistAddSong.class)       addSongToPlaylist((PlaylistAddSong) event);
+        if (cls == PlaylistRemoveSong.class)    removeSongFromPlaylist((PlaylistRemoveSong) event);
+        if (cls == PlaylistSetName.class)       setPlaylistName((PlaylistSetName) event);
+        if (cls == PlaylistSelected.class)      playlistSelected((PlaylistSelected) event);
 
         // sampler
         if (cls == SamplerUpdated.class) samplerUpdate((SamplerUpdated) event);
@@ -127,13 +137,15 @@ public class Model implements IModel {
         // library
         if (cls == SongFound.class)         songFound((SongFound)event);
         if (cls == SongMissing.class)       songMissing((SongMissing)event);
+        if (cls == SongDeleted.class)       songDeleted((SongDeleted)event);
+        if (cls == SongDeleteRequest.class) songDeleteRequest((SongDeleteRequest)event);
         if (event == SYNC_LIBRARY)          syncLibrary();
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
         updateListeners();
     }
 
-    private void setPlaylistName(SetPlaylistName event) {
+    private void setPlaylistName(PlaylistSetName event) {
         ContentValues values = new ContentValues();
         values.put("NAME", event.playlistName);
         int rows = DatabaseHelper.getInstance(context).getReadableDatabase().update(
@@ -161,7 +173,7 @@ public class Model implements IModel {
         doPlay(currentPlaylist, currentPlaylist.firstShuffleIndex());
     }
 
-    private void removeSongFromPlaylist(RemoveSongFromPlaylist event) {
+    private void removeSongFromPlaylist(PlaylistRemoveSong event) {
         Song song = songsByHash.get(event.songHash);
         Playlist playlist = playlistsById.get(event.playlistId);
         int songPosition = playlist.songs.indexOf(song);
@@ -194,12 +206,48 @@ public class Model implements IModel {
         selectedPlaylist = event.playlist;
     }
 
+    private void syncLibrary() { syncLibraryRequested = true; }
+
     private void syncLibraryStarted() {
         syncLibraryRequested = false;
     }
 
-    private void syncLibrary() {
-        syncLibraryRequested = true;
+    private void songDeleteRequest(SongDeleteRequest event) {
+        System.out.println(">>> Delete Song Request");
+        deleteSong = songsByHash.get(event.songHash);
+    }
+
+    private void songDeleted(SongDeleted event) {
+        Song song = event.song;
+        ContentValues values = new ContentValues();
+        values.put("IS_DELETED", true);
+        values.put("IS_MISSING", true);
+        DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", values, "HASH=?", new String[]{song.hash.toString()});
+        song.setDeleted();
+
+        Song current = currentSong();
+        if (current != null && current.equals(song))
+            currentSongIndex = null;
+
+        printDBSongs();
+    }
+
+    private void printDBSongs() {
+        Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
+        while(cursor.moveToNext()) {
+            System.out.println(
+                "HASH: " + cursor.getString(cursor.getColumnIndex("HASH")) + ", " +
+                "NAME: " + cursor.getString(cursor.getColumnIndex("NAME")) + ", " +
+                "GENRE: " + cursor.getString(cursor.getColumnIndex("GENRE")) + ", " +
+                "ARTIST: " + cursor.getString(cursor.getColumnIndex("ARTIST")) + ", " +
+                "DURATION: " + cursor.getInt(cursor.getColumnIndex("DURATION")) + ", " +
+                "FILE_PATH: " + cursor.getString(cursor.getColumnIndex("FILE_PATH")) + ", " +
+                "FILE_LENGTH: " + cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")) + ", " +
+                "LAST_MODIFIED: " + cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")) + ", " +
+                "IS_MISSING: " + (cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1) + ", " +
+                "IS_DELETED: " + (cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1));
+        }
+        cursor.close();
     }
 
     private void repeatAll() {
@@ -219,18 +267,20 @@ public class Model implements IModel {
     }
 
     private void songFound(SongFound event) {
-        System.out.println("111 song found");
+        System.out.println(">>> SONG FOunD");
 
         Song song = findSongByHash(event.song.hash);
-        if (song == null)
+        if (song == null) {
             insertNewSong(event.song);
-        else
-            updateSong(event.song);
-
-        addSong(event.song);
+            addSong(event.song);
+        } else {
+            song.setNotMissing();
+            updateSong(song);
+        }
     }
 
     private void addSong(Song song) {
+        System.out.println("@@@ ADD SONG: " + song.name);
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
     }
@@ -272,6 +322,8 @@ public class Model implements IModel {
     private ArrayList<Artist> artists() {
         Map<String, Artist> artistsByName = new HashMap<>();
         for (Song song : allSongs()) {
+            if (song.isMissing)
+                continue;
             Artist artist = artistsByName.get(song.artist);
             if (artist == null) {
                 artist = new Artist(song.artist);
@@ -365,7 +417,7 @@ public class Model implements IModel {
         System.out.println(">>> Playlist deleted: " + playlist.name);
     }
 
-    private void addSongToPlaylist(AddSongToPlaylist event) {
+    private void addSongToPlaylist(PlaylistAddSong event) {
         insertAssociationSongToPlaylist(event.songHash, event.playlistId);
         System.out.println("@@@ Dispatched Event: addSongToPlaylist. Playlist id: " + event.playlistId + ", song: " + event.songHash);
     }
@@ -430,7 +482,19 @@ public class Model implements IModel {
             return;
         }
 
-        doPlay(currentPlaylist, currentPlaylist.songAfter(currentSongIndex, step, isShuffle));
+        if (currentPlaylist.size() == 1) {
+            doPlay(currentPlaylist, 0);
+            return;
+        }
+
+        // Skip all songs missing
+        Integer songAfter = currentPlaylist.songAfter(currentSongIndex, step, isShuffle);
+        while (songAfter != null && currentPlaylist.song(songAfter).isMissing) {
+            songAfter = currentPlaylist.songAfter(songAfter, step, isShuffle);
+        }
+
+        if (songAfter != null)
+            doPlay(currentPlaylist, songAfter);
     }
 
     private void play(Play event) {
@@ -438,6 +502,14 @@ public class Model implements IModel {
     }
 
     private void doPlay(Playlist playlist, int songIndex) {
+        Song song = playlist.song(songIndex);
+        if (song != null && song.isMissing) {
+            isPaused = true;
+            currentSongIndex = null;
+            return;
+            // TODO toast song missing
+        }
+
         isPaused = false;
         currentSongIndex = songIndex;
         currentPlaylist = playlist;
@@ -489,6 +561,7 @@ public class Model implements IModel {
                 playlistAllSongs(),
                 artists(),
                 syncLibraryRequested,
+                deleteSong,
                 selectedPlaylist);
     }
 
@@ -513,9 +586,10 @@ public class Model implements IModel {
     }
 
 
-    private List<Song> allSongs() {
+    private Set<Song> allSongs() {
         if (allSongs == null) {
-            allSongs = new ArrayList<>();
+            System.out.println(">>> INIT ALL SONGS");
+            allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
             while(cursor.moveToNext()) {
@@ -528,7 +602,8 @@ public class Model implements IModel {
                         cursor.getString(cursor.getColumnIndex("FILE_PATH")),
                         cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
-                        cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1);
+                        cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
+                        cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1);
                 addSong(song);
             }
             cursor.close();

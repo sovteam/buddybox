@@ -91,19 +91,25 @@ public class PlaylistActivity extends AppCompatActivity {
             text1.setText(item.name());
             text2.setText(item.subtitle());
 
-            if (item == songPlaying) {
-                text1.setTextColor(Color.parseColor("#81c784"));
-                text2.setTextColor(Color.parseColor("#81c784"));
-            } else {
-                text1.setTextColor(Color.WHITE);
-                text2.setTextColor(Color.WHITE);
-            }
+            int color = songColor(item);
+            text1.setTextColor(color);
+            text2.setTextColor(color);
 
             rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
                 openSongOptionsDialog(playlist.song(position));
             }});
 
             return rowView;
+        }
+
+        private int songColor(Song song) {
+            if (song.isMissing)
+                return Color.parseColor("#e53935"); // RED
+
+            if (song == songPlaying)
+                return Color.parseColor("#81c784"); // GREEN
+
+            return Color.WHITE;
         }
 
         void updateState() {

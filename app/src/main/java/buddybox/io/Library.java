@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import buddybox.ui.ModelProxy;
 import buddybox.core.IModel;
-import buddybox.core.State;
 import buddybox.core.Song;
+import buddybox.core.State;
+import buddybox.core.events.SongDeleted;
 import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
+import buddybox.ui.ModelProxy;
 import utils.Daemon;
 
 import static buddybox.core.Dispatcher.dispatch;
@@ -29,9 +30,26 @@ public class Library {
     synchronized
     private static void updateState(State state) {
         boolean wasSyncing = Library.state != null && Library.state.syncLibraryPending;
-        Library.state = state;
         if (state.syncLibraryPending && !wasSyncing)
             startSynchronizingLibrary();
+
+        boolean shawDeleteSong = state.deleteSong != null &&
+                (Library.state == null || Library.state.deleteSong != state.deleteSong);
+        if (shawDeleteSong)
+            startDeleteSong(state.deleteSong);
+
+        Library.state = state;
+    }
+
+    private static void startDeleteSong(final Song song) {
+        new Daemon("Delete Song") { @Override public void run() { // TODO should put in same thread of sync?
+            deleteSong(song);
+        }};
+    }
+
+    private static void deleteSong(Song song) {
+        if (SongUtils.deleteSong(song))
+            dispatch(new SongDeleted(song));
     }
 
     synchronized
@@ -40,12 +58,9 @@ public class Library {
     }
 
     private static void startSynchronizingLibrary() {
-        new Daemon("Library Sync") {
-            @Override
-            public void run() {
-                synchronizeLibrary();
-            }
-        };
+        new Daemon("Library Sync") { @Override public void run() {
+            synchronizeLibrary();
+        }};
     }
 
     private static void synchronizeLibrary() {

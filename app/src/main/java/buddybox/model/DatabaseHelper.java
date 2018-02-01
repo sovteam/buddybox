@@ -40,7 +40,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FILE_PATH TEXT," +
                 "FILE_LENGTH INTEGER," +
                 "LAST_MODIFIED INTEGER," +
-                "IS_MISSING BOOLEAN)");
+                "IS_MISSING INTEGER," +
+                "IS_DELETED INTEGER)");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLISTS (ID INTEGER PRIMARY KEY, NAME TEXT UNIQUE)");
 

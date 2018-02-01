@@ -11,7 +11,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import buddybox.core.events.AddSongToPlaylist;
+import buddybox.core.events.PlaylistAddSong;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -39,7 +39,7 @@ public class SelectPlaylistDialogFragment extends DialogFragment {
                         if (which == 0) {
                             openNewPlaylistDialog(songHash);
                         } else {
-                            dispatch(new AddSongToPlaylist(getArguments().getString("songHash"), playlistsIds[which - 1]));
+                            dispatch(new PlaylistAddSong(getArguments().getString("songHash"), playlistsIds[which - 1]));
                             Toast.makeText(getContext(), "Song added to playlist", Toast.LENGTH_SHORT).show(); // TODO do it thourgh updateState?
                         }
                         System.out.println(">>> Playlist selected " + which);

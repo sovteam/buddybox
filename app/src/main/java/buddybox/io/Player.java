@@ -33,7 +33,7 @@ public class Player {
 
     private static void updateState(State state) {
         System.out.println(">>> player updateState songPlaying " + state.songPlaying + ", isPaused: " + state.isPaused);
-        if (state.songPlaying == null || state.isPaused) {
+        if (state.songPlaying == null || state.isPaused || state.songPlaying.isMissing) {
             if (songPlaying != null)
                 mediaPlayer.pause();
             return;

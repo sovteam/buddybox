@@ -30,39 +30,42 @@ import static buddybox.core.events.Play.REPEAT_ALL;
 
 public class PlayingActivity extends AppCompatActivity {
 
+    private Song playing;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playing);
 
         // Set events
-        findViewById(R.id.playingPlayPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(PLAY_PAUSE_CURRENT);
-        }});
-
         findViewById(R.id.playingMinimize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             finish();
         }});
+        findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openSongOptionsDialog(); }});
 
-        findViewById(R.id.skipNext).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SKIP_NEXT);
+        findViewById(R.id.playingPlayPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
+        findViewById(R.id.skipNext).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SKIP_NEXT);
         }});
-
-        findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SKIP_PREVIOUS);
+        findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(SKIP_PREVIOUS);
         }});
-
-        findViewById(R.id.repeatAll).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(REPEAT_ALL);
+        findViewById(R.id.repeatAll).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(REPEAT_ALL);
         }});
-
-        findViewById(R.id.repeatSong).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(REPEAT_SONG);
+        findViewById(R.id.repeatSong).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(REPEAT_SONG);
         }});
-
         findViewById(R.id.shuffle).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(SHUFFLE);
         }});
+    }
+
+    private void openSongOptionsDialog() {
+        if (playing == null)
+            return;
+
+        SongOptionsDialog dialog = new SongOptionsDialog();
+        Bundle args = new Bundle();
+        args.putString("songHash", playing.hash.toString());
+        dialog.setArguments(args);
+        dialog.show(getSupportFragmentManager(), "Song Options");
     }
 
     @Override
@@ -74,9 +77,11 @@ public class PlayingActivity extends AppCompatActivity {
     }
 
     private void updateState(State state) {
-        Song playing = state.songPlaying;
-        if (playing == null)
+        playing = state.songPlaying;
+        if (playing == null) {
+            finish();
             return;
+        }
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);

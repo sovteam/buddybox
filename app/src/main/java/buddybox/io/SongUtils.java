@@ -359,6 +359,13 @@ public class SongUtils {
         if (durationStr != null)
             duration = Integer.parseInt(durationStr);
 
-        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false);
+        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false);
+    }
+
+    public static boolean deleteSong(Song song) {
+        File songFile = new File(song.filePath);
+        if (songFile.exists())
+            return songFile.delete();
+        return false;
     }
 }

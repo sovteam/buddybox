@@ -1,11 +1,5 @@
 package buddybox.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import utils.Hash;
 
 public class Song implements Playable {
@@ -16,21 +10,24 @@ public class Song implements Playable {
     public final String genre;
     public final Integer duration;
 
-    public boolean isMissing = false;
-
     // sampler
     public boolean isSample;
+
     public Long loved;
     public Boolean lovedViewed;
     public Long hated;
     public Long deleted;
-
     public String filePath;
+
     public final long fileLength;
     public final long lastModified;
 
+    public boolean isMissing;
+    public boolean isDeleted;
+
+
     public Song(Hash hash, String name, String artist, String genre, Integer duration, String filePath,
-                long fileLength, long lastModified, Boolean isMissing) {
+                long fileLength, long lastModified, boolean isMissing, boolean isDeleted) {
         this.hash = hash;
         this.name = name;
         this.artist = artist;
@@ -40,6 +37,7 @@ public class Song implements Playable {
         this.fileLength = fileLength;
         this.lastModified = lastModified;
         this.isMissing = isMissing;
+        this.isDeleted = isDeleted;
     }
 
     @Override public String name() { return name; }
@@ -80,6 +78,11 @@ public class Song implements Playable {
 
     public void setNotMissing() {
         isMissing = false;
+        isDeleted = false;
     }
 
+    public void setDeleted() {
+        isDeleted = true;
+        setMissing();
+    }
 }
