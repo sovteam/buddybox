@@ -39,6 +39,8 @@ import buddybox.core.events.SongDeleteRequest;
 import buddybox.core.events.SongDeleted;
 import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
+import buddybox.core.events.SongSelected;
+import buddybox.core.events.SongUpdate;
 import utils.Hash;
 
 import static buddybox.core.events.Library.SYNC_LIBRARY;
@@ -85,6 +87,7 @@ public class Model implements IModel {
 
     private boolean syncLibraryRequested = false;
     private Song deleteSong;
+    private Song songSelected;
 
     public Model(Context context) {
         this.context = context;
@@ -139,10 +142,21 @@ public class Model implements IModel {
         if (cls == SongMissing.class)       songMissing((SongMissing)event);
         if (cls == SongDeleted.class)       songDeleted((SongDeleted)event);
         if (cls == SongDeleteRequest.class) songDeleteRequest((SongDeleteRequest)event);
+        if (cls == SongSelected.class)      songSelected((SongSelected)event);
+        if (cls == SongUpdate.class)        songUpdate((SongUpdate)event);
         if (event == SYNC_LIBRARY)          syncLibrary();
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
         updateListeners();
+    }
+
+    private void songUpdate(SongUpdate event) {
+        Song song = event.song;
+        song.setName(event.name);
+        song.setArtist(event.artist);
+        song.setAlbum(event.album);
+        song.setGenre(event.genre);
+        updateSong(song);
     }
 
     private void setPlaylistName(PlaylistSetName event) {
@@ -215,6 +229,10 @@ public class Model implements IModel {
     private void songDeleteRequest(SongDeleteRequest event) {
         System.out.println(">>> Delete Song Request");
         deleteSong = songsByHash.get(event.songHash);
+    }
+
+    private void songSelected(SongSelected event) {
+        songSelected = songsByHash.get(event.hash);
     }
 
     private void songDeleted(SongDeleted event) {
@@ -307,11 +325,13 @@ public class Model implements IModel {
         ret.put("NAME", song.name);
         ret.put("GENRE", song.genre);
         ret.put("ARTIST", song.artist);
+        ret.put("ALBUM", song.album);
         ret.put("DURATION", song.duration);
         ret.put("FILE_PATH", song.filePath);
         ret.put("FILE_LENGTH", song.fileLength);
         ret.put("LAST_MODIFIED", song.lastModified);
         ret.put("IS_MISSING", song.isMissing ? 1 : 0);
+        ret.put("IS_DELETED", song.isDeleted ? 1 : 0);
         return ret;
     }
 
@@ -562,7 +582,7 @@ public class Model implements IModel {
                 artists(),
                 syncLibraryRequested,
                 deleteSong,
-                selectedPlaylist);
+                selectedPlaylist, songSelected);
     }
 
     private Song currentSong() {
@@ -596,8 +616,9 @@ public class Model implements IModel {
                 Song song = new Song(
                         new Hash(cursor.getString(cursor.getColumnIndex("HASH"))),
                         cursor.getString(cursor.getColumnIndex("NAME")),
-                        cursor.getString(cursor.getColumnIndex("GENRE")),
                         cursor.getString(cursor.getColumnIndex("ARTIST")),
+                        cursor.getString(cursor.getColumnIndex("ALBUM")),
+                        cursor.getString(cursor.getColumnIndex("GENRE")),
                         cursor.getInt(cursor.getColumnIndex("DURATION")),
                         cursor.getString(cursor.getColumnIndex("FILE_PATH")),
                         cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),

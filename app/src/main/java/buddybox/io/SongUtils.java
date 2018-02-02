@@ -26,11 +26,12 @@ public class SongUtils {
 
     private static final String UNKNOWN_GENRE = "Unknown Genre";
     private static final String UNKNOWN_ARTIST = "Unknown Artist";
+    private static final String UNKNOWN_ALBUM = "Unknown Album";
 
     private static Map<String, String> genreByCode;
     private static File musicFolder;
 
-    public static File musicFolder() {
+    static File musicFolder() {
         if (musicFolder == null) {
             musicFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
             if (!musicFolder.exists())
@@ -40,7 +41,7 @@ public class SongUtils {
         return musicFolder;
     }
 
-    public static List<Song> listSongs(File folder) {
+    static List<Song> listSongs(File folder) {
         List<File> mp3Files = listMp3Files(folder);
 
         List<Song> ret = new ArrayList<>();
@@ -64,7 +65,7 @@ public class SongUtils {
     }
 
 
-    public static byte[] rawMP3(File file) {
+    private static byte[] rawMP3(File file) {
         byte[] ret = null;
         try {
             InputStream in = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
@@ -104,7 +105,7 @@ public class SongUtils {
         return size + 10;
     }
 
-    public static List<File> listLibraryMp3Files() {
+    static List<File> listLibraryMp3Files() {
         return listMp3Files(musicFolder());
     }
 
@@ -133,7 +134,7 @@ public class SongUtils {
         return file.getName().toLowerCase().endsWith(".mp3");
     }
 
-    public static Map<String, String> readMp3Metadata(File mp3) {
+    private static Map<String, String> readMp3Metadata(File mp3) {
         Map<String, String> ret = new HashMap<>();
 
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
@@ -151,11 +152,18 @@ public class SongUtils {
         else
             artist = artist.trim();
 
+        String album = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM);
+        if (album == null || album.trim().isEmpty())
+            album = UNKNOWN_ALBUM;
+        else
+            album = album.trim();
+
         String genre = formatSongGenre(mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_GENRE));
         String duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 
         ret.put("name", name);
         ret.put("artist", artist);
+        ret.put("album", album);
         ret.put("genre", genre);
         ret.put("duration", duration);
 
@@ -185,7 +193,7 @@ public class SongUtils {
         return genreMap().get(key);
     }
 
-    private static Map<String, String> genreMap() {
+    public static Map<String, String> genreMap() {
         if (genreByCode == null) {
             genreByCode = new HashMap<>();
             genreByCode.put("0", "Blues");
@@ -350,7 +358,7 @@ public class SongUtils {
         return digest;
     }
 
-    public static Song readSong(File mp3) {
+    static Song readSong(File mp3) {
         Map<String, String> metadata = SongUtils.readMp3Metadata(mp3);
         Hash hash = SongUtils.mp3Hash(mp3);
 
@@ -359,13 +367,11 @@ public class SongUtils {
         if (durationStr != null)
             duration = Integer.parseInt(durationStr);
 
-        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false);
+        return new Song(hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false);
     }
 
-    public static boolean deleteSong(Song song) {
+    static boolean deleteSong(Song song) {
         File songFile = new File(song.filePath);
-        if (songFile.exists())
-            return songFile.delete();
-        return false;
+        return songFile.exists() && songFile.delete();
     }
 }

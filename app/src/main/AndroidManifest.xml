@@ -27,6 +27,7 @@
         <activity
             android:name="buddybox.ui.PlaylistActivity"
             android:screenOrientation="portrait"/>
+        <activity android:name="buddybox.ui.EditSongActivity" />
 
         <receiver android:name="buddybox.ui.notification.NotificationDismissedReceiver"    android:exported="false" />
         <receiver android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"    android:exported="false" />

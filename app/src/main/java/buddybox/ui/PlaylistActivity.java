@@ -26,7 +26,6 @@ import static buddybox.ui.ModelProxy.dispatch;
 
 public class PlaylistActivity extends AppCompatActivity {
 
-    public static boolean isActive;
     private IModel.StateListener listener;
     private PlaylistSongsAdapter songsAdapter;
     private Playlist playlist;
@@ -63,13 +62,11 @@ public class PlaylistActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         ModelProxy.removeStateListener(listener);
-        isActive = false;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        isActive = true;
     }
 
     private class PlaylistSongsAdapter extends ArrayAdapter<Song> {

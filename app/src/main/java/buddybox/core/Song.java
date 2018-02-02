@@ -5,9 +5,10 @@ import utils.Hash;
 public class Song implements Playable {
 
     public final Hash hash;
-    public final String name;
-    public final String artist;
-    public final String genre;
+    public String name;
+    public String artist;
+    public String album;
+    public String genre;
     public final Integer duration;
 
     // sampler
@@ -26,11 +27,13 @@ public class Song implements Playable {
     public boolean isDeleted;
 
 
-    public Song(Hash hash, String name, String artist, String genre, Integer duration, String filePath,
+
+    public Song(Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
                 long fileLength, long lastModified, boolean isMissing, boolean isDeleted) {
         this.hash = hash;
         this.name = name;
         this.artist = artist;
+        this.album = album;
         this.genre = genre;
         this.duration = duration;
         this.filePath = filePath;
@@ -84,5 +87,21 @@ public class Song implements Playable {
     public void setDeleted() {
         isDeleted = true;
         setMissing();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
 }

@@ -2,15 +2,15 @@ package buddybox.ui;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
-import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.SongDeleteRequest;
-import buddybox.core.events.SongDeleted;
+import buddybox.core.events.SongSelected;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -40,11 +40,12 @@ public class SongOptionsDialog extends DialogFragment {
     }
 
     private void editSong(String songHash) {
-        System.out.println(">>> Go fish!");
+        dispatch(new SongSelected(songHash));
+        startActivity(new Intent(getContext(), EditSongActivity.class));
     }
 
     private void deleteSong(String songHash) {
         dispatch(new SongDeleteRequest(songHash));
-        Toast.makeText(getContext(), "Song deleted", Toast.LENGTH_SHORT).show(); // TODO model should toast?
+        Toast.makeText(getContext(), "Song deleted", Toast.LENGTH_SHORT).show();
     }
 }

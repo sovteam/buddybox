@@ -35,6 +35,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "HASH TEXT PRIMARY KEY," +
                 "NAME TEXT," +
                 "ARTIST TEXT," +
+                "ALBUM TEXT," +
                 "GENRE TEXT," +
                 "DURATION INTEGER," +
                 "FILE_PATH TEXT," +
