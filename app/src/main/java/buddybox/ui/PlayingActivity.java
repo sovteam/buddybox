@@ -118,17 +118,17 @@ public class PlayingActivity extends AppCompatActivity {
         }
 
         // Update seek bar
-        if (playing != state.songPlaying) {
+        if (!seekBarTouching)
+            seekBar.setProgress(state.playProgress);
+
+        if (playing != state.songPlaying)
             seekBar.setMax(state.songPlaying.duration);
-            seekBar.setProgress(0);
-        } else {
-            if (!seekBarTouching)
-                seekBar.setProgress(state.playProgress);
-            /*ObjectAnimator animation = ObjectAnimator.ofInt(seekBar, "progress", state.playProgress);
-            animation.setInterpolator(new LinearInterpolator());
-            animation.setDuration(1200);
-            animation.start();*/
-        }
+
+        /*ObjectAnimator animation = ObjectAnimator.ofInt(seekBar, "progress", state.playProgress);
+        animation.setInterpolator(new LinearInterpolator());
+        animation.setDuration(1200);
+        animation.start();*/
+
         seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#4fc3f7" : "#43a047"), PorterDuff.Mode.MULTIPLY));
         seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#4fc3f7" : "#43a047"), PorterDuff.Mode.SRC_IN);
         playing = state.songPlaying;

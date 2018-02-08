@@ -511,6 +511,7 @@ public class Model implements IModel {
     }
 
     private void skip(int step) {
+        playProgress = 0;
         if (step > 0 && currentPlaylist.isLastSong(currentSongIndex, isShuffle) && !repeatAll) {
             playPauseCurrent();
             return;
