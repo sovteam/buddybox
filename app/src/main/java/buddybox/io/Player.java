@@ -4,10 +4,12 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
 
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.PlayProgress;
 
 import static buddybox.ui.ModelProxy.dispatch;
 import static buddybox.ui.ModelProxy.addStateListener;
@@ -17,6 +19,10 @@ public class Player {
     private static MediaPlayer mediaPlayer;
     private static Context context;
     private static Song songPlaying;
+
+    private static Handler handler = new Handler();
+    private static boolean playCycleRunning = false;
+
 
     public static void init(Context context) {
         Player.context = context;
@@ -32,15 +38,22 @@ public class Player {
     }
 
     private static void updateState(State state) {
-        System.out.println(">>> player updateState songPlaying " + state.songPlaying + ", isPaused: " + state.isPaused);
-        if (state.songPlaying == null || state.isPaused || state.songPlaying.isMissing) {
-            if (songPlaying != null)
-                mediaPlayer.pause();
+        if (state.seekTo != null) {
+            mediaPlayer.seekTo(state.seekTo);
             return;
         }
 
+        if (state.songPlaying == null || state.isPaused || state.songPlaying.isMissing) {
+            if (songPlaying != null) {
+                mediaPlayer.pause();
+            }
+            return;
+        }
+
+
         if (songPlaying == state.songPlaying) {
             mediaPlayer.start();
+            startPlayCycle();
             return;
         }
 
@@ -51,9 +64,35 @@ public class Player {
             mediaPlayer.setDataSource(context, myUri);
             mediaPlayer.prepare();
             mediaPlayer.start();
+            startPlayCycle();
         } catch (Exception e) {
             e.printStackTrace();
         }
         songPlaying = state.songPlaying;
+    }
+
+    private static void startPlayCycle() {
+        if (!playCycleRunning) {
+            playCycleRunning = true;
+            playCycle();
+        }
+    }
+
+    private static void playCycle() {
+        System.out.println(">>> MediaPlayer: update seek bar: " + ((double) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()));
+
+        dispatch(new PlayProgress(mediaPlayer.getCurrentPosition()));
+
+        if (mediaPlayer.isPlaying()) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    playCycle();
+                }
+            };
+            handler.postDelayed(runnable, 1000);
+        } else {
+            playCycleRunning = false;
+        }
     }
 }

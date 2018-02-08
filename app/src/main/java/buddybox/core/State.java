@@ -39,11 +39,16 @@ public class State {
     public final boolean syncLibraryPending;
     public final Song deleteSong;
 
+    // Player
     public final Playlist selectedPlaylist;
+    public final Integer playProgress;
+    public final Integer seekTo;
     public final boolean isShuffle;
     public final Song selectedSong;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer playProgress, Integer seekTo, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong) {
+        this.playProgress = playProgress;
+        this.seekTo = seekTo;
         this.isShuffle = isShuffle;
         this.buddyCount = buddyCount;
         this.songCount = songCount;

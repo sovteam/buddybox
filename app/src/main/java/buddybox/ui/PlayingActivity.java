@@ -1,24 +1,34 @@
 package buddybox.ui;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
 import java.util.List;
 
+import buddybox.core.Dispatcher;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.PlaylistSelected;
+import buddybox.core.events.SeekTo;
 
 import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.ui.ModelProxy.dispatch;
@@ -31,6 +41,8 @@ import static buddybox.core.events.Play.REPEAT_ALL;
 public class PlayingActivity extends AppCompatActivity {
 
     private Song playing;
+    private SeekBar seekBar;
+    private boolean seekBarTouching;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +67,29 @@ public class PlayingActivity extends AppCompatActivity {
         findViewById(R.id.shuffle).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(SHUFFLE);
         }});
+
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            public int newPosition;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                newPosition = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                seekBarTouching = true;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(newPosition);
+                dispatch(new SeekTo(newPosition));
+                seekBarTouching = false;
+            }
+        });
+
     }
 
     private void openSongOptionsDialog() {
@@ -77,11 +112,27 @@ public class PlayingActivity extends AppCompatActivity {
     }
 
     private void updateState(State state) {
-        playing = state.songPlaying;
-        if (playing == null) {
+        if (state.songPlaying == null) {
             finish();
             return;
         }
+
+        // Update seek bar
+        if (playing != state.songPlaying) {
+            seekBar.setMax(state.songPlaying.duration);
+            seekBar.setProgress(0);
+        } else {
+            if (!seekBarTouching)
+                seekBar.setProgress(state.playProgress);
+            /*ObjectAnimator animation = ObjectAnimator.ofInt(seekBar, "progress", state.playProgress);
+            animation.setInterpolator(new LinearInterpolator());
+            animation.setDuration(1200);
+            animation.start();*/
+        }
+        seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#4fc3f7" : "#43a047"), PorterDuff.Mode.MULTIPLY));
+        seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#4fc3f7" : "#43a047"), PorterDuff.Mode.SRC_IN);
+        playing = state.songPlaying;
+
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);

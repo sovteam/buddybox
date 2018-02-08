@@ -27,6 +27,7 @@ import buddybox.core.State;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.Play;
+import buddybox.core.events.PlayProgress;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistRemoveSong;
 import buddybox.core.events.PlaylistSelected;
@@ -35,6 +36,7 @@ import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
+import buddybox.core.events.SeekTo;
 import buddybox.core.events.SongDeleteRequest;
 import buddybox.core.events.SongDeleted;
 import buddybox.core.events.SongFound;
@@ -88,6 +90,8 @@ public class Model implements IModel {
     private boolean syncLibraryRequested = false;
     private Song deleteSong;
     private Song songSelected;
+    private Integer seekTo;
+    private int playProgress;
 
     public Model(Context context) {
         this.context = context;
@@ -110,6 +114,8 @@ public class Model implements IModel {
 
         // player
         if (cls == Play.class) play((Play)event);
+        if (cls == SeekTo.class) seekTo((SeekTo)event);
+        if (cls == PlayProgress.class) playProgress((PlayProgress)event);
         if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
@@ -148,6 +154,14 @@ public class Model implements IModel {
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
         updateListeners();
+    }
+
+    private void playProgress(PlayProgress event) {
+        playProgress = event.position;
+    }
+
+    private void seekTo(SeekTo event) {
+        seekTo = event.position;
     }
 
     private void songUpdate(SongUpdate event) {
@@ -566,6 +580,8 @@ public class Model implements IModel {
                 null,
                 currentSong(),
                 currentPlaylist,
+                playProgress(),
+                reportSeekTo(),
                 isPaused,
                 isShuffle,
                 repeatAll,
@@ -582,7 +598,20 @@ public class Model implements IModel {
                 artists(),
                 syncLibraryRequested,
                 deleteSong,
-                selectedPlaylist, songSelected);
+                selectedPlaylist,
+                songSelected);
+    }
+
+    private Integer playProgress() {
+        if (seekTo != null)
+            return seekTo;
+        return playProgress;
+    }
+
+    private Integer reportSeekTo() {
+        Integer position = seekTo;
+        seekTo = null;
+        return position;
     }
 
     private Song currentSong() {
