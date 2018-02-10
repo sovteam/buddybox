@@ -49,8 +49,7 @@ import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.core.events.Play.REPEAT_ALL;
-import static buddybox.core.events.Play.REPEAT_SONG;
+import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.core.events.Play.SKIP_NEXT;
@@ -120,8 +119,7 @@ public class Model implements IModel {
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
-        if (event == REPEAT_SONG) repeatSong();
-        if (event == REPEAT_ALL) repeatAll();
+        if (event == REPEAT) repeat();
         if (event == SHUFFLE) shuffle();
         if (event == FINISHED_PLAYING) finishedPlaying();
 
@@ -282,13 +280,20 @@ public class Model implements IModel {
         cursor.close();
     }
 
-    private void repeatAll() {
-        System.out.println("repeatAll: " + !repeatAll);
-        repeatAll = !repeatAll;
-    }
+    private void repeat() {
+        if (repeatSong) {
+            repeatSong = false;
+            return;
+        }
 
-    private void repeatSong() {
-        repeatSong = !repeatSong;
+        if (repeatAll) {
+            repeatAll = false;
+            repeatSong = true;
+            return;
+        }
+
+        repeatAll = true;
+        repeatSong = false;
     }
 
     private void songMissing(SongMissing event) {

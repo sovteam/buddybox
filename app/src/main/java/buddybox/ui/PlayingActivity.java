@@ -1,17 +1,12 @@
 package buddybox.ui;
 
-import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,7 +17,6 @@ import com.adalbertosoares.buddybox.R;
 
 import java.util.List;
 
-import buddybox.core.Dispatcher;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
@@ -30,13 +24,12 @@ import buddybox.core.State;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.SeekTo;
 
+import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.ui.ModelProxy.dispatch;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
-import static buddybox.core.events.Play.REPEAT_SONG;
-import static buddybox.core.events.Play.REPEAT_ALL;
 
 public class PlayingActivity extends AppCompatActivity {
 
@@ -60,12 +53,10 @@ public class PlayingActivity extends AppCompatActivity {
         }});
         findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(SKIP_PREVIOUS);
         }});
-        findViewById(R.id.repeatAll).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(REPEAT_ALL);
-        }});
-        findViewById(R.id.repeatSong).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(REPEAT_SONG);
-        }});
         findViewById(R.id.shuffle).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             dispatch(SHUFFLE);
+        }});
+        findViewById(R.id.repeat).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {             dispatch(REPEAT);
         }});
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
@@ -161,11 +152,13 @@ public class PlayingActivity extends AppCompatActivity {
         ((ImageView) findViewById(R.id.shuffle)).setImageResource(
                 state.isShuffle ? R.drawable.ic_shuffle_blue : R.drawable.ic_shuffle);
 
-        ((ImageView) findViewById(R.id.repeatSong)).setImageResource(
-                state.repeatSong ? R.drawable.ic_repeat_one_blue : R.drawable.ic_repeat_one);
+        ((ImageView) findViewById(R.id.repeat)).setImageResource(
+            state.repeatSong
+                ? R.drawable.ic_repeat_one_blue
+                : state.repeatAll
+                    ? R.drawable.ic_repeat_blue
+                    : R.drawable.ic_repeat);
 
-        ((ImageView) findViewById(R.id.repeatAll)).setImageResource(
-                state.repeatAll ? R.drawable.ic_repeat_blue : R.drawable.ic_repeat);
 
         ((ImageButton)findViewById(R.id.playingPlayPause)).setImageResource(state.isPaused ? R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
     }

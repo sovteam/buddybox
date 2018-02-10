@@ -56,41 +56,51 @@
         android:paddingRight="20dp"
         android:gravity="center_vertical|center_horizontal">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/song"
-            android:id="@+id/playingSongName"
-            android:layout_alignParentTop="true"
-            android:textAlignment="center" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="@string/artist"
-            android:id="@+id/playingSongArtist"
-            android:layout_below="@+id/playingSongName"
-            android:textAlignment="center" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/genre"
-            android:id="@+id/playingSongGenre"
-            android:layout_below="@+id/playingSongArtist"
-            android:textAlignment="center" />
-
         <LinearLayout
-            android:id="@+id/playlistsChips"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/seekBar"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/playingSongGenre"
-            android:layout_marginTop="40dp"
-            android:orientation="horizontal">
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/playingSongName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:text="@string/song"
+                android:textAlignment="center"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="30sp" />
+
+            <TextView
+                android:id="@+id/playingSongArtist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/playingSongName"
+                android:text="@string/artist"
+                android:textAlignment="center"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/playingSongGenre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/playingSongArtist"
+                android:text="@string/genre"
+                android:textAlignment="center"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <LinearLayout
+                android:id="@+id/playlistsChips"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_alignParentStart="true"
+                android:layout_below="@+id/playingSongGenre"
+                android:layout_marginTop="40dp"
+                android:orientation="horizontal"></LinearLayout>
+
         </LinearLayout>
 
         <SeekBar
@@ -144,9 +154,10 @@
             android:id="@+id/shuffle"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_alignTop="@+id/repeatAll"
+            android:layout_alignTop="@+id/skipNext"
+            android:layout_marginLeft="16dp"
             android:layout_marginTop="20dp"
-            android:layout_toEndOf="@+id/repeatAll"
+            android:layout_toEndOf="@+id/skipNext"
             android:background="@android:color/transparent"
             android:contentDescription="TODO"
             android:padding="10dp"
@@ -154,25 +165,11 @@
             android:src="@drawable/ic_shuffle" />
 
         <ImageButton
-            android:id="@+id/repeatAll"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignTop="@+id/skipNext"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="10dp"
-            android:layout_toEndOf="@+id/skipNext"
-            android:background="@android:color/transparent"
-            android:contentDescription="TODO"
-            android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_repeat" />
-
-        <ImageButton
-            android:id="@+id/repeatSong"
+            android:id="@+id/repeat"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="16dp"
             android:layout_toStartOf="@+id/skipPrevious"
             android:background="@android:color/transparent"
             android:contentDescription="TODO"

@@ -3,13 +3,17 @@ package buddybox.ui;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
@@ -103,56 +107,26 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         lovedPlayables = new LovedPlayablesArrayAdapter();
         lovedList.setAdapter(lovedPlayables);
 
-        findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameSampler);
-        }});
+        findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler); }});
 
         // Playing
-        findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(PLAY_PAUSE_CURRENT);
-        }});
-
-        findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            startActivity(new Intent(MainActivity.this, PlayingActivity.class));
-        }});
+        findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
+        findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { startActivity(new Intent(MainActivity.this, PlayingActivity.class)); }});
 
         // NavBar
-        findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameLibrary, view);
-        }});
-
-        findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameSampler, view);
-        }});
-
-        findViewById(R.id.lovedNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameLoved, view);
-        }});
-
-        findViewById(R.id.sharingNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            navigateTo(R.id.frameSharing, view);
-        }});
+        findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLibrary, view); }});
+        findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler, view); }});
+        findViewById(R.id.lovedNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLoved, view); }});
+        findViewById(R.id.sharingNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSharing, view); }});
 
         // Sampler
-        findViewById(R.id.hateIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(new SamplerHate(sampling));
-        }});
-
-        findViewById(R.id.loveIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(new SamplerLove(sampling));
-        }});
-
-        findViewById(R.id.deleteIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(new SamplerDelete(sampling));
-        }});
-
-        findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            checkWriteExternalStoragePermission();
-        }});
+        findViewById(R.id.hateIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerHate(sampling)); }});
+        findViewById(R.id.loveIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerLove(sampling)); }});
+        findViewById(R.id.deleteIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerDelete(sampling)); }});
+        findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { checkWriteExternalStoragePermission(); }});
 
         // Sharing
-        findViewById(R.id.syncLibrary).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(SYNC_LIBRARY);
+        findViewById(R.id.syncLibrary).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(SYNC_LIBRARY);
         }});
 
         navigateTo(R.id.frameLibrary);
@@ -248,9 +222,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     @Override
     protected void onDestroy() {
+        closeMainNotification();
+        System.out.println(">>> Main onDestroy()");
         super.onDestroy();
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.cancel(notificationId);
     }
 
     @Override
@@ -472,6 +446,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         if (songPlaying == null || state.isSampling) {
             playingBar.setVisibility(View.INVISIBLE);
+            closeMainNotification();
         } else {
             playingBar.setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.playingName)).setText(songPlaying.name());
@@ -530,6 +505,11 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         notification.addAction(R.drawable.ic_skip_next, "", pendingNext);
 
         notify(notificationId, notification);
+    }
+
+    private void closeMainNotification() {
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.cancel(notificationId);
     }
 
     private void notify(int id, NotificationCompat.Builder notificationBuilder) {
