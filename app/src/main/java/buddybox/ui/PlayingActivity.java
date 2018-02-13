@@ -115,13 +115,8 @@ public class PlayingActivity extends AppCompatActivity {
         if (playing != state.songPlaying)
             seekBar.setMax(state.songPlaying.duration);
 
-        /*ObjectAnimator animation = ObjectAnimator.ofInt(seekBar, "progress", state.playProgress);
-        animation.setInterpolator(new LinearInterpolator());
-        animation.setDuration(1200);
-        animation.start();*/
-
-        seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#4fc3f7" : "#43a047"), PorterDuff.Mode.MULTIPLY));
-        seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#4fc3f7" : "#43a047"), PorterDuff.Mode.SRC_IN);
+        seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.MULTIPLY));
+        seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.SRC_IN);
         playing = state.songPlaying;
 
 
@@ -130,7 +125,7 @@ public class PlayingActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
 
         // Show playlists that includes song playing
-        LinearLayout container = (LinearLayout)findViewById(R.id.playlistsChips);
+        LinearLayout container = findViewById(R.id.playlistsChips);
         container.removeAllViews();
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.setMargins(12,0,12,0);
@@ -140,7 +135,8 @@ public class PlayingActivity extends AppCompatActivity {
                 final TextView chip = new TextView(this);
                 chip.setLayoutParams(params);
                 chip.setText(p.name());
-                chip.setBackgroundResource(state.playlistPlaying == p ? R.drawable.shape_chip_green : R.drawable.shape_chip_grey);
+                chip.setTextColor(Color.parseColor(state.playlistPlaying == p ? "#03a9f4" : "#FFFFFF" ));
+                chip.setBackgroundResource(R.drawable.shape_chip_grey);
                 chip.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
                     dispatch(new PlaylistSelected(p));
                     startActivity(new Intent(chip.getContext(), PlaylistActivity.class));

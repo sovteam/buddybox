@@ -4,6 +4,7 @@ import utils.Hash;
 
 public class Song implements Playable {
 
+    public final Long id;
     public final Hash hash;
     public String name;
     public String artist;
@@ -26,10 +27,9 @@ public class Song implements Playable {
     public boolean isMissing;
     public boolean isDeleted;
 
-
-
-    public Song(Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
+    public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
                 long fileLength, long lastModified, boolean isMissing, boolean isDeleted) {
+        this.id = id;
         this.hash = hash;
         this.name = name;
         this.artist = artist;

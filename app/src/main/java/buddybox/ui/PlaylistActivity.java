@@ -1,25 +1,27 @@
 package buddybox.ui;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
-
-import java.util.ArrayList;
+import com.woxthebox.draglistview.DragItem;
+import com.woxthebox.draglistview.DragListView;
+import com.woxthebox.draglistview.swipe.ListSwipeHelper.OnSwipeListenerAdapter;
+import com.woxthebox.draglistview.swipe.ListSwipeItem;
 
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.Play;
+import buddybox.core.events.PlaylistChangeSongPosition;
+import buddybox.core.events.PlaylistRemoveSong;
 
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.ui.ModelProxy.dispatch;
@@ -29,7 +31,9 @@ public class PlaylistActivity extends AppCompatActivity {
     private IModel.StateListener listener;
     private PlaylistSongsAdapter songsAdapter;
     private Playlist playlist;
-    private Song songPlaying;
+    private DragListView mDragListView;
+    private MySwipeRefreshLayout mRefreshLayout;
+    private boolean dragging = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,19 +47,62 @@ public class PlaylistActivity extends AppCompatActivity {
         findViewById(R.id.playlistMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openPlaylistOptionsDialog(); }});
         findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SHUFFLE_PLAY); }});
 
-        // list playlist songs
-        ListView list = (ListView) findViewById(R.id.playlistSongs);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new Play(playlist, i));
-        }});
-        songsAdapter = new PlaylistSongsAdapter();
-        list.setAdapter(songsAdapter);
+        mRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        mRefreshLayout.setEnabled(false);
+        mRefreshLayout.setVerticalScrollBarEnabled(false);
 
-        // set listener
+        songsAdapter = new PlaylistSongsAdapter(R.layout.list_item, R.id.drag, false);
+        mDragListView = findViewById(R.id.drag_list_view);
+        mDragListView.setAdapter(songsAdapter, true);
+        mDragListView.setCanDragHorizontally(false);
+        mDragListView.setCustomDragItem(new MyDragItem(PlaylistActivity.this, R.layout.list_item));
+        mDragListView.setLayoutManager(new LinearLayoutManager(PlaylistActivity.this));
+
+        mDragListView.setDragListListener(new DragListView.DragListListenerAdapter() {
+            @Override
+            public void onItemDragStarted(int position) {
+                dragging = true;
+            }
+
+            @Override
+            public void onItemDragEnded(int fromPosition, int toPosition) {
+                if (fromPosition != toPosition) {
+                    dispatch(new PlaylistChangeSongPosition(fromPosition, toPosition));
+                }
+                dragging = false;
+            }
+        });
+
+        mDragListView.setSwipeListener(new OnSwipeListenerAdapter() { @Override public void onItemSwipeStarted(ListSwipeItem item) { } @Override public void onItemSwipeEnded(ListSwipeItem item, ListSwipeItem.SwipeDirection swipedDirection) {
+            // Swipe to delete on right
+            if (swipedDirection == ListSwipeItem.SwipeDirection.RIGHT) {
+                Pair<Long, Song> adapterItem = (Pair<Long, Song>) item.getTag();
+                final int pos = mDragListView.getAdapter().getPositionForItem(adapterItem);
+                mDragListView.getAdapter().removeItem(pos);
+                dispatch(new PlaylistRemoveSong(adapterItem.second.hash.toString()));
+            }
+        }});
+
         listener = new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }};
         ModelProxy.addStateListener(listener);
+    }
+
+    private static class MyDragItem extends DragItem {
+
+        MyDragItem(Context context, int layoutId) {
+            super(context, layoutId);
+        }
+
+        @Override
+        public void onBindDragView(View clickedView, View dragView) {
+            CharSequence name = ((TextView) clickedView.findViewById(R.id.songName)).getText();
+            ((TextView) dragView.findViewById(R.id.songName)).setText(name);
+            CharSequence artist = ((TextView) clickedView.findViewById(R.id.songArtist)).getText();
+            ((TextView) dragView.findViewById(R.id.songArtist)).setText(artist);
+            dragView.findViewById(R.id.item_layout).setBackgroundColor(Color.parseColor("#03a9f4"));
+        }
     }
 
     @Override
@@ -64,66 +111,16 @@ public class PlaylistActivity extends AppCompatActivity {
         ModelProxy.removeStateListener(listener);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    private class PlaylistSongsAdapter extends ArrayAdapter<Song> {
-
-        PlaylistSongsAdapter() {
-            super(PlaylistActivity.this, -1, new ArrayList<Song>());
-        }
-
-        @NonNull
-        @Override
-        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
-            View rowView = convertView == null
-                    ? getLayoutInflater().inflate(R.layout.playlist_song_item, parent, false)
-                    : convertView;
-
-            Song item = getItem(position);
-            TextView text1 = (TextView) rowView.findViewById(R.id.songName);
-            TextView text2 = (TextView) rowView.findViewById(R.id.songSubtitle);
-            text1.setText(item.name());
-            text2.setText(item.subtitle());
-
-            int color = songColor(item);
-            text1.setTextColor(color);
-            text2.setTextColor(color);
-
-            rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-                openSongOptionsDialog(playlist.song(position));
-            }});
-
-            return rowView;
-        }
-
-        private int songColor(Song song) {
-            if (song.isMissing)
-                return Color.parseColor("#e53935"); // RED
-
-            if (song == songPlaying)
-                return Color.parseColor("#81c784"); // GREEN
-
-            return Color.WHITE;
-        }
-
-        void updateState() {
-            clear();
-            addAll(playlist.songs);
-        }
-    }
-
     private void updateState(State state) {
         playlist = state.selectedPlaylist;
-        songPlaying = state.songPlaying;
         if (playlist == null) {
             finish();
             return;
         }
 
-        songsAdapter.updateState();
+        if (!dragging)
+            songsAdapter.updateState(state);
+
         ((TextView)findViewById(R.id.playlistName)).setText(playlist.name());
         ((TextView)findViewById(R.id.playlistSubtitle)).setText(playlist.subtitle());
     }
@@ -137,13 +134,4 @@ public class PlaylistActivity extends AppCompatActivity {
         dialog.show(getSupportFragmentManager(), "Playlist Options");
     }
 
-
-    private void openSongOptionsDialog(Song song) {
-        PlaylistSongOptionsDialog frag = new PlaylistSongOptionsDialog();
-        Bundle args = new Bundle();
-        args.putLong("playlistId", playlist.id);
-        args.putString("songHash", song.hash.toString());
-        frag.setArguments(args);
-        frag.show(getSupportFragmentManager(), "Playlist Song Options");
-    }
 }

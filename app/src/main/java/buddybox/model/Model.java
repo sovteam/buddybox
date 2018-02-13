@@ -29,6 +29,7 @@ import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.Play;
 import buddybox.core.events.PlayProgress;
 import buddybox.core.events.PlaylistAddSong;
+import buddybox.core.events.PlaylistChangeSongPosition;
 import buddybox.core.events.PlaylistRemoveSong;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.PlaylistSetName;
@@ -124,12 +125,13 @@ public class Model implements IModel {
         if (event == FINISHED_PLAYING) finishedPlaying();
 
         // playlist
-        if (cls == CreatePlaylist.class)        createPlaylist((CreatePlaylist) event);
-        if (cls == DeletePlaylist.class)        deletePlaylist((DeletePlaylist) event);
-        if (cls == PlaylistAddSong.class)       addSongToPlaylist((PlaylistAddSong) event);
-        if (cls == PlaylistRemoveSong.class)    removeSongFromPlaylist((PlaylistRemoveSong) event);
-        if (cls == PlaylistSetName.class)       setPlaylistName((PlaylistSetName) event);
-        if (cls == PlaylistSelected.class)      playlistSelected((PlaylistSelected) event);
+        if (cls == CreatePlaylist.class)                createPlaylist((CreatePlaylist) event);
+        if (cls == DeletePlaylist.class)                deletePlaylist((DeletePlaylist) event);
+        if (cls == PlaylistAddSong.class)               addSongToPlaylist((PlaylistAddSong) event);
+        if (cls == PlaylistRemoveSong.class)            removeSongFromPlaylist((PlaylistRemoveSong) event);
+        if (cls == PlaylistSetName.class)               setPlaylistName((PlaylistSetName) event);
+        if (cls == PlaylistSelected.class)              playlistSelected((PlaylistSelected) event);
+        if (cls == PlaylistChangeSongPosition.class)    playlistChangeSongPosition((PlaylistChangeSongPosition) event);
 
         // sampler
         if (cls == SamplerUpdated.class) samplerUpdate((SamplerUpdated) event);
@@ -152,6 +154,45 @@ public class Model implements IModel {
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
         updateListeners();
+    }
+
+    private void playlistChangeSongPosition(PlaylistChangeSongPosition event) {
+        /* UPDATE DB */
+        if (event.fromPosition > event.toPosition) {
+            // Slide +1 position songs >= toPosition and < fromPosition
+            DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+                    "UPDATE PLAYLIST_SONG " +
+                            "SET POSITION = POSITION +1 " +
+                            "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
+                            "AND    POSITION <  " + event.fromPosition + " " +
+                            "AND    POSITION >= " + event.toPosition);
+        } else {
+            // Slide -1 position songs <= toPosition and > fromPosition
+            DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+                    "UPDATE PLAYLIST_SONG " +
+                            "SET POSITION = POSITION -1 " +
+                            "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
+                            "AND    POSITION >  " + event.fromPosition + " " +
+                            "AND    POSITION <= " + event.toPosition);
+        }
+
+        // Update moved song position
+        Song song = selectedPlaylist.song(event.fromPosition);
+        DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+                "UPDATE PLAYLIST_SONG " +
+                        "SET POSITION = " + event.toPosition + " " +
+                        "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
+                        "AND    SONG_HASH = '" + song.hash.toString() + "'");
+
+        /* UPDATE OBJECTS */
+        Song currentSong = null;
+        if (currentSongIndex != null && currentPlaylist == selectedPlaylist)
+            currentSong = selectedPlaylist.song(currentSongIndex);
+
+        selectedPlaylist.changeSongPosition(event.fromPosition, event.toPosition);
+
+        if (currentSong != null && currentPlaylist == selectedPlaylist)
+            currentSongIndex = selectedPlaylist.songs.indexOf(currentSong);
     }
 
     private void playProgress(PlayProgress event) {
@@ -201,19 +242,19 @@ public class Model implements IModel {
 
     private void removeSongFromPlaylist(PlaylistRemoveSong event) {
         Song song = songsByHash.get(event.songHash);
-        Playlist playlist = playlistsById.get(event.playlistId);
+        Playlist playlist = playlistsById.get(selectedPlaylist.id);
         int songPosition = playlist.songs.indexOf(song);
 
         // update position-1 for relations.position > song index
         DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = POSITION -1 " +
-                        "WHERE PLAYLIST_ID = " + event.playlistId + " " +
+                        "WHERE PLAYLIST_ID = " + selectedPlaylist.id + " " +
                         "AND SONG_HASH = '" + event.songHash + "' " +
                         "AND POSITION > " + songPosition);
 
         // delete from associations table
-        DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(event.playlistId), event.songHash});
+        DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(selectedPlaylist.id), event.songHash});
 
         // remove from playlistsBySong
         List<Playlist> songPlaylists = playlistsBySong.get(event.songHash);
@@ -646,9 +687,11 @@ public class Model implements IModel {
             System.out.println(">>> INIT ALL SONGS");
             allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
-            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
+            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().query("SONGS", new String[] { "rowid", "*" }, null, null, null, null, null);;
             while(cursor.moveToNext()) {
+                System.out.println(">>> ID: " + cursor.getLong(cursor.getColumnIndex("rowid")));
                 Song song = new Song(
+                        cursor.getLong(cursor.getColumnIndex("rowid")),
                         new Hash(cursor.getString(cursor.getColumnIndex("HASH"))),
                         cursor.getString(cursor.getColumnIndex("NAME")),
                         cursor.getString(cursor.getColumnIndex("ARTIST")),

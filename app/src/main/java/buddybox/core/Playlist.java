@@ -128,4 +128,10 @@ public class Playlist implements Playable {
     public void setName(String name) {
         this.name = name;
     }
+
+    public void changeSongPosition(int fromPosition, int toPosition) {
+        Song song = song(fromPosition);
+        songs.remove(song);
+        songs.add(toPosition, song);
+    }
 }

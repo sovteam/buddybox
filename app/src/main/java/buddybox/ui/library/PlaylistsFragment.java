@@ -98,8 +98,8 @@ public class PlaylistsFragment extends Fragment {
             text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
 
             if (item == playlistPlaying) {
-                text1.setTextColor(Color.parseColor("#81c784"));
-                text2.setTextColor(Color.parseColor("#81c784"));
+                text1.setTextColor(Color.parseColor("#03a9f4"));
+                text2.setTextColor(Color.parseColor("#03a9f4"));
             } else {
                 text1.setTextColor(Color.WHITE);
                 text2.setTextColor(Color.WHITE);
