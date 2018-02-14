@@ -1,24 +1,26 @@
 package buddybox.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v4.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
 import com.woxthebox.draglistview.DragItemAdapter;
 import com.woxthebox.draglistview.swipe.ListSwipeItem;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
+import buddybox.core.events.SongSelected;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -26,11 +28,13 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
 
     private Playlist playlist;
     private Song songPlaying;
+    private final Context context;
     private final int mLayoutId;
     private final int mGrabHandleId;
     private final boolean mDragOnLongPress;
 
-    PlaylistSongsAdapter(int layoutId, int grabHandleId, boolean dragOnLongPress) {
+    PlaylistSongsAdapter(Context context, int layoutId, int grabHandleId, boolean dragOnLongPress) {
+        this.context = context;
         mLayoutId = layoutId;
         mGrabHandleId = grabHandleId;
         mDragOnLongPress = dragOnLongPress;
@@ -69,12 +73,14 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
     }
 
     class ViewHolder extends DragItemAdapter.ViewHolder {
-        TextView songName;
-        TextView songArtist;
+        private final ImageView drag;
+        private final TextView songName;
+        private final TextView songArtist;
         private Song song;
 
         ViewHolder(final View itemView) {
             super(itemView, mGrabHandleId, mDragOnLongPress);
+            drag = itemView.findViewById(R.id.drag);
             songName = itemView.findViewById(R.id.songName);
             songArtist = itemView.findViewById(R.id.songArtist);
             ((ListSwipeItem) itemView).setSupportedSwipeDirection(ListSwipeItem.SwipeDirection.RIGHT);
@@ -85,19 +91,18 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             songName.setText(song.name);
             songArtist.setText(song.artist);
 
-            int color = songColor(song);
+            int color = Color.WHITE;
+            int icon = R.drawable.ic_list;
+            if (song.isMissing) {
+                color = Color.parseColor("#e53935"); // RED
+                icon = R.drawable.ic_list_red;
+            } else if (song == songPlaying) {
+                color = Color.parseColor("#03a9f4"); // BLUE
+                icon = R.drawable.ic_list_blue;
+            }
             songName.setTextColor(color);
             songArtist.setTextColor(color);
-        }
-
-        private int songColor(Song song) {
-            if (song.isMissing)
-                return Color.parseColor("#e53935"); // RED
-
-            if (song == songPlaying)
-                return Color.parseColor("#03a9f4"); // Blue
-
-            return Color.WHITE;
+            drag.setImageResource(icon);
         }
 
         @Override
@@ -107,7 +112,8 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
 
         @Override
         public boolean onItemLongClicked(View view) {
-            Toast.makeText(view.getContext(), "Item long clicked", Toast.LENGTH_SHORT).show();
+            dispatch(new SongSelected(song.hash.toString()));
+            context.startActivity(new Intent(context, EditSongActivity.class));
             return true;
         }
     }

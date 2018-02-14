@@ -51,7 +51,7 @@ public class PlaylistActivity extends AppCompatActivity {
         mRefreshLayout.setEnabled(false);
         mRefreshLayout.setVerticalScrollBarEnabled(false);
 
-        songsAdapter = new PlaylistSongsAdapter(R.layout.list_item, R.id.drag, false);
+        songsAdapter = new PlaylistSongsAdapter(PlaylistActivity.this, R.layout.list_item, R.id.drag, false);
         mDragListView = findViewById(R.id.drag_list_view);
         mDragListView.setAdapter(songsAdapter, true);
         mDragListView.setCanDragHorizontally(false);
