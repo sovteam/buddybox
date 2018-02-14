@@ -107,6 +107,7 @@ public class EditSongActivity extends AppCompatActivity {
             spinner.setSelection(allGenres.indexOf(song.genre));
 
             ((TextView)findViewById(R.id.fileLength)).setText(String.format("File size: %s", song.printFileLength()));
+            ((TextView)findViewById(R.id.songDuration)).setText(String.format("Duration: %s", song.duration()));
         }
     }
 

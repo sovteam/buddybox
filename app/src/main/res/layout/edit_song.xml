@@ -152,15 +152,34 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp" />
 
-    <TextView
-        android:id="@+id/fileLength"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
-        android:paddingLeft="4dp"
-        android:text="File size: 4,2 MB" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/fileLength"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:paddingLeft="4dp"
+            android:text="File size: 4,2 MB" />
+
+        <TextView
+            android:id="@+id/songDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:paddingLeft="4dp"
+            android:text="Duration: 4:06" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/delete"
