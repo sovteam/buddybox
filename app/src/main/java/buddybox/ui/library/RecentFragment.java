@@ -1,5 +1,6 @@
 package buddybox.ui.library;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,6 +23,8 @@ import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.SongSelected;
+import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
 import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
 
@@ -48,7 +51,12 @@ public class RecentFragment extends Fragment {
         view = inflater.inflate(R.layout.library_recent, container, false);
 
         // List recent songs
-        ListView list = (ListView) view.findViewById(R.id.recentPlayables);
+        ListView list = view.findViewById(R.id.recentPlayables);
+        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+            dispatch(new SongSelected(recentPlaylist.song(pos).hash.toString()));
+            startActivity(new Intent(getContext(), EditSongActivity.class));
+            return true;
+        }});
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             dispatch(new Play(recentPlaylist, i));
         }});
@@ -94,8 +102,8 @@ public class RecentFragment extends Fragment {
                     : convertView;
 
             Playable item = getItem(position);
-            TextView text1 = (TextView) rowView.findViewById(R.id.songName);
-            TextView text2 = (TextView) rowView.findViewById(R.id.text2);
+            TextView text1 = rowView.findViewById(R.id.songName);
+            TextView text2 = rowView.findViewById(R.id.text2);
             text1.setText(item.name());
             text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
 
