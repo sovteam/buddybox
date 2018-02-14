@@ -26,6 +26,7 @@ import java.util.Objects;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.SongDeleteRequest;
 import buddybox.core.events.SongUpdate;
 import buddybox.io.SongUtils;
 
@@ -46,6 +47,7 @@ public class EditSongActivity extends AppCompatActivity {
             cancel();
         }});
         findViewById(R.id.save).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { save(); }});
+        findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { delete(); }});
 
         // set listener
         listener = new IModel.StateListener() { @Override public void update(State state) {
@@ -60,25 +62,31 @@ public class EditSongActivity extends AppCompatActivity {
         ModelProxy.removeStateListener(listener);
     }
 
+    private void delete() {
+        dispatch(new SongDeleteRequest(song.hash.toString()));
+        Toast.makeText(EditSongActivity.this, "Song deleted", Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
     private void updateState(State state) {
         if (song == null) {
             song = state.selectedSong;
 
             // Set fields
-            EditText name = (EditText)findViewById(R.id.songName);
+            EditText name = findViewById(R.id.songName);
             name.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             name.setText(song.name);
 
-            EditText artist = (EditText)findViewById(R.id.songArtist);
+            EditText artist = findViewById(R.id.songArtist);
             artist.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             artist.setText(song.artist);
 
-            EditText album = (EditText)findViewById(R.id.songAlbum);
+            EditText album = findViewById(R.id.songAlbum);
             album.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             album.setText(song.album);
 
             // List genres
-            Spinner spinner = (Spinner) findViewById(R.id.songGenre);
+            Spinner spinner = findViewById(R.id.songGenre);
             List<String> genres = new ArrayList<>(SongUtils.genreMap().values());
             List<String> allGenres = new ArrayList<>();
             allGenres.add("Select song genre");
@@ -97,6 +105,8 @@ public class EditSongActivity extends AppCompatActivity {
             adapter.addAll(allGenres);
             spinner.setAdapter(adapter);
             spinner.setSelection(allGenres.indexOf(song.genre));
+
+            ((TextView)findViewById(R.id.fileLength)).setText(String.format("File size: %s", song.printFileLength()));
         }
     }
 
@@ -113,7 +123,7 @@ public class EditSongActivity extends AppCompatActivity {
                     : convertView;
 
             String genre = getItem(position);
-            TextView text1 = (TextView) rowView.findViewById(android.R.id.text1);
+            TextView text1 = rowView.findViewById(android.R.id.text1);
             text1.setText(genre);
 
             return rowView;
@@ -146,9 +156,9 @@ public class EditSongActivity extends AppCompatActivity {
     private void save() {
         Map<String,String> values = getValues();
 
-        TextView nameError = (TextView)findViewById(R.id.songNameError);
+        TextView nameError = findViewById(R.id.songNameError);
         if (values.get("name").isEmpty()) {
-            nameError.setText("Song name cannot be empty");
+            nameError.setText(R.string.SongNameCantBeEmpty);
             return;
         }
         nameError.setText("");

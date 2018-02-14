@@ -16,4 +16,5 @@
     <string name="genre">Genre</string>
     <string name="subtitle">Subtitle</string>
     <string name="maximize_playing_song">Maximize playing song</string>
+    <string name="SongNameCantBeEmpty">Song name cannot be empty</string>
 </resources>

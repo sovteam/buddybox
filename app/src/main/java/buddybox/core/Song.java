@@ -1,5 +1,7 @@
 package buddybox.core;
 
+import java.util.Locale;
+
 import utils.Hash;
 
 public class Song implements Playable {
@@ -103,5 +105,9 @@ public class Song implements Playable {
 
     public void setGenre(String genre) {
         this.genre = genre;
+    }
+
+    public String printFileLength() {
+        return String.format(Locale.getDefault(), "%.1f", (double) fileLength / 1024 / 1024) + " MB";
     }
 }

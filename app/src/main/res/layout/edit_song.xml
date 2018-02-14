@@ -79,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:labelFor="@+id/songArtist"
         android:paddingLeft="4dp"
         android:text="Artist" />
@@ -110,7 +110,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:labelFor="@+id/songAlbum"
         android:paddingLeft="4dp"
         android:text="Album" />
@@ -140,7 +140,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:labelFor="@+id/songGenre"
         android:paddingLeft="4dp"
         android:text="Genre" />
@@ -151,4 +151,22 @@
         android:layout_height="32dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp" />
+
+    <TextView
+        android:id="@+id/fileLength"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:paddingLeft="4dp"
+        android:text="File size: 4,2 MB" />
+
+    <Button
+        android:id="@+id/delete"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="#e53935"
+        android:text="Delete Song" />
 </LinearLayout>
