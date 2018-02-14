@@ -77,6 +77,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_toStartOf="@+id/drag"
                 android:singleLine="true"
+                android:text="Song"
                 android:textAppearance="?attr/textAppearanceListItem" />
 
             <TextView
@@ -87,7 +88,9 @@
                 android:layout_below="@+id/songName"
                 android:layout_marginBottom="8dp"
                 android:layout_toStartOf="@+id/drag"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:text="Artist"
+                android:textColor="@android:color/darker_gray" />
         </LinearLayout>
 
     </RelativeLayout>

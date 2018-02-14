@@ -105,14 +105,14 @@ public class RecentFragment extends Fragment {
             TextView text1 = rowView.findViewById(R.id.songName);
             TextView text2 = rowView.findViewById(R.id.text2);
             text1.setText(item.name());
-            text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
+            text2.setText(item.subtitle());
 
             if (item == songPlaying) {
                 text1.setTextColor(Color.parseColor("#4fc3f7"));
                 text2.setTextColor(Color.parseColor("#4fc3f7"));
             } else {
                 text1.setTextColor(Color.WHITE);
-                text2.setTextColor(Color.WHITE);
+                text2.setTextColor(Color.LTGRAY);
             }
 
             rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {

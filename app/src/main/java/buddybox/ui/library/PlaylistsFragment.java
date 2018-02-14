@@ -92,17 +92,17 @@ public class PlaylistsFragment extends Fragment {
                     : convertView;
 
             Playlist item = getItem(position);
-            TextView text1 = (TextView) rowView.findViewById(android.R.id.text1);
-            TextView text2 = (TextView) rowView.findViewById(android.R.id.text2);
+            TextView text1 = rowView.findViewById(android.R.id.text1);
+            TextView text2 = rowView.findViewById(android.R.id.text2);
             text1.setText(item.name());
-            text2.setText(String.format("%s %s", item.subtitle(), item.duration()));
+            text2.setText(item.subtitle());
 
             if (item == playlistPlaying) {
                 text1.setTextColor(Color.parseColor("#03a9f4"));
                 text2.setTextColor(Color.parseColor("#03a9f4"));
             } else {
                 text1.setTextColor(Color.WHITE);
-                text2.setTextColor(Color.WHITE);
+                text2.setTextColor(Color.LTGRAY);
             }
 
             return rowView;

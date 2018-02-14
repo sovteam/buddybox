@@ -24,7 +24,10 @@ public class Playlist implements Playable {
 
     @Override
     public String subtitle() {
-        return size() + " song" + (size() != 1 ? "s" : "");
+        String songsPrint = size() + " song" + (size() != 1 ? "s" : "");
+        if (size() > 0)
+            return songsPrint + " - " + duration();
+        return songsPrint;
     }
 
     @Override
