@@ -109,16 +109,17 @@ public class PlayingActivity extends AppCompatActivity {
         }
 
         // Update seek bar
+        if (playing != state.songPlaying) {
+            seekBar.setMax(state.songPlaying.duration);
+            ((TextView)findViewById(R.id.songDuration)).setText(state.songPlaying.duration());
+        }
         if (!seekBarTouching)
             seekBar.setProgress(state.playProgress);
-
-        if (playing != state.songPlaying)
-            seekBar.setMax(state.songPlaying.duration);
-
         seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.MULTIPLY));
         seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.SRC_IN);
-        playing = state.songPlaying;
+        ((TextView)findViewById(R.id.songProgress)).setText(state.songPlaying.formatTime(state.playProgress));
 
+        playing = state.songPlaying;
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
