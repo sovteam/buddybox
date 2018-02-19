@@ -27,7 +27,6 @@ import buddybox.core.State;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.Play;
-import buddybox.core.events.PlayProgress;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistChangeSongPosition;
 import buddybox.core.events.PlaylistRemoveSong;
@@ -91,7 +90,6 @@ public class Model implements IModel {
     private Song deleteSong;
     private Song songSelected;
     private Integer seekTo;
-    private int playProgress;
 
     public Model(Context context) {
         this.context = context;
@@ -115,7 +113,6 @@ public class Model implements IModel {
         // player
         if (cls == Play.class) play((Play)event);
         if (cls == SeekTo.class) seekTo((SeekTo)event);
-        if (cls == PlayProgress.class) playProgress((PlayProgress)event);
         if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
@@ -193,10 +190,6 @@ public class Model implements IModel {
 
         if (currentSong != null && currentPlaylist == selectedPlaylist)
             currentSongIndex = selectedPlaylist.songs.indexOf(currentSong);
-    }
-
-    private void playProgress(PlayProgress event) {
-        playProgress = event.position;
     }
 
     private void seekTo(SeekTo event) {
@@ -557,7 +550,6 @@ public class Model implements IModel {
     }
 
     private void skip(int step) {
-        playProgress = 0;
         if (step > 0 && currentPlaylist.isLastSong(currentSongIndex, isShuffle) && !repeatAll) {
             playPauseCurrent();
             return;
@@ -588,7 +580,6 @@ public class Model implements IModel {
             isPaused = true;
             currentSongIndex = null;
             return;
-            // TODO toast song missing
         }
 
         isPaused = false;
@@ -627,7 +618,6 @@ public class Model implements IModel {
                 null,
                 currentSong(),
                 currentPlaylist,
-                playProgress(),
                 reportSeekTo(),
                 isPaused,
                 isShuffle,
@@ -647,12 +637,6 @@ public class Model implements IModel {
                 deleteSong,
                 selectedPlaylist,
                 songSelected);
-    }
-
-    private Integer playProgress() {
-        if (seekTo != null)
-            return seekTo;
-        return playProgress;
     }
 
     private Integer reportSeekTo() {
@@ -687,11 +671,10 @@ public class Model implements IModel {
             System.out.println(">>> INIT ALL SONGS");
             allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
-            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().query("SONGS", new String[] { "rowid", "*" }, null, null, null, null, null);;
+            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
             while(cursor.moveToNext()) {
-                System.out.println(">>> ID: " + cursor.getLong(cursor.getColumnIndex("rowid")));
                 Song song = new Song(
-                        cursor.getLong(cursor.getColumnIndex("rowid")),
+                        cursor.getLong(cursor.getColumnIndex("ID")),
                         new Hash(cursor.getString(cursor.getColumnIndex("HASH"))),
                         cursor.getString(cursor.getColumnIndex("NAME")),
                         cursor.getString(cursor.getColumnIndex("ARTIST")),

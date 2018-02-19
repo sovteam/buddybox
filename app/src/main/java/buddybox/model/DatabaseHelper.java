@@ -32,6 +32,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         System.out.println(">>> DB onCreate >>> CREATE TABLES");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS SONGS (" +
+                "ID INTEGER PRIMARY KEY," +
                 "HASH TEXT," +
                 "NAME TEXT," +
                 "ARTIST TEXT," +

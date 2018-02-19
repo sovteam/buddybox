@@ -6,14 +6,16 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.PlayProgress;
 
-import static buddybox.ui.ModelProxy.dispatch;
-import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
+import static buddybox.ui.ModelProxy.addStateListener;
+import static buddybox.ui.ModelProxy.dispatch;
 
 public class Player {
     private static MediaPlayer mediaPlayer;
@@ -22,6 +24,7 @@ public class Player {
 
     private static Handler handler = new Handler();
     private static boolean playCycleRunning = false;
+    private static List<ProgressListener> listeners = new ArrayList<>();
 
 
     public static void init(Context context) {
@@ -59,7 +62,7 @@ public class Player {
 
         try {
             Uri myUri = Uri.parse(state.songPlaying.filePath);
-            mediaPlayer.pause();
+            mediaPlayer.stop();
             mediaPlayer.reset();
             mediaPlayer.setDataSource(context, myUri);
             mediaPlayer.prepare();
@@ -78,21 +81,37 @@ public class Player {
         }
     }
 
+    public static void removeListener(ProgressListener progressListener) {
+        listeners.remove(progressListener);
+    }
+
+    public interface ProgressListener {
+        void updateProgress(int progress);
+    }
+
+    public static void addListener(ProgressListener listener) {
+        listeners.add(listener);
+        listener.updateProgress(mediaPlayer.getCurrentPosition());
+    }
+
     private static void playCycle() {
-        System.out.println(">>> MediaPlayer: update seek bar: " + ((double) mediaPlayer.getCurrentPosition() / mediaPlayer.getDuration()));
+        notifyListeners();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+            if (mediaPlayer.isPlaying())
+                playCycle();
+            else
+                playCycleRunning = false;
+            }
+        };
+        handler.postDelayed(runnable, 1000);
+    }
 
-        dispatch(new PlayProgress(mediaPlayer.getCurrentPosition()));
-
-        if (mediaPlayer.isPlaying()) {
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    playCycle();
-                }
-            };
-            handler.postDelayed(runnable, 1000);
-        } else {
-            playCycleRunning = false;
+    private static void notifyListeners() {
+        System.out.println("update listeners: " + mediaPlayer.getCurrentPosition());
+        for (ProgressListener listener : listeners) {
+            listener.updateProgress(mediaPlayer.getCurrentPosition());
         }
     }
 }

@@ -23,6 +23,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.SeekTo;
+import buddybox.io.Player;
 
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
@@ -36,6 +37,8 @@ public class PlayingActivity extends AppCompatActivity {
     private Song playing;
     private SeekBar seekBar;
     private boolean seekBarTouching;
+    private IModel.StateListener stateListener;
+    private Player.ProgressListener progressListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,9 +100,28 @@ public class PlayingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
+        stateListener = new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
-        }});
+        }};
+        ModelProxy.addStateListener(stateListener);
+        progressListener = new Player.ProgressListener() { @Override public void updateProgress(int progress) { updatePlayerProgress(progress);
+        }};
+        Player.addListener(progressListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ModelProxy.removeStateListener(stateListener);
+        Player.removeListener(progressListener);
+    }
+
+    private void updatePlayerProgress(int progress) {
+        if (!seekBarTouching) {
+            seekBar.setProgress(progress);
+        }
+        if (playing != null)
+            ((TextView)findViewById(R.id.songProgress)).setText(playing.formatTime(progress));
     }
 
     private void updateState(State state) {
@@ -110,14 +132,13 @@ public class PlayingActivity extends AppCompatActivity {
 
         // Update seek bar
         if (playing != state.songPlaying) {
+            seekBar.setProgress(0);
             seekBar.setMax(state.songPlaying.duration);
+            ((TextView)findViewById(R.id.songProgress)).setText(state.songPlaying.formatTime(0));
             ((TextView)findViewById(R.id.songDuration)).setText(state.songPlaying.duration());
         }
-        if (!seekBarTouching)
-            seekBar.setProgress(state.playProgress);
         seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.MULTIPLY));
         seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.SRC_IN);
-        ((TextView)findViewById(R.id.songProgress)).setText(state.songPlaying.formatTime(state.playProgress));
 
         playing = state.songPlaying;
 
