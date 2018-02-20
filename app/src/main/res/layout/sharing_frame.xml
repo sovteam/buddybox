@@ -9,82 +9,127 @@
     android:paddingRight="20dp">
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="You have 3 buddies"
-        android:id="@+id/textView"
-        android:layout_marginRight="55dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/textView14"
-        android:layout_marginTop="20dp" />
+        android:layout_alignBaseline="@+id/button3"
+        android:layout_alignBottom="@+id/button3"
+        android:layout_alignParentStart="true"
+        android:text="You have 3 buddies" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Invite a Buddy"
         android:id="@+id/button3"
-        android:textAlignment="gravity"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_alignParentTop="true"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_marginTop="20dp" />
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="20dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="Invite a Buddy"
+        android:textAlignment="gravity" />
 
     <TextView
+        android:id="@+id/textView14"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="The more friends you have, the more songs you will receive. "
-        android:id="@+id/textView14"
-        android:layout_below="@+id/button3"
         android:layout_alignEnd="@+id/button3"
-        android:layout_marginBottom="30dp" />
+        android:layout_below="@+id/button3"
+        android:layout_marginTop="12dp"
+        android:text="The more friends you have, the more songs you will receive. " />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="You have 42 songs"
         android:id="@+id/textView15"
-        android:layout_marginRight="55dp"
-        android:layout_below="@+id/textView14"
-        android:layout_alignStart="@+id/textView14" />
-
-    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Add mp3 files"
+        android:layout_alignBaseline="@+id/button4"
+        android:layout_alignBottom="@+id/button4"
+        android:layout_alignParentStart="true"
+        android:text="You have 42 songs" />
+
+    <Button
         android:id="@+id/button4"
-        android:textAlignment="gravity"
-        android:gravity="center_vertical|center_horizontal"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/button3"
         android:layout_below="@+id/textView14"
-        android:layout_alignEnd="@+id/button3" />
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="Add mp3 files"
+        android:textAlignment="gravity" />
 
     <TextView
+        android:id="@+id/textView16"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="IMPORTANT: This player shares the MP3 files in your music folder: /android/.../music Make sure all MP3 files there can be shared. "
-        android:id="@+id/textView16"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/button4"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginTop="12dp"
+        android:text="IMPORTANT: This player shares the MP3 files in your music folder: /android/.../music Make sure all MP3 files there can be shared. " />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Sync Library"
         android:id="@+id/syncLibrary"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_below="@+id/textView16"
-        android:layout_alignParentEnd="true" />
+        android:layout_marginTop="12dp"
+        android:text="Sync Library" />
 
     <ProgressBar
         android:id="@+id/syncLibrarySpinner"
         style="?android:attr/progressBarStyleLarge"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignBottom="@+id/syncLibrary"
+        android:layout_alignTop="@+id/syncLibrary"
+        android:layout_toEndOf="@+id/mediaStorage"
+        android:layout_toStartOf="@+id/syncLibrary" />
+
+    <TextView
+        android:id="@+id/textView25"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/syncLibrary"
-        android:layout_alignEnd="@+id/syncLibrary"
-        android:layout_alignBottom="@+id/syncLibrary"
-        android:layout_alignStart="@+id/syncLibrary" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/syncLibrary"
+        android:layout_marginTop="12dp"
+        android:text="Free storage:" />
+
+    <TextView
+        android:id="@+id/textView26"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView25"
+        android:layout_marginTop="12dp"
+        android:text="Media storage:" />
+
+    <TextView
+        android:id="@+id/freeStorage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/textView25"
+        android:layout_marginLeft="12dp"
+        android:layout_toEndOf="@+id/textView25"
+        android:text="2.3 GB"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/mediaStorage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/textView26"
+        android:layout_marginLeft="12dp"
+        android:layout_toEndOf="@+id/textView26"
+        android:text="420 MB"
+        android:textStyle="bold" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/textView26"
+        android:layout_marginTop="12dp" />
 
 </RelativeLayout>

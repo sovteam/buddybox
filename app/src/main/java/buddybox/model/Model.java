@@ -90,6 +90,7 @@ public class Model implements IModel {
     private Song deleteSong;
     private Song songSelected;
     private Integer seekTo;
+    private Long mediaStorageUsed;
 
     public Model(Context context) {
         this.context = context;
@@ -335,6 +336,7 @@ public class Model implements IModel {
         values.put("IS_MISSING", true);
         DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", values, "HASH=?", new String[]{event.song.hash.toString()});
         event.song.setMissing();
+        updateMediaStorageUsed(-event.song.fileLength);
     }
 
     private void songFound(SongFound event) {
@@ -354,6 +356,13 @@ public class Model implements IModel {
         System.out.println("@@@ ADD SONG: " + song.name);
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
+        updateMediaStorageUsed(song.fileLength);
+    }
+
+    private void updateMediaStorageUsed(long fileLength) {
+        if (mediaStorageUsed == null)
+            mediaStorageUsed = 0L;
+        mediaStorageUsed += fileLength;
     }
 
     private Song findSongByHash(Hash hash) {
@@ -631,6 +640,7 @@ public class Model implements IModel {
                 null,
                 1,
                 getAvailableMemorySize(),
+                getMediaStorageUsed(),
                 playlistAllSongs(),
                 artists(),
                 syncLibraryRequested,
@@ -765,6 +775,17 @@ public class Model implements IModel {
         return availableBlocks * blockSize;
     }
 
+    private Long getMediaStorageUsed() {
+        if (mediaStorageUsed == null) {
+            mediaStorageUsed = 0L;
+            for (Song song : allSongs) {
+                if (!song.isMissing)
+                    mediaStorageUsed += song.fileLength;
+            }
+        }
+        return mediaStorageUsed;
+    }
+
     private File musicDirectory() {
         if (musicDirectory == null) {
             musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
@@ -785,4 +806,6 @@ public class Model implements IModel {
     public void removeStateListener(StateListener listener) {
         this.listeners.remove(listener);
     }
+
+
 }

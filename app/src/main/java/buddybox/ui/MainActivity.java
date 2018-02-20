@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
@@ -29,9 +30,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
@@ -39,6 +42,7 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import buddybox.ModelSim;
 import buddybox.core.IModel;
@@ -93,14 +97,14 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         setContentView(R.layout.activity_main);
 
         // Library pager
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager = findViewById(R.id.viewpager);
         setupViewPager(viewPager);
 
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
         // Loved list
-        ListView lovedList = (ListView) findViewById(R.id.lovedPlayables);
+        ListView lovedList = findViewById(R.id.lovedPlayables);
         lovedList.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             dispatch(new Play(lovedPlaylist, i));
         }});
@@ -162,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], @NonNull int[] grantResults) {
         if (requestCode == WRITE_EXTERNAL_STORAGE) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -259,11 +263,26 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private void updateSharing(State state) {
         if (state.syncLibraryPending) {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.VISIBLE);
-            findViewById(R.id.syncLibrary).setVisibility(View.GONE);
+            findViewById(R.id.syncLibrary).setEnabled(false);
+            ((Button)findViewById(R.id.syncLibrary)).setText("Synchronizing");
         } else {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.GONE);
-            findViewById(R.id.syncLibrary).setVisibility(View.VISIBLE);
+            findViewById(R.id.syncLibrary).setEnabled(true);
+            ((Button)findViewById(R.id.syncLibrary)).setText("Sync Library");
         }
+
+        ((TextView)findViewById(R.id.freeStorage)).setText(formatStorage(state.availableMemorySize));
+        ((TextView)findViewById(R.id.mediaStorage)).setText(formatStorage(state.mediaStorageUsed));
+        ProgressBar bar = findViewById(R.id.progressBar);
+        bar.setMax((int) state.availableMemorySize);
+        bar.setProgress((int) state.mediaStorageUsed);
+    }
+
+    private String formatStorage(Long storage) {
+        double memory = (double) storage / 1024 / 1024;
+        return (memory > 1024)
+            ? (String.format(Locale.US, "%.1f", memory / 1024) + " GB")
+            : (String.format(Locale.US, "%.1f", memory) + " MB");
     }
 
     private void updateLovedState(State state) {
@@ -327,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }
 
         private void setText(View rowView, int id, String value) {
-            TextView textView = (TextView) rowView.findViewById(id);
+            TextView textView = rowView.findViewById(id);
             textView.setText(value);
         }
 

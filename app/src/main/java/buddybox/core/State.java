@@ -32,6 +32,7 @@ public class State {
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
     public final long availableMemorySize;
+    public final long mediaStorageUsed;
     public final List<Artist> artists;
     public final boolean isSampling;
     public final boolean repeatAll;
@@ -45,7 +46,7 @@ public class State {
     public final boolean isShuffle;
     public final Song selectedSong;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong) {
         this.seekTo = seekTo;
         this.isShuffle = isShuffle;
         this.buddyCount = buddyCount;
@@ -68,6 +69,7 @@ public class State {
         this.playlists = playlists;
         this.searchResults = searchResults;
         this.availableMemorySize = availableMemorySize;
+        this.mediaStorageUsed = mediaStorageUsed;
         this.syncLibraryPending = syncLibraryRequested;
         this.deleteSong = deleteSong;
         this.selectedPlaylist = selectedPlaylist;
