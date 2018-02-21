@@ -3,6 +3,8 @@ package buddybox.model;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
@@ -37,6 +39,8 @@ import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
 import buddybox.core.events.SeekTo;
+import buddybox.core.events.SetHeadphonesVolume;
+import buddybox.core.events.SetSpeakerVolume;
 import buddybox.core.events.SongDeleteRequest;
 import buddybox.core.events.SongDeleted;
 import buddybox.core.events.SongFound;
@@ -57,10 +61,15 @@ import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
+import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_CONNECTED;
+import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
 
 /** The Model is modified only through dispatched events, handled sequentially.
  * Only the Model handles the database. */
 public class Model implements IModel {
+
+    public static final String HEADPHONES = "headphones";
+    public static final String SPEAKER = "speaker";
 
     private final Context context;
     private final Handler handler = new Handler();
@@ -91,6 +100,9 @@ public class Model implements IModel {
     private Song songSelected;
     private Integer seekTo;
     private Long mediaStorageUsed;
+    private String outputActive;
+    private int speakerVolume = 100;
+    private int headphonesVolume = 50;
 
     public Model(Context context) {
         this.context = context;
@@ -112,8 +124,8 @@ public class Model implements IModel {
         System.out.println("@@@ Event class " + cls);
 
         // player
-        if (cls == Play.class) play((Play)event);
-        if (cls == SeekTo.class) seekTo((SeekTo)event);
+        if (cls == Play.class) play((Play) event);
+        if (cls == SeekTo.class) seekTo((SeekTo) event);
         if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == SKIP_NEXT) skip(+1);
@@ -122,33 +134,41 @@ public class Model implements IModel {
         if (event == SHUFFLE) shuffle();
         if (event == FINISHED_PLAYING) finishedPlaying();
 
+        // sound output
+        if (event == HEADPHONES_CONNECTED) headphonesConnected();
+        if (event == HEADPHONES_DISCONNECTED) headphonesDisconnected();
+        if (cls == SetSpeakerVolume.class) setSpeakerVolume((SetSpeakerVolume) event);
+        if (cls == SetHeadphonesVolume.class) setHeadphonesVolume((SetHeadphonesVolume) event);
+
+
         // playlist
-        if (cls == CreatePlaylist.class)                createPlaylist((CreatePlaylist) event);
-        if (cls == DeletePlaylist.class)                deletePlaylist((DeletePlaylist) event);
-        if (cls == PlaylistAddSong.class)               addSongToPlaylist((PlaylistAddSong) event);
-        if (cls == PlaylistRemoveSong.class)            removeSongFromPlaylist((PlaylistRemoveSong) event);
-        if (cls == PlaylistSetName.class)               setPlaylistName((PlaylistSetName) event);
-        if (cls == PlaylistSelected.class)              playlistSelected((PlaylistSelected) event);
-        if (cls == PlaylistChangeSongPosition.class)    playlistChangeSongPosition((PlaylistChangeSongPosition) event);
+        if (cls == CreatePlaylist.class) createPlaylist((CreatePlaylist) event);
+        if (cls == DeletePlaylist.class) deletePlaylist((DeletePlaylist) event);
+        if (cls == PlaylistAddSong.class) addSongToPlaylist((PlaylistAddSong) event);
+        if (cls == PlaylistRemoveSong.class) removeSongFromPlaylist((PlaylistRemoveSong) event);
+        if (cls == PlaylistSetName.class) setPlaylistName((PlaylistSetName) event);
+        if (cls == PlaylistSelected.class) playlistSelected((PlaylistSelected) event);
+        if (cls == PlaylistChangeSongPosition.class)
+            playlistChangeSongPosition((PlaylistChangeSongPosition) event);
 
         // sampler
         if (cls == SamplerUpdated.class) samplerUpdate((SamplerUpdated) event);
-        if (event == SAMPLER_START)      samplerStart();
-        if (event == SAMPLER_STOP)       samplerStop();
-        if (cls == SamplerHate.class)    samplerHate((SamplerHate) event);
-        if (cls == SamplerDelete.class)  samplerDelete((SamplerDelete) event);
-        if (cls == SamplerLove.class)    samplerLove((SamplerLove) event);
+        if (event == SAMPLER_START) samplerStart();
+        if (event == SAMPLER_STOP) samplerStop();
+        if (cls == SamplerHate.class) samplerHate((SamplerHate) event);
+        if (cls == SamplerDelete.class) samplerDelete((SamplerDelete) event);
+        if (cls == SamplerLove.class) samplerLove((SamplerLove) event);
 
         if (event == LOVED_VIEWED) lovedViewed();
 
         // library
-        if (cls == SongFound.class)         songFound((SongFound)event);
-        if (cls == SongMissing.class)       songMissing((SongMissing)event);
-        if (cls == SongDeleted.class)       songDeleted((SongDeleted)event);
-        if (cls == SongDeleteRequest.class) songDeleteRequest((SongDeleteRequest)event);
-        if (cls == SongSelected.class)      songSelected((SongSelected)event);
-        if (cls == SongUpdate.class)        songUpdate((SongUpdate)event);
-        if (event == SYNC_LIBRARY)          syncLibrary();
+        if (cls == SongFound.class) songFound((SongFound) event);
+        if (cls == SongMissing.class) songMissing((SongMissing) event);
+        if (cls == SongDeleted.class) songDeleted((SongDeleted) event);
+        if (cls == SongDeleteRequest.class) songDeleteRequest((SongDeleteRequest) event);
+        if (cls == SongSelected.class) songSelected((SongSelected) event);
+        if (cls == SongUpdate.class) songUpdate((SongUpdate) event);
+        if (event == SYNC_LIBRARY) syncLibrary();
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
         updateListeners();
@@ -356,7 +376,8 @@ public class Model implements IModel {
         System.out.println("@@@ ADD SONG: " + song.name);
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
-        updateMediaStorageUsed(song.fileLength);
+        if (!song.isMissing)
+            updateMediaStorageUsed(song.fileLength);
     }
 
     private void updateMediaStorageUsed(long fileLength) {
@@ -646,7 +667,10 @@ public class Model implements IModel {
                 syncLibraryRequested,
                 deleteSong,
                 selectedPlaylist,
-                songSelected);
+                songSelected,
+                getOutputActive(),
+                speakerVolume,
+                headphonesVolume);
     }
 
     private Integer reportSeekTo() {
@@ -780,7 +804,7 @@ public class Model implements IModel {
             mediaStorageUsed = 0L;
             for (Song song : allSongs) {
                 if (!song.isMissing)
-                    mediaStorageUsed += song.fileLength;
+                    updateMediaStorageUsed(song.fileLength);
             }
         }
         return mediaStorageUsed;
@@ -807,5 +831,37 @@ public class Model implements IModel {
         this.listeners.remove(listener);
     }
 
+    private String getOutputActive() {
+        if (outputActive == null)
+            outputActive = isHeadphonesPlugged() ? HEADPHONES : SPEAKER;
+        return outputActive;
+    }
 
+    private boolean isHeadphonesPlugged(){
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager == null)
+            return false;
+
+        AudioDeviceInfo[] audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+        for (AudioDeviceInfo device : audioDevices)
+            if (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES || device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADSET)
+                return true;
+        return false;
+    }
+
+    private void headphonesConnected() {
+        outputActive = HEADPHONES;
+    }
+
+    private void headphonesDisconnected() {
+        outputActive = SPEAKER;
+    }
+
+    public void setSpeakerVolume(SetSpeakerVolume event) {
+        speakerVolume = event.volume;
+    }
+
+    public void setHeadphonesVolume(SetHeadphonesVolume event) {
+        headphonesVolume = event.volume;
+    }
 }

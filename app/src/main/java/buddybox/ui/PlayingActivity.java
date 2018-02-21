@@ -62,7 +62,7 @@ public class PlayingActivity extends AppCompatActivity {
         findViewById(R.id.repeat).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {             dispatch(REPEAT);
         }});
 
-        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public int newPosition;
 

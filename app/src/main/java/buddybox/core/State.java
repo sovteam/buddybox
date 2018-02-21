@@ -45,10 +45,14 @@ public class State {
     public final Integer seekTo;
     public final boolean isShuffle;
     public final Song selectedSong;
+    public final int speakerVolume;
+    public final int headphonesVolume;
+    public final String outputActive;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, int speakerVolume, int headphonesVolume) {
         this.seekTo = seekTo;
         this.isShuffle = isShuffle;
+        this.outputActive = outputActive;
         this.buddyCount = buddyCount;
         this.songCount = songCount;
         this.musicFolders = musicFolders;
@@ -74,5 +78,7 @@ public class State {
         this.deleteSong = deleteSong;
         this.selectedPlaylist = selectedPlaylist;
         this.selectedSong = selectedSong;
+        this.speakerVolume = speakerVolume;
+        this.headphonesVolume = headphonesVolume;
     }
 }

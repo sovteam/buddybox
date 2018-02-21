@@ -14,10 +14,13 @@ import buddybox.core.Song;
 import buddybox.core.State;
 
 import static buddybox.core.events.Play.FINISHED_PLAYING;
+import static buddybox.model.Model.HEADPHONES;
 import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.ui.ModelProxy.dispatch;
 
 public class Player {
+    private final static int MAX_VOLUME = 100;
+
     private static MediaPlayer mediaPlayer;
     private static Context context;
     private static Song songPlaying;
@@ -25,7 +28,6 @@ public class Player {
     private static Handler handler = new Handler();
     private static boolean playCycleRunning = false;
     private static List<ProgressListener> listeners = new ArrayList<>();
-
 
     public static void init(Context context) {
         Player.context = context;
@@ -41,6 +43,13 @@ public class Player {
     }
 
     private static void updateState(State state) {
+        int volumeConfig = state.outputActive.equals(HEADPHONES) ? state.headphonesVolume : state.speakerVolume;
+        float volume = volumeConfig == 100
+                ? 1f
+                : (float) (1 - (Math.log(MAX_VOLUME - volumeConfig) / Math.log(MAX_VOLUME)));
+        mediaPlayer.setVolume(volume, volume);
+
+
         if (state.seekTo != null) {
             mediaPlayer.seekTo(state.seekTo);
             return;
@@ -59,6 +68,7 @@ public class Player {
             startPlayCycle();
             return;
         }
+
 
         try {
             Uri myUri = Uri.parse(state.songPlaying.filePath);

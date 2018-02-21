@@ -3,17 +3,16 @@ package buddybox.ui;
 import android.Manifest;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -35,6 +34,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
@@ -46,14 +46,16 @@ import java.util.Locale;
 
 import buddybox.ModelSim;
 import buddybox.core.IModel;
-import buddybox.core.events.Play;
 import buddybox.core.Playable;
 import buddybox.core.Playlist;
+import buddybox.core.Song;
+import buddybox.core.State;
+import buddybox.core.events.Play;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
-import buddybox.core.Song;
-import buddybox.core.State;
+import buddybox.core.events.SetHeadphonesVolume;
+import buddybox.core.events.SetSpeakerVolume;
 import buddybox.io.Library;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
@@ -67,11 +69,13 @@ import buddybox.ui.notification.NotificationSkipNextReceiver;
 import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
 import static buddybox.core.Dispatcher.dispatch;
+import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
-import static buddybox.core.events.Library.SYNC_LIBRARY;
+import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_CONNECTED;
+import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
 
 public class MainActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
 
@@ -89,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private ViewPager viewPager;
 
     private Song sampling;
+    private HeadsetPlugReceiver headsetPlugReceiver;
+    private SeekBar headphoneSeekBar;
+    private SeekBar speakerSeekBar;
 
 
     @Override
@@ -134,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }});
 
         navigateTo(R.id.frameLibrary);
+
+        setHeadsetPlugObserver();
+        setVolumeControls();
 
         checkWriteExternalStoragePermission();
     }
@@ -227,7 +237,11 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     @Override
     protected void onDestroy() {
         closeMainNotification();
-        System.out.println(">>> Main onDestroy()");
+
+        if (headsetPlugReceiver != null) {
+            unregisterReceiver(headsetPlugReceiver);
+            headsetPlugReceiver = null;
+        }
         super.onDestroy();
     }
 
@@ -276,6 +290,20 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         ProgressBar bar = findViewById(R.id.progressBar);
         bar.setMax((int) state.availableMemorySize);
         bar.setProgress((int) state.mediaStorageUsed);
+
+        // update output
+        if (state.outputActive.equals(Model.HEADPHONES))
+            ((ImageView)findViewById(R.id.headphones)).setImageResource(R.drawable.ic_headphones_blue);
+        else
+            ((ImageView)findViewById(R.id.headphones)).setImageResource(R.drawable.ic_headphones);
+
+        if (state.outputActive.equals(Model.SPEAKER))
+            ((ImageView)findViewById(R.id.speaker)).setImageResource(R.drawable.ic_speaker_phone_blue);
+        else
+            ((ImageView)findViewById(R.id.speaker)).setImageResource(R.drawable.ic_speaker_phone);
+
+        speakerSeekBar.setProgress(state.speakerVolume);
+        headphoneSeekBar.setProgress(state.headphonesVolume);
     }
 
     private String formatStorage(Long storage) {
@@ -535,5 +563,77 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         nm.notify(id, notificationBuilder.build());
     }
+
+    private void setHeadsetPlugObserver() {
+        headsetPlugReceiver = new HeadsetPlugReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.intent.action.HEADSET_PLUG");
+        registerReceiver(headsetPlugReceiver, intentFilter);
+    }
+
+    class HeadsetPlugReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (!intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+                return;
+            }
+            boolean connectedHeadphones = (intent.getIntExtra("state", 0) == 1);
+            boolean connectedMicrophone = (intent.getIntExtra("microphone", 0) == 1) && connectedHeadphones;
+            String headsetName = intent.getStringExtra("name");
+            /*
+                if (state.isConnectedHeadphones == connectedHeadphones)
+                    return; */
+
+            if (connectedHeadphones)
+                dispatch(HEADPHONES_CONNECTED);
+            else
+                dispatch(HEADPHONES_DISCONNECTED);
+
+            System.out.println(">>> connectedHeadphones " + connectedHeadphones + " " + headsetName);
+        }
+    }
+
+    private void setVolumeControls() {
+        headphoneSeekBar = findViewById(R.id.headphoneSeekBar);
+        headphoneSeekBar.setMax(100);
+        headphoneSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private int newPosition;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                newPosition = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(newPosition);
+                ModelProxy.dispatch(new SetHeadphonesVolume(newPosition));
+            }
+        });
+
+        speakerSeekBar = findViewById(R.id.speakerSeekBar);
+        speakerSeekBar.setMax(100);
+        speakerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private int newPosition;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                newPosition = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(newPosition);
+                ModelProxy.dispatch(new SetSpeakerVolume(newPosition));
+            }
+        });
+    }
+
 
 }
