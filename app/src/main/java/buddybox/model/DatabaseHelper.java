@@ -11,7 +11,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "buddybox_database_v1";
     private static final int DATABASE_VERSION = 1;
 
-    public static synchronized DatabaseHelper getInstance(Context context) {
+    static synchronized DatabaseHelper getInstance(Context context) {
         if (INSTANCE == null)
             INSTANCE = new DatabaseHelper(context.getApplicationContext());
 

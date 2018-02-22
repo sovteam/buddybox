@@ -1,7 +1,9 @@
 package buddybox.ui.library;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,20 +30,22 @@ public class ArtistsFragment extends Fragment {
     private View view;
     private List<Artist> artists;
     private IModel.StateListener listener;
+    private FragmentActivity activity;
 
     public ArtistsFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = getActivity();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.library_artists, container, false);
 
         // List artists
-        ListView list = (ListView) view.findViewById(R.id.artists);
+        ListView list = view.findViewById(R.id.artists);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             System.out.println("GUI Artist click " + i);
         }});
@@ -76,16 +80,20 @@ public class ArtistsFragment extends Fragment {
 
     private class ArtistsArrayAdapter extends ArrayAdapter<Artist> {
         ArtistsArrayAdapter() {
-            super(getActivity(), -1, new ArrayList<Artist>());
+            super(activity, -1, new ArrayList<Artist>());
         }
 
+        @NonNull
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
-            View rowView = convertView == null
-                    ? getActivity().getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
+        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
+            View rowView = (convertView == null)
+                    ? activity.getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
                     : convertView;
 
             Artist artist = getItem(position);
+            if (artist == null)
+                return rowView;
+
             setText(rowView, android.R.id.text1, artist.name);
             setText(rowView, android.R.id.text2, Integer.toString(artist.songsCount()) + " songs");
 
@@ -93,7 +101,7 @@ public class ArtistsFragment extends Fragment {
         }
 
         private void setText(View rowView, int id, String value) {
-            TextView textView = (TextView) rowView.findViewById(id);
+            TextView textView = rowView.findViewById(id);
             textView.setText(value);
         }
 

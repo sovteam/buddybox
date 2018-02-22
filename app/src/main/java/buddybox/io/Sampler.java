@@ -18,7 +18,6 @@ import static buddybox.ui.ModelProxy.dispatch;
 
 public class Sampler {
     private static Context context;
-    private static List<Song> samples;
 
     public static void init(Context context) {
         Sampler.context = context;
@@ -74,7 +73,7 @@ public class Sampler {
     }
 
     private static void updateSamplerLibrary() {
-        samples = SongUtils.listSongs(samplerDirectory());
+        List<Song> samples = SongUtils.listSongs(samplerDirectory());
         dispatch(new SamplerUpdated(samples));
     }
 

@@ -5,7 +5,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
@@ -16,12 +18,22 @@ import static buddybox.ui.ModelProxy.dispatch;
 
 public class SongOptionsDialog extends DialogFragment {
 
+    private FragmentActivity activity;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        activity = getActivity();
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-        final String songHash = getArguments().getString("songHash");
+        Bundle args = getArguments();
+        assert args != null;
+        final String songHash = args.getString("songHash");
         String[] options = new String[]{"Edit Song", "Delete Song"};
 
         builder.setTitle("Song Options")

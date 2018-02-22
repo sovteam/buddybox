@@ -3,7 +3,10 @@ package buddybox.ui.library;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import buddybox.core.IModel;
-import buddybox.core.events.Play;
 import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.Play;
 import buddybox.core.events.SongSelected;
 import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
@@ -38,16 +41,18 @@ public class RecentFragment extends Fragment {
     private List<Playlist> playlists;
     private Song songPlaying;
     private IModel.StateListener listener;
+    private FragmentActivity activity;
 
     public RecentFragment(){}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = getActivity();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.library_recent, container, false);
 
         // List recent songs
@@ -92,16 +97,20 @@ public class RecentFragment extends Fragment {
 
     private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
         PlayablesArrayAdapter() {
-            super(getActivity(), -1, new ArrayList<Playable>());
+            super(activity, -1, new ArrayList<Playable>());
         }
 
+        @NonNull
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent) {
+        public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = convertView == null
-                    ? getActivity().getLayoutInflater().inflate(R.layout.song_item, parent, false)
+                    ? activity.getLayoutInflater().inflate(R.layout.song_item, parent, false)
                     : convertView;
 
             Playable item = getItem(position);
+            if (item == null)
+                return rowView;
+
             TextView text1 = rowView.findViewById(R.id.songName);
             TextView text2 = rowView.findViewById(R.id.text2);
             text1.setText(item.name());
@@ -156,7 +165,9 @@ public class RecentFragment extends Fragment {
         args.putLongArray("playlistsIds", playlistIds);
         frag.setArguments(args);
 
-        frag.show(getFragmentManager(), "Select Playlist");
+        FragmentManager fragManager = getFragmentManager();
+        if (fragManager != null)
+            frag.show(fragManager, "Select Playlist");
     }
 
     public void updateState(State state) {

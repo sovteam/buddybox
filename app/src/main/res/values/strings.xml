@@ -17,4 +17,6 @@
     <string name="subtitle">Subtitle</string>
     <string name="maximize_playing_song">Maximize playing song</string>
     <string name="SongNameCantBeEmpty">Song name cannot be empty</string>
+    <string name="Synchronizing">Synchronizing</string>
+    <string name="SyncLibrary">Sync Library</string>
 </resources>

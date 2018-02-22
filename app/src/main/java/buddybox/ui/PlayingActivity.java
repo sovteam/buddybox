@@ -64,7 +64,7 @@ public class PlayingActivity extends AppCompatActivity {
 
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public int newPosition;
+            int newPosition;
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

@@ -50,6 +50,8 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
     public void onBindViewHolder(ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         Song song = mItemList.get(position).second;
+        if (song == null)
+            return;
         holder.setSong(song);
         holder.songName.setText(song.name);
         holder.songArtist.setText(song.artist);

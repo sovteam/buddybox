@@ -40,9 +40,9 @@ import android.widget.TextView;
 import com.adalbertosoares.buddybox.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import buddybox.ModelSim;
 import buddybox.core.IModel;
@@ -88,10 +88,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     NotificationCompat.Builder mainNotification;
     private int notificationId = 0; // TODO move to a better place
 
-    // Library Pager
-    private TabLayout tabLayout;
-    private ViewPager viewPager;
-
     private Song sampling;
     private HeadsetPlugReceiver headsetPlugReceiver;
     private SeekBar headphoneSeekBar;
@@ -104,10 +100,10 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         setContentView(R.layout.activity_main);
 
         // Library pager
-        viewPager = findViewById(R.id.viewpager);
+        ViewPager viewPager = findViewById(R.id.viewpager);
         setupViewPager(viewPager);
 
-        tabLayout = findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
         // Loved list
@@ -178,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == WRITE_EXTERNAL_STORAGE) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -203,15 +199,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();
-        private final HashMap<String, Fragment> allFragments;
 
-        public ViewPagerAdapter(FragmentManager manager) {
+        ViewPagerAdapter(FragmentManager manager) {
             super(manager);
-            allFragments = new HashMap<>();
-        }
-
-        public Fragment getFragment(String title) {
-            return allFragments.get(title);
         }
 
         @Override
@@ -224,10 +214,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             return mFragmentList.size();
         }
 
-        public void addFragment(Fragment fragment, String title) {
+        void addFragment(Fragment fragment, String title) {
             mFragmentList.add(fragment);
             mFragmentTitleList.add(title);
-            allFragments.put(title, fragment);
         }
 
         @Override
@@ -280,11 +269,11 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         if (state.syncLibraryPending) {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.VISIBLE);
             findViewById(R.id.syncLibrary).setEnabled(false);
-            ((Button)findViewById(R.id.syncLibrary)).setText("Synchronizing");
+            ((Button)findViewById(R.id.syncLibrary)).setText(R.string.Synchronizing);
         } else {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.GONE);
             findViewById(R.id.syncLibrary).setEnabled(true);
-            ((Button)findViewById(R.id.syncLibrary)).setText("Sync Library");
+            ((Button)findViewById(R.id.syncLibrary)).setText(R.string.SyncLibrary);
         }
 
         ((TextView)findViewById(R.id.freeStorage)).setText(formatStorage(state.availableMemorySize));
@@ -367,13 +356,17 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             super(MainActivity.this, -1, new ArrayList<Playable>());
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = convertView == null
                     ? getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
                     : convertView;
 
             Playable item = getItem(position);
+            if (item == null)
+                return rowView;
+
             setText(rowView, android.R.id.text1, item.name());
             setText(rowView, android.R.id.text2, item.subtitle());
             return rowView;
@@ -391,12 +384,15 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private class LovedPlayablesArrayAdapter extends PlayablesArrayAdapter {
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = super.getView(position, convertView, parent);
-            TextView text1 = (TextView) rowView.findViewById(android.R.id.text1);
-            TextView text2 = (TextView) rowView.findViewById(android.R.id.text2);
+            TextView text1 = rowView.findViewById(android.R.id.text1);
+            TextView text2 = rowView.findViewById(android.R.id.text2);
             Song item = (Song)getItem(position);
+            if (item == null)
+                return rowView;
 
             if (item.isLovedViewed()) {
                 text1.setTextColor(Color.WHITE);
@@ -511,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private NotificationCompat.Builder mainNotification() {
         if (mainNotification == null) {
-            mainNotification = new NotificationCompat.Builder(this);
+            mainNotification = new NotificationCompat.Builder(this, "Main Notification");
             mainNotification.setAutoCancel(false);
             mainNotification.setSmallIcon(R.drawable.ic_play);
 
@@ -562,11 +558,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private void closeMainNotification() {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        assert nm != null;
         nm.cancel(notificationId);
     }
 
     private void notify(int id, NotificationCompat.Builder notificationBuilder) {
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        assert nm != null;
         nm.notify(id, notificationBuilder.build());
     }
 
@@ -580,22 +578,19 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     class HeadsetPlugReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (!intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
+            if (!Objects.equals(intent.getAction(), Intent.ACTION_HEADSET_PLUG)) {
                 return;
             }
             boolean connectedHeadphones = (intent.getIntExtra("state", 0) == 1);
-            boolean connectedMicrophone = (intent.getIntExtra("microphone", 0) == 1) && connectedHeadphones;
-            String headsetName = intent.getStringExtra("name");
-            /*
-                if (state.isConnectedHeadphones == connectedHeadphones)
-                    return; */
+            // boolean connectedMicrophone = (intent.getIntExtra("microphone", 0) == 1) && connectedHeadphones;
 
             if (connectedHeadphones)
                 dispatch(HEADPHONES_CONNECTED);
             else
                 dispatch(HEADPHONES_DISCONNECTED);
 
-            System.out.println(">>> connectedHeadphones " + connectedHeadphones + " " + headsetName);
+            // String headsetName = intent.getStringExtra("name");
+            // System.out.println(">>> connectedHeadphones " + connectedHeadphones + " " + headsetName);
         }
     }
 

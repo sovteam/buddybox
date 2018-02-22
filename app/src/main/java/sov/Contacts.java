@@ -2,7 +2,7 @@ package sov;
 
 public class Contacts {
 
-    long[] contactIds() { return null };
+    long[] contactIds() { return null; };
 
     void send(long receiverId, Object payload, int priority, long timeoutMillis) {};
 

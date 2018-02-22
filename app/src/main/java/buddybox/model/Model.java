@@ -857,11 +857,11 @@ public class Model implements IModel {
         outputActive = SPEAKER;
     }
 
-    public void setSpeakerVolume(SetSpeakerVolume event) {
+    private void setSpeakerVolume(SetSpeakerVolume event) {
         speakerVolume = event.volume;
     }
 
-    public void setHeadphonesVolume(SetHeadphonesVolume event) {
+    private void setHeadphonesVolume(SetHeadphonesVolume event) {
         headphonesVolume = event.volume;
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.ui.MainActivity;
 
 import static buddybox.core.events.Play.FINISHED_PLAYING;
 import static buddybox.model.Model.HEADPHONES;

@@ -3,7 +3,9 @@ package buddybox.ui.library;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import buddybox.core.IModel;
-import buddybox.core.events.Play;
 import buddybox.core.Playlist;
 import buddybox.core.State;
+import buddybox.core.events.Play;
 import buddybox.core.events.PlaylistSelected;
-import buddybox.ui.MainActivity;
 import buddybox.ui.ModelProxy;
-import buddybox.ui.PlayingActivity;
 import buddybox.ui.PlaylistActivity;
 
 import static buddybox.ui.ModelProxy.dispatch;
@@ -36,16 +36,18 @@ public class PlaylistsFragment extends Fragment {
     private List<Playlist> playlists;
     private Playlist playlistPlaying;
     private IModel.StateListener listener;
+    private FragmentActivity activity;
 
     public PlaylistsFragment() { }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activity = getActivity();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.library_playlists, container, false);
 
         // List playlists
@@ -73,7 +75,6 @@ public class PlaylistsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         if (ModelProxy.isInitialized()) {
             listener = new IModel.StateListener() { @Override public void update(State state) {
                 updateState(state);
@@ -82,19 +83,29 @@ public class PlaylistsFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        ModelProxy.removeStateListener(listener);
+        super.onDestroy();
+    }
+
     private class PlaylistsArrayAdapter extends ArrayAdapter<Playlist> {
 
         PlaylistsArrayAdapter() {
-            super(getActivity(), -1, new ArrayList<Playlist>());
+            super(activity, -1, new ArrayList<Playlist>());
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = convertView == null
-                    ? getActivity().getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
+                    ? activity.getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
                     : convertView;
 
             Playlist item = getItem(position);
+            if (item == null)
+                return rowView;
+
             TextView text1 = rowView.findViewById(android.R.id.text1);
             TextView text2 = rowView.findViewById(android.R.id.text2);
             text1.setText(item.name());

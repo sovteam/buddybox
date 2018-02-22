@@ -4,7 +4,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
@@ -18,13 +21,24 @@ import static buddybox.ui.ModelProxy.dispatch;
 public class SelectPlaylistDialogFragment extends DialogFragment {
     private String songHash;
     private long[] playlistsIds;
+    private FragmentActivity activity;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        activity = getActivity();
+    }
 
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-        List<String> playlistsNames = getArguments().getStringArrayList("playlistsNames");
+        Bundle args = getArguments();
+        if (args == null)
+            return builder.create();
+
+        List<String> playlistsNames = args.getStringArrayList("playlistsNames");
         if (playlistsNames == null) playlistsNames = new ArrayList<>();
         playlistsNames.add(0, "<Create New Playlist>");
 
@@ -55,6 +69,8 @@ public class SelectPlaylistDialogFragment extends DialogFragment {
         args.putString("songHash", songHash);
         frag.setArguments(args);
 
-        frag.show(getFragmentManager(), "Create Playlist");
+        FragmentManager fragMan = getFragmentManager();
+        if (fragMan != null)
+            frag.show(fragMan, "Create Playlist");
     }
 }

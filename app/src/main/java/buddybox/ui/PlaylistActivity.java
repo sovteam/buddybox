@@ -31,7 +31,6 @@ public class PlaylistActivity extends AppCompatActivity {
     private PlaylistSongsAdapter songsAdapter;
     private Playlist playlist;
     private DragListView mDragListView;
-    private MySwipeRefreshLayout mRefreshLayout;
     private boolean dragging = false;
 
     @Override
@@ -46,7 +45,7 @@ public class PlaylistActivity extends AppCompatActivity {
         findViewById(R.id.playlistMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openPlaylistOptionsDialog(); }});
         findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SHUFFLE_PLAY); }});
 
-        mRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        MySwipeRefreshLayout mRefreshLayout = findViewById(R.id.swipe_refresh_layout);
         mRefreshLayout.setEnabled(false);
         mRefreshLayout.setVerticalScrollBarEnabled(false);
 

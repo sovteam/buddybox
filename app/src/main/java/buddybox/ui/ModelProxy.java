@@ -7,7 +7,7 @@ public class ModelProxy {
 
     private static IModel INSTANCE;
 
-    public static void init(IModel instance) {
+    static void init(IModel instance) {
         if (INSTANCE != null) throw new IllegalStateException();
         INSTANCE = instance;
     }

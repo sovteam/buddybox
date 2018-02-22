@@ -3,10 +3,14 @@ package buddybox.ui;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -19,16 +23,28 @@ import static buddybox.ui.ModelProxy.dispatch;
 
 public class EditPlaylistDialog extends DialogFragment {
 
+    private FragmentActivity activity;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        activity = getActivity();
+    }
+
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_edit_playlist, null);
-        final EditText edit = (EditText)view.findViewById(R.id.playlistName);
+        View view = View.inflate(getContext(), R.layout.dialog_edit_playlist, null);
+        final EditText edit = view.findViewById(R.id.playlistName);
         edit.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        edit.setText(getArguments().getString("playlistName"));
+
+        Bundle args = getArguments();
+        if (args != null)
+            edit.setText(args.getString("playlistName"));
 
         builder.setView(view)
                 .setTitle("Edit Playlist Name")
@@ -50,7 +66,9 @@ public class EditPlaylistDialog extends DialogFragment {
                     }
                 });
         AlertDialog dialog = builder.create();
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        Window window = dialog.getWindow();
+        if (window != null)
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         return dialog;
     }
 }

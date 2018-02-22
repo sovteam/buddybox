@@ -38,7 +38,7 @@ public class Playlist implements Playable {
         return formatDuration(total);
     }
 
-    public String formatDuration(int milliseconds) {
+    private String formatDuration(int milliseconds) {
         int duration = milliseconds / 1000;
         int hours = duration / 60 / 60;
         int minutes = (duration - hours * 60 * 60) / 60;
