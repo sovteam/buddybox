@@ -52,14 +52,15 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.97"
+        android:gravity="center_horizontal"
         android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:gravity="center_vertical|center_horizontal">
+        android:paddingRight="20dp">
 
         <LinearLayout
+            android:id="@+id/songContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/seekBar"
+            android:layout_above="@+id/playlistsScroll"
             android:layout_alignParentStart="true"
             android:gravity="center_vertical"
             android:orientation="vertical">
@@ -69,6 +70,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
+                android:layout_marginTop="40dp"
                 android:text="@string/song"
                 android:textAlignment="center"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -88,20 +90,53 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/playingSongArtist"
+                android:layout_marginBottom="40dp"
                 android:text="@string/genre"
                 android:textAlignment="center"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
-            <LinearLayout
+            <!--<RelativeLayout
                 android:id="@+id/playlistsChips"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/playingSongGenre"
                 android:layout_marginTop="40dp"
-                android:orientation="horizontal"></LinearLayout>
+                android:orientation="horizontal">-->
 
         </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/playlistsScroll"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_above="@+id/seekBar"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <buddybox.ui.util.FlowLayout
+                    android:id="@+id/playlistsChips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="6dip"
+                    android:paddingRight="12dip"
+                    android:paddingTop="6dip">
+
+                    <TextView
+                        android:id="@+id/playlistsText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:text="In playlists: " />
+                </buddybox.ui.util.FlowLayout>
+            </LinearLayout>
+        </ScrollView>
 
         <SeekBar
             android:id="@+id/seekBar"

@@ -7,9 +7,11 @@ import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -24,6 +26,7 @@ import buddybox.core.State;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.SeekTo;
 import buddybox.io.Player;
+import buddybox.ui.util.FlowLayout;
 
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
@@ -42,6 +45,7 @@ public class PlayingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println(">>> Playing onCreated");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playing);
 
@@ -147,15 +151,18 @@ public class PlayingActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
 
         // Show playlists that includes song playing
-        LinearLayout container = findViewById(R.id.playlistsChips);
+        FlowLayout container = findViewById(R.id.playlistsChips);
         container.removeAllViews();
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(12,0,12,0);
+
         List<Playlist> playlists = state.playlistsBySong.get(playing.hash.toString());
-        if (playlists != null) {
+        if (playlists != null && !playlists.isEmpty()) {
+            TextView label = new TextView(this);
+            label.setText("In playlists: ");
+            label.setPadding(0,30,10,12);
+            container.addView(label);
+
             for (final Playlist p : playlists) {
                 final TextView chip = new TextView(this);
-                chip.setLayoutParams(params);
                 chip.setText(p.name());
                 chip.setTextColor(Color.parseColor(state.playlistPlaying == p ? "#03a9f4" : "#FFFFFF" ));
                 chip.setBackgroundResource(R.drawable.shape_chip_grey);
