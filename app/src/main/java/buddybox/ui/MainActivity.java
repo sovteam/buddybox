@@ -118,7 +118,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         // Playing
         findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
-        findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { startActivity(new Intent(MainActivity.this, PlayingActivity.class)); }});
+        findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, PlayingActivity.class));
+                overridePendingTransition(R.anim.slide_in_up, R.anim.stay);
+            }
+        });
 
         // NavBar
         findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLibrary, view); }});
