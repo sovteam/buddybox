@@ -87,7 +87,7 @@ public class Model implements IModel {
     private ArrayList<Playlist> playlists;
     private HashMap<Long, Playlist> playlistsById;
 
-    private boolean isPaused;
+    private boolean isPaused = true;
     private boolean isShuffle = false;
     private boolean repeatAll = true;
     private boolean repeatSong = false;

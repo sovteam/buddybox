@@ -28,8 +28,7 @@
         android:gravity="start|center_vertical"
         android:padding="16dp"
         android:text="Remove Song"
-        android:textColor="@android:color/white"
-        android:textSize="18sp" />
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/item_right"
@@ -61,7 +60,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:padding="16dp"
-            android:src="@drawable/ic_list" />
+            android:src="@drawable/ic_drag_handle" />
 
         <LinearLayout
             android:layout_width="match_parent"

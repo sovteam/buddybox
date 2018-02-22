@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#000000">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -22,6 +23,7 @@
             android:src="@drawable/ic_arrow_back" />
 
         <TextView
+            android:id="@+id/container_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -40,6 +42,16 @@
             android:background="@android:color/transparent"
             app:srcCompat="@drawable/ic_done" />
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/file_missing_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:text="This Song File is Missing"
+        android:textColor="#ef5350" />
 
     <TextView
         android:id="@+id/textView20"

@@ -49,11 +49,14 @@ public class PlaylistsFragment extends Fragment {
         view = inflater.inflate(R.layout.library_playlists, container, false);
 
         // List playlists
-        ListView list = (ListView) view.findViewById(R.id.playlists);
+        ListView list = view.findViewById(R.id.playlists);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            // dispatch(new Play(playlists.get(i), 0));
             dispatch(new PlaylistSelected(playlists.get(i)));
             startActivity(new Intent(getContext(), PlaylistActivity.class));
+        }});
+        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+            dispatch(new Play(playlists.get(i), 0));
+            return true;
         }});
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);

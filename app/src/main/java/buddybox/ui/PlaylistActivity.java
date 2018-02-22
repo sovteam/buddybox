@@ -8,7 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
 import com.woxthebox.draglistview.DragItem;
@@ -101,7 +100,7 @@ public class PlaylistActivity extends AppCompatActivity {
             ((TextView) dragView.findViewById(R.id.songName)).setText(name);
             CharSequence artist = ((TextView) clickedView.findViewById(R.id.songArtist)).getText();
             ((TextView) dragView.findViewById(R.id.songArtist)).setText(artist);
-            dragView.findViewById(R.id.item_layout).setBackgroundColor(Color.parseColor("#03a9f4"));
+            dragView.findViewById(R.id.item_layout).setBackgroundColor(Color.parseColor("#1976d2"));
         }
     }
 

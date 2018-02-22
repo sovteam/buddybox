@@ -1,5 +1,6 @@
 package buddybox.ui;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -108,6 +109,14 @@ public class EditSongActivity extends AppCompatActivity {
 
             ((TextView)findViewById(R.id.fileLength)).setText(String.format("File size: %s", song.printFileLength()));
             ((TextView)findViewById(R.id.songDuration)).setText(String.format("Duration: %s", song.duration()));
+
+            if (song.isMissing) {
+                findViewById(R.id.delete).setVisibility(View.GONE);
+                findViewById(R.id.file_missing_text).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.delete).setVisibility(View.VISIBLE);
+                findViewById(R.id.file_missing_text).setVisibility(View.GONE);
+            }
         }
     }
 

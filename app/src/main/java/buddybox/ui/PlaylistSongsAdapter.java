@@ -92,13 +92,13 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             songArtist.setText(song.artist);
 
             int color = Color.WHITE;
-            int icon = R.drawable.ic_list;
+            int icon = R.drawable.ic_drag_handle;
             if (song.isMissing) {
                 color = Color.parseColor("#e53935"); // RED
-                icon = R.drawable.ic_list_red;
+                icon = R.drawable.ic_drag_handle_red;
             } else if (song == songPlaying) {
                 color = Color.parseColor("#03a9f4"); // BLUE
-                icon = R.drawable.ic_list_blue;
+                icon = R.drawable.ic_drag_handle_blue;
             }
             songName.setTextColor(color);
             songArtist.setTextColor(color);

@@ -145,6 +145,8 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         setHeadsetPlugObserver();
         setVolumeControls();
 
+        System.out.println(">>> Main Activity: onCreate");
+
         checkWriteExternalStoragePermission();
     }
 
@@ -288,19 +290,23 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         ((TextView)findViewById(R.id.freeStorage)).setText(formatStorage(state.availableMemorySize));
         ((TextView)findViewById(R.id.mediaStorage)).setText(formatStorage(state.mediaStorageUsed));
         ProgressBar bar = findViewById(R.id.progressBar);
-        bar.setMax((int) state.availableMemorySize);
+        bar.setMax((int) (state.availableMemorySize + state.mediaStorageUsed));
         bar.setProgress((int) state.mediaStorageUsed);
 
         // update output
-        if (state.outputActive.equals(Model.HEADPHONES))
-            ((ImageView)findViewById(R.id.headphones)).setImageResource(R.drawable.ic_headphones_blue);
-        else
-            ((ImageView)findViewById(R.id.headphones)).setImageResource(R.drawable.ic_headphones);
+        int ic_headphone = state.outputActive.equals(Model.HEADPHONES)
+                ? state.isPaused
+                    ? R.drawable.ic_headphones
+                    : R.drawable.ic_headphones_blue
+                : R.drawable.ic_headphones_grey;
+        ((ImageView)findViewById(R.id.headphones)).setImageResource(ic_headphone);
 
-        if (state.outputActive.equals(Model.SPEAKER))
-            ((ImageView)findViewById(R.id.speaker)).setImageResource(R.drawable.ic_speaker_phone_blue);
-        else
-            ((ImageView)findViewById(R.id.speaker)).setImageResource(R.drawable.ic_speaker_phone);
+        int ic_speaker = state.outputActive.equals(Model.SPEAKER)
+                ? state.isPaused
+                    ? R.drawable.ic_speaker_phone
+                    : R.drawable.ic_speaker_phone_blue
+                : R.drawable.ic_speaker_phone_grey;
+        ((ImageView)findViewById(R.id.speaker)).setImageResource(ic_speaker);
 
         speakerSeekBar.setProgress(state.speakerVolume);
         headphoneSeekBar.setProgress(state.headphonesVolume);
