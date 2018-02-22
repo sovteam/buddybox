@@ -56,6 +56,7 @@ import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
+import buddybox.io.CallDetectService;
 import buddybox.io.Library;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
@@ -144,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         navigateTo(R.id.frameLibrary);
 
-        setHeadsetPlugObserver();
+        setHeadsetPlugObserver(); // TODO Extract to io class
         setVolumeControls();
 
         System.out.println(">>> Main Activity: onCreate");
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         Player.init(this);
         Library.init();
         Sampler.init(this);
+        CallDetectService.init(this);
 
         dispatch(SYNC_LIBRARY);
     }

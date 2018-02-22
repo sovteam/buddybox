@@ -4,6 +4,7 @@
     package="com.adalbertosoares.buddybox">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"
@@ -33,6 +34,12 @@
         <receiver android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"    android:exported="false" />
         <receiver android:name="buddybox.ui.notification.NotificationSkipNextReceiver"     android:exported="false" />
         <receiver android:name="buddybox.ui.notification.NotificationSkipPreviousReceiver" android:exported="false" />
+
+        <service
+            android:name="buddybox.io.CallDetectService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
 
     </application>
 

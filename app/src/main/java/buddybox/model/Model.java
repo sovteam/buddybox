@@ -49,6 +49,9 @@ import buddybox.core.events.SongSelected;
 import buddybox.core.events.SongUpdate;
 import utils.Hash;
 
+import static buddybox.core.events.CallDetect.OUTGOING_CALL;
+import static buddybox.core.events.CallDetect.PHONE_IDLE;
+import static buddybox.core.events.CallDetect.RECEIVING_CALL;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
@@ -103,6 +106,8 @@ public class Model implements IModel {
     private String outputActive;
     private int speakerVolume = 100;
     private int headphonesVolume = 50;
+
+    private boolean wasPlayingBeforeCall = false;
 
     public Model(Context context) {
         this.context = context;
@@ -171,7 +176,24 @@ public class Model implements IModel {
         if (event == SYNC_LIBRARY) syncLibrary();
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
+        // call detect
+        if (event == RECEIVING_CALL) phoneCalling();
+        if (event == OUTGOING_CALL) phoneCalling();
+        if (event == PHONE_IDLE) phoneIdle();
+
         updateListeners();
+    }
+
+    private void phoneIdle() {
+        if (wasPlayingBeforeCall && isPaused)
+            playPauseCurrent();
+        wasPlayingBeforeCall = false;
+    }
+
+    private void phoneCalling() {
+        wasPlayingBeforeCall = !isPaused;
+        if (!isPaused)
+            playPauseCurrent();
     }
 
     private void playlistChangeSongPosition(PlaylistChangeSongPosition event) {
