@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.HapticFeedbackConstants;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -56,6 +57,7 @@ import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
+import buddybox.io.BluetoothDetectService;
 import buddybox.io.CallDetectService;
 import buddybox.io.Library;
 import buddybox.io.Player;
@@ -72,6 +74,8 @@ import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Play.SKIP_NEXT;
+import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
@@ -93,6 +97,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private HeadsetPlugReceiver headsetPlugReceiver;
     private SeekBar headphoneSeekBar;
     private SeekBar speakerSeekBar;
+
+    private int  lastKeyPressed;
+    private long lastKeyPressedStamp;
 
 
     @Override
@@ -154,15 +161,48 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void initApp() {
-        findViewById(R.id.permission).setVisibility(View.INVISIBLE);
-
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
         Player.init(this);
         Library.init();
         Sampler.init(this);
         CallDetectService.init(this);
-
+        System.out.println("%%%%%%%%%%%%%%%%%%%% Call BT init");
+        BluetoothDetectService.init(this);
         dispatch(SYNC_LIBRARY);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        /*
+        * 88 - skip previous
+        * 87 - skip next
+        * pause?
+        * play?
+        * stop?
+        *
+        * volume up/down for headset control ?
+        * */
+        System.out.println(">>>> Should SKIP " + (keyCode == lastKeyPressed && (System.currentTimeMillis() - lastKeyPressedStamp) < 600));
+
+        if (keyCode == lastKeyPressed && (System.currentTimeMillis() - lastKeyPressedStamp) < 600)
+            return super.onKeyDown(keyCode, event);
+
+        switch (keyCode) {
+            case 87:
+                dispatch(SKIP_NEXT);
+                break;
+            case 88:
+                dispatch(SKIP_PREVIOUS);
+                break;
+            default:
+                break;
+        }
+
+        lastKeyPressed = keyCode;
+        lastKeyPressedStamp = System.currentTimeMillis();
+
+        System.out.println("######## Key down code: " + keyCode);
+        return super.onKeyDown(keyCode, event);
     }
 
     private void checkWriteExternalStoragePermission() {
@@ -178,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                 return;
             }
         }
+        findViewById(R.id.permission).setVisibility(View.GONE);
         initApp();
     }
 
@@ -186,11 +227,12 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         if (requestCode == WRITE_EXTERNAL_STORAGE) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // permission was granted
+                // Permission was granted
                 System.out.println("<<< Permission Granted >>>");
+                findViewById(R.id.permission).setVisibility(View.GONE);
                 initApp();
             } else {
-                // permission denied
+                // Permission denied
                 System.out.println("<<< Permission Denied >>>");
             }
         }
@@ -304,6 +346,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                     : R.drawable.ic_speaker_phone_blue
                 : R.drawable.ic_speaker_phone_grey;
         ((ImageView)findViewById(R.id.speaker)).setImageResource(ic_speaker);
+
+        int ic_bluetooth = state.outputActive.equals(Model.BLUETOOTH)
+                ? state.isPaused
+                    ? R.drawable.ic_bluetooth
+                    : R.drawable.ic_bluetooth_blue
+                : R.drawable.ic_bluetooth_grey;
+        ((ImageView)findViewById(R.id.bluetooth)).setImageResource(ic_bluetooth);
 
         speakerSeekBar.setProgress(state.speakerVolume);
         headphoneSeekBar.setProgress(state.headphonesVolume);

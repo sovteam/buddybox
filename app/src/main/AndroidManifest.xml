@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
         android:allowBackup="true"
@@ -39,6 +40,14 @@
             android:name="buddybox.io.CallDetectService"
             android:enabled="true"
             android:exported="false">
+        </service>
+        <service
+            android:name="buddybox.io.BluetoothDetectService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter android:priority="0">
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
         </service>
 
     </application>

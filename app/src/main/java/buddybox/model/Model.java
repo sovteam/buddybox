@@ -49,6 +49,8 @@ import buddybox.core.events.SongSelected;
 import buddybox.core.events.SongUpdate;
 import utils.Hash;
 
+import static buddybox.core.events.Bluetooth.BLUETOOTH_CONNECT;
+import static buddybox.core.events.Bluetooth.BLUETOOTH_DISCONNECT;
 import static buddybox.core.events.CallDetect.OUTGOING_CALL;
 import static buddybox.core.events.CallDetect.PHONE_IDLE;
 import static buddybox.core.events.CallDetect.RECEIVING_CALL;
@@ -73,6 +75,7 @@ public class Model implements IModel {
 
     public static final String HEADPHONES = "headphones";
     public static final String SPEAKER = "speaker";
+    public static final String BLUETOOTH = "bluetooth";
 
     private final Context context;
     private final Handler handler = new Handler();
@@ -103,11 +106,12 @@ public class Model implements IModel {
     private Song songSelected;
     private Integer seekTo;
     private Long mediaStorageUsed;
-    private String outputActive;
+    private Boolean isHeadphoneConnected;
     private int speakerVolume = 100;
     private int headphonesVolume = 50;
 
     private boolean wasPlayingBeforeCall = false;
+    private boolean isBluetoothConnected;
 
     public Model(Context context) {
         this.context = context;
@@ -181,7 +185,19 @@ public class Model implements IModel {
         if (event == OUTGOING_CALL) phoneCalling();
         if (event == PHONE_IDLE) phoneIdle();
 
+        // bluetooth
+        if (event == BLUETOOTH_CONNECT) bluetoothConnect();
+        if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
+
         updateListeners();
+    }
+
+    private void bluetoothDisconnect() {
+        isBluetoothConnected = false;
+    }
+
+    private void bluetoothConnect() {
+        isBluetoothConnected = true;
     }
 
     private void phoneIdle() {
@@ -690,7 +706,7 @@ public class Model implements IModel {
                 deleteSong,
                 selectedPlaylist,
                 songSelected,
-                getOutputActive(),
+                getOutputConnected(),
                 speakerVolume,
                 headphonesVolume);
     }
@@ -853,30 +869,34 @@ public class Model implements IModel {
         this.listeners.remove(listener);
     }
 
-    private String getOutputActive() {
-        if (outputActive == null)
-            outputActive = isHeadphonesPlugged() ? HEADPHONES : SPEAKER;
-        return outputActive;
+    private String getOutputConnected() {
+        return isBluetoothConnected
+            ? BLUETOOTH
+            : isHeadphonesPlugged()
+                ? HEADPHONES
+                : SPEAKER;
     }
 
     private boolean isHeadphonesPlugged(){
-        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (audioManager == null)
-            return false;
-
-        AudioDeviceInfo[] audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
-        for (AudioDeviceInfo device : audioDevices)
-            if (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES || device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADSET)
-                return true;
-        return false;
+        if (isHeadphoneConnected == null) {
+            isHeadphoneConnected = false;
+            AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (audioManager != null) {
+                AudioDeviceInfo[] audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
+                for (AudioDeviceInfo device : audioDevices)
+                    if (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES || device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADSET)
+                        isHeadphoneConnected = true;
+            }
+        }
+        return isHeadphoneConnected;
     }
 
     private void headphonesConnected() {
-        outputActive = HEADPHONES;
+        isHeadphoneConnected = true;
     }
 
     private void headphonesDisconnected() {
-        outputActive = SPEAKER;
+        isHeadphoneConnected = false;
     }
 
     private void setSpeakerVolume(SetSpeakerVolume event) {

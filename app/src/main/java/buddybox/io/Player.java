@@ -120,7 +120,6 @@ public class Player {
     }
 
     private static void notifyListeners() {
-        System.out.println("update listeners: " + mediaPlayer.getCurrentPosition());
         for (ProgressListener listener : listeners) {
             listener.updateProgress(mediaPlayer.getCurrentPosition());
         }
