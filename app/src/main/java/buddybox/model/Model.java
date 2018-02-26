@@ -155,7 +155,6 @@ public class Model implements IModel {
         if (cls == SetSpeakerVolume.class) setSpeakerVolume((SetSpeakerVolume) event);
         if (cls == SetHeadphonesVolume.class) setHeadphonesVolume((SetHeadphonesVolume) event);
 
-
         // playlist
         if (cls == CreatePlaylist.class) createPlaylist((CreatePlaylist) event);
         if (cls == DeletePlaylist.class) deletePlaylist((DeletePlaylist) event);
@@ -882,11 +881,11 @@ public class Model implements IModel {
     }
 
     private String getOutputConnected() {
-        return isBluetoothConnected
-            ? BLUETOOTH
-            : isHeadphonesPlugged()
+        return isHeadphonesPlugged()
                 ? HEADPHONES
-                : SPEAKER;
+                : isBluetoothConnected
+                    ? BLUETOOTH
+                    : SPEAKER;
     }
 
     private boolean isHeadphonesPlugged(){
