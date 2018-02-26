@@ -55,6 +55,7 @@ import buddybox.core.events.Play;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
+import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
 import buddybox.io.BluetoothDetectService;
@@ -81,6 +82,9 @@ import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
 import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_CONNECTED;
 import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
+import static buddybox.model.Model.BLUETOOTH;
+import static buddybox.model.Model.HEADPHONES;
+import static buddybox.model.Model.SPEAKER;
 
 public class MainActivity extends AppCompatActivity implements OnRequestPermissionsResultCallback {
 
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private HeadsetPlugReceiver headsetPlugReceiver;
     private SeekBar headphoneSeekBar;
     private SeekBar speakerSeekBar;
+    private SeekBar bluetoothSeekBar;
 
     private int  lastKeyPressed;
     private long lastKeyPressedStamp;
@@ -340,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                 : R.drawable.ic_headphones_grey;
         ((ImageView)findViewById(R.id.headphones)).setImageResource(ic_headphone);
 
-        int ic_speaker = state.outputActive.equals(Model.SPEAKER)
+        int ic_speaker = state.outputActive.equals(SPEAKER)
                 ? state.isPaused
                     ? R.drawable.ic_speaker_phone
                     : R.drawable.ic_speaker_phone_blue
@@ -354,8 +359,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                 : R.drawable.ic_bluetooth_grey;
         ((ImageView)findViewById(R.id.bluetooth)).setImageResource(ic_bluetooth);
 
-        speakerSeekBar.setProgress(state.speakerVolume);
-        headphoneSeekBar.setProgress(state.headphonesVolume);
+        speakerSeekBar.setProgress(state.volumeSettings.get(SPEAKER));
+        headphoneSeekBar.setProgress(state.volumeSettings.get(HEADPHONES));
+        bluetoothSeekBar.setProgress(state.volumeSettings.get(BLUETOOTH));
     }
 
     private String formatStorage(Long storage) {
@@ -689,6 +695,26 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             public void onStopTrackingTouch(SeekBar seekBar) {
                 seekBar.setProgress(newPosition);
                 ModelProxy.dispatch(new SetSpeakerVolume(newPosition));
+            }
+        });
+
+        bluetoothSeekBar = findViewById(R.id.bluetoothSeekBar);
+        bluetoothSeekBar.setMax(100);
+        bluetoothSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            private int newPosition;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                newPosition = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBar.setProgress(newPosition);
+                ModelProxy.dispatch(new SetBluetoothVolume(newPosition));
             }
         });
     }

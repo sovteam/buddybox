@@ -4,6 +4,7 @@ import android.os.Handler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import utils.Hash;
@@ -64,6 +65,6 @@ public class ModelSim implements IModel {
 
         boolean isPaused = count % 2 == 0;
         for (StateListener listener : listeners)
-            listener.update(new State(1, null, song, null, null, isPaused, false, false, false, null, false, null, null, null, null, 1, count * 1024, 0L, recent, null, false, null, null, null, null, 100, 50));
+            listener.update(new State(1, null, song, null, null, isPaused, false, false, false, null, false, null, null, null, null, 1, count * 1024, 0L, recent, null, false, null, null, null, null, new HashMap<String, Integer>()));
     }
 }

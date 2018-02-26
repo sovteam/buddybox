@@ -39,6 +39,7 @@ import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
 import buddybox.core.events.SeekTo;
+import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
 import buddybox.core.events.SongDeleteRequest;
@@ -107,11 +108,10 @@ public class Model implements IModel {
     private Integer seekTo;
     private Long mediaStorageUsed;
     private Boolean isHeadphoneConnected;
-    private int speakerVolume = 100;
-    private int headphonesVolume = 50;
 
     private boolean wasPlayingBeforeCall = false;
     private boolean isBluetoothConnected;
+    private Map<String,Integer>  volumeSettings;
 
     public Model(Context context) {
         this.context = context;
@@ -146,6 +146,7 @@ public class Model implements IModel {
         // sound output
         if (event == HEADPHONES_CONNECTED) headphonesConnected();
         if (event == HEADPHONES_DISCONNECTED) headphonesDisconnected();
+        if (cls == SetBluetoothVolume.class) setBluetoothVolume((SetBluetoothVolume) event);
         if (cls == SetSpeakerVolume.class) setSpeakerVolume((SetSpeakerVolume) event);
         if (cls == SetHeadphonesVolume.class) setHeadphonesVolume((SetHeadphonesVolume) event);
 
@@ -707,8 +708,7 @@ public class Model implements IModel {
                 selectedPlaylist,
                 songSelected,
                 getOutputConnected(),
-                speakerVolume,
-                headphonesVolume);
+                getVolumeSettings());
     }
 
     private Integer reportSeekTo() {
@@ -900,10 +900,24 @@ public class Model implements IModel {
     }
 
     private void setSpeakerVolume(SetSpeakerVolume event) {
-        speakerVolume = event.volume;
+        getVolumeSettings().put(SPEAKER, event.volume);
     }
 
     private void setHeadphonesVolume(SetHeadphonesVolume event) {
-        headphonesVolume = event.volume;
+        getVolumeSettings().put(HEADPHONES, event.volume);
+    }
+
+    private void setBluetoothVolume(SetBluetoothVolume event) {
+        getVolumeSettings().put(BLUETOOTH, event.volume);
+    }
+
+    private Map<String, Integer> getVolumeSettings() {
+        if (volumeSettings == null) {
+            volumeSettings = new HashMap<>();
+            volumeSettings.put(HEADPHONES, 50);
+            volumeSettings.put(BLUETOOTH, 70);
+            volumeSettings.put(SPEAKER, 100);
+        }
+        return volumeSettings;
     }
 }

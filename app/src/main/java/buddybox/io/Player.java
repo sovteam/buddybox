@@ -12,10 +12,8 @@ import java.util.List;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.ui.MainActivity;
 
 import static buddybox.core.events.Play.FINISHED_PLAYING;
-import static buddybox.model.Model.HEADPHONES;
 import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -44,18 +42,20 @@ public class Player {
     }
 
     private static void updateState(State state) {
-        int volumeConfig = state.outputActive.equals(HEADPHONES) ? state.headphonesVolume : state.speakerVolume;
-        float volume = volumeConfig == 100
-                ? 1f
-                : (float) (1 - (Math.log(MAX_VOLUME - volumeConfig) / Math.log(MAX_VOLUME)));
-        mediaPlayer.setVolume(volume, volume);
+        // set player volume
+        int outputVolume = state.volumeSettings.get(state.outputActive);
+        float playerVolume = outputVolume == 100
+            ? 1f
+            : (float) (1 - (Math.log(MAX_VOLUME - outputVolume) / Math.log(MAX_VOLUME)));
+        mediaPlayer.setVolume(playerVolume, playerVolume);
 
-
+        // seek to
         if (state.seekTo != null) {
             mediaPlayer.seekTo(state.seekTo);
             return;
         }
 
+        // pause
         if (state.songPlaying == null || state.isPaused || state.songPlaying.isMissing) {
             if (songPlaying != null) {
                 mediaPlayer.pause();
@@ -63,14 +63,14 @@ public class Player {
             return;
         }
 
-
+        // play current song
         if (songPlaying == state.songPlaying) {
             mediaPlayer.start();
             startPlayCycle();
             return;
         }
 
-
+        // play another song
         try {
             Uri myUri = Uri.parse(state.songPlaying.filePath);
             mediaPlayer.stop();
@@ -105,6 +105,10 @@ public class Player {
         listener.updateProgress(mediaPlayer.getCurrentPosition());
     }
 
+    /**
+     * Keep track of song playing progress
+     * and notify listeners
+     */
     private static void playCycle() {
         notifyListeners();
         Runnable runnable = new Runnable() {
