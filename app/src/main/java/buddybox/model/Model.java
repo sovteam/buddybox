@@ -50,14 +50,15 @@ import buddybox.core.events.SongSelected;
 import buddybox.core.events.SongUpdate;
 import utils.Hash;
 
+import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_GAIN;
+import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_LOSS;
+import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_LOSS_TRANSIENT;
 import static buddybox.core.events.Bluetooth.BLUETOOTH_CONNECT;
 import static buddybox.core.events.Bluetooth.BLUETOOTH_DISCONNECT;
-import static buddybox.core.events.CallDetect.OUTGOING_CALL;
-import static buddybox.core.events.CallDetect.PHONE_IDLE;
-import static buddybox.core.events.CallDetect.RECEIVING_CALL;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
+import static buddybox.core.events.Play.PAUSE;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
@@ -70,8 +71,10 @@ import static buddybox.core.events.Sampler.SAMPLER_STOP;
 import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_CONNECTED;
 import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
 
-/** The Model is modified only through dispatched events, handled sequentially.
- * Only the Model handles the database. */
+/**
+ * The Model is modified only through dispatched events, handled sequentially.
+ * Only the Model handles the database.
+ */
 public class Model implements IModel {
 
     public static final String HEADPHONES = "headphones";
@@ -95,6 +98,7 @@ public class Model implements IModel {
     private HashMap<Long, Playlist> playlistsById;
 
     private boolean isPaused = true;
+    private boolean isStopped = true;
     private boolean isShuffle = false;
     private boolean repeatAll = true;
     private boolean repeatSong = false;
@@ -109,7 +113,7 @@ public class Model implements IModel {
     private Long mediaStorageUsed;
     private Boolean isHeadphoneConnected;
 
-    private boolean wasPlayingBeforeCall = false;
+    private boolean wasPlayingBeforeLostAudioFocus = false;
     private boolean isBluetoothConnected;
     private Map<String,Integer>  volumeSettings;
 
@@ -137,6 +141,7 @@ public class Model implements IModel {
         if (cls == SeekTo.class) seekTo((SeekTo) event);
         if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
+        if (event == PAUSE) pause();
         if (event == SKIP_NEXT) skip(+1);
         if (event == SKIP_PREVIOUS) skip(-1);
         if (event == REPEAT) repeat();
@@ -181,10 +186,10 @@ public class Model implements IModel {
         if (event == SYNC_LIBRARY) syncLibrary();
         if (event == SYNC_LIBRARY_FINISHED) syncLibraryStarted();
 
-        // call detect
-        if (event == RECEIVING_CALL) phoneCalling();
-        if (event == OUTGOING_CALL) phoneCalling();
-        if (event == PHONE_IDLE) phoneIdle();
+        // audio focus
+        if (event == AUDIO_FOCUS_LOSS) audioFocusLoss();
+        if (event == AUDIO_FOCUS_GAIN) audioFocusGain();
+        if (event == AUDIO_FOCUS_LOSS_TRANSIENT) audioFocusLossTransient();
 
         // bluetooth
         if (event == BLUETOOTH_CONNECT) bluetoothConnect();
@@ -193,24 +198,28 @@ public class Model implements IModel {
         updateListeners();
     }
 
+    private void audioFocusLossTransient() {
+        wasPlayingBeforeLostAudioFocus = !isPaused;
+        if (!isPaused)
+            playPauseCurrent();
+    }
+
+    private void audioFocusGain() {
+        if (wasPlayingBeforeLostAudioFocus && isPaused)
+            playPauseCurrent();
+        wasPlayingBeforeLostAudioFocus = false;
+    }
+
+    private void audioFocusLoss() {
+        isPaused = true;
+    }
+
     private void bluetoothDisconnect() {
         isBluetoothConnected = false;
     }
 
     private void bluetoothConnect() {
         isBluetoothConnected = true;
-    }
-
-    private void phoneIdle() {
-        if (wasPlayingBeforeCall && isPaused)
-            playPauseCurrent();
-        wasPlayingBeforeCall = false;
-    }
-
-    private void phoneCalling() {
-        wasPlayingBeforeCall = !isPaused;
-        if (!isPaused)
-            playPauseCurrent();
     }
 
     private void playlistChangeSongPosition(PlaylistChangeSongPosition event) {
@@ -479,13 +488,11 @@ public class Model implements IModel {
     private void finishedPlaying() {
         if (isSampling)
             doPlay(samplerPlaylist, 0);
-        else {
+        else if (!isStopped)
             if (repeatSong)
                 doPlay(currentPlaylist, currentSongIndex);
             else
                 skip(+1);
-        }
-
     }
 
     private void createPlaylist(CreatePlaylist event) {
@@ -650,7 +657,7 @@ public class Model implements IModel {
             currentSongIndex = null;
             return;
         }
-
+        isStopped = false;
         isPaused = false;
         currentSongIndex = songIndex;
         currentPlaylist = playlist;
@@ -658,6 +665,10 @@ public class Model implements IModel {
 
     private void playPauseCurrent() {
         isPaused = !isPaused;
+    }
+
+    private void pause() {
+        isPaused = true;
     }
 
     private void updateListeners() {
@@ -688,6 +699,7 @@ public class Model implements IModel {
                 currentSong(),
                 currentPlaylist,
                 reportSeekTo(),
+                isStopped,
                 isPaused,
                 isShuffle,
                 repeatAll,

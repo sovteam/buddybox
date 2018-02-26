@@ -21,31 +21,31 @@ public class BluetoothDetectService extends Service {
     private static final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println(">>> Broadcast received!");
-            final String action = intent.getAction();
-            // BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        System.out.println(">>> Broadcast received!");
+        final String action = intent.getAction();
+        // BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-            if (action == null)
-                return;
+        if (action == null)
+            return;
 
-            switch(action) {
-                case BluetoothDevice.ACTION_ACL_CONNECTED:
-                    System.out.println("@@@ Bluetooth connected");
-                    dispatch(BLUETOOTH_CONNECT);
-                    break;
-                case BluetoothDevice.ACTION_ACL_DISCONNECTED:
-                    System.out.println("@@@ Bluetooth disconnected");
+        switch(action) {
+            case BluetoothDevice.ACTION_ACL_CONNECTED:
+                System.out.println("@@@ Bluetooth connected");
+                dispatch(BLUETOOTH_CONNECT);
+                break;
+            case BluetoothDevice.ACTION_ACL_DISCONNECTED:
+                System.out.println("@@@ Bluetooth disconnected");
+                dispatch(BLUETOOTH_DISCONNECT);
+                break;
+            case BluetoothAdapter.ACTION_STATE_CHANGED:
+                if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
+                    System.out.println("@@@ Bluetooth OFF");
                     dispatch(BLUETOOTH_DISCONNECT);
-                    break;
-                case BluetoothAdapter.ACTION_STATE_CHANGED:
-                    if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1) == BluetoothAdapter.STATE_OFF) {
-                        System.out.println("@@@ Bluetooth OFF");
-                        dispatch(BLUETOOTH_DISCONNECT);
-                    }
-                    break;
-                default:
-                    break;
-            }
+                }
+                break;
+            default:
+                break;
+        }
         }
     };
 
@@ -68,6 +68,7 @@ public class BluetoothDetectService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(BluetoothDevice.EXTRA_CLASS);
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(receiver, filter);
 

@@ -4,7 +4,6 @@
     package="com.adalbertosoares.buddybox">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
@@ -35,17 +34,24 @@
         <receiver android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"    android:exported="false" />
         <receiver android:name="buddybox.ui.notification.NotificationSkipNextReceiver"     android:exported="false" />
         <receiver android:name="buddybox.ui.notification.NotificationSkipPreviousReceiver" android:exported="false" />
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
 
-        <service
-            android:name="buddybox.io.CallDetectService"
-            android:enabled="true"
-            android:exported="false">
-        </service>
         <service
             android:name="buddybox.io.BluetoothDetectService"
             android:enabled="true"
             android:exported="false">
             <intent-filter android:priority="0">
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </service>
+        <service
+            android:name="buddybox.io.MediaPlaybackService"
+            android:exported="false">
+            <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>

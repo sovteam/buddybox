@@ -10,23 +10,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 import buddybox.core.IModel;
-import buddybox.core.Song;
 import buddybox.core.State;
 
+import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_GAIN;
+import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_LOSS;
+import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_LOSS_TRANSIENT;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
+import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.ui.ModelProxy.dispatch;
 
 public class Player {
     private final static int MAX_VOLUME = 100;
+    private final static int DUCK_VOLUME = 30;
 
     private static MediaPlayer mediaPlayer;
     private static Context context;
-    private static Song songPlaying;
 
     private static Handler handler = new Handler();
     private static boolean playCycleRunning = false;
     private static List<ProgressListener> listeners = new ArrayList<>();
+
+    private static AudioManager audioManager;
+    private static AudioManager.OnAudioFocusChangeListener audioFocusListener;
+
+    private static boolean canPlay;
+    private static State lastState;
 
     public static void init(Context context) {
         Player.context = context;
@@ -42,12 +51,13 @@ public class Player {
     }
 
     private static void updateState(State state) {
+        updatePlayerState(state);
+        lastState = state;
+    }
+
+    private static void updatePlayerState(State state) {
         // set player volume
-        int outputVolume = state.volumeSettings.get(state.outputActive);
-        float playerVolume = outputVolume == 100
-            ? 1f
-            : (float) (1 - (Math.log(MAX_VOLUME - outputVolume) / Math.log(MAX_VOLUME)));
-        mediaPlayer.setVolume(playerVolume, playerVolume);
+        setNormalVolume(state);
 
         // seek to
         if (state.seekTo != null) {
@@ -57,14 +67,20 @@ public class Player {
 
         // pause
         if (state.songPlaying == null || state.isPaused || state.songPlaying.isMissing) {
-            if (songPlaying != null) {
+            if (lastState != null && lastState.songPlaying != null) {
                 mediaPlayer.pause();
             }
             return;
         }
 
+        // check if authorized to play
+        if (!canPlay()) {
+            dispatch(PLAY_PAUSE_CURRENT);
+            return;
+        }
+
         // play current song
-        if (songPlaying == state.songPlaying) {
+        if (lastState.songPlaying == state.songPlaying) {
             mediaPlayer.start();
             startPlayCycle();
             return;
@@ -82,7 +98,52 @@ public class Player {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        songPlaying = state.songPlaying;
+    }
+
+    private static boolean canPlay() {
+        AudioManager audioManager = getAudioManager();
+        if (audioManager == null)
+            return false;
+
+        // request audio focus
+        if (!canPlay) {
+            int result = audioManager.requestAudioFocus(audioFocusListener(), AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            canPlay = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+            if (canPlay)
+                MediaPlaybackService.init(context);
+        }
+        return canPlay;
+    }
+
+    private static AudioManager.OnAudioFocusChangeListener audioFocusListener() {
+        if (audioFocusListener == null) {
+            audioFocusListener = new AudioManager.OnAudioFocusChangeListener() { @Override public void onAudioFocusChange(int i) {
+                System.out.println(">>>> audio focus changed " + i);
+                switch (i) {
+                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                        setDuckVolume();
+                        break;
+                    case AudioManager.AUDIOFOCUS_LOSS:
+                        canPlay = false;
+                        dispatch(AUDIO_FOCUS_LOSS);
+                        break;
+                    case AudioManager.AUDIOFOCUS_GAIN:
+                        canPlay = true;
+                        dispatch(AUDIO_FOCUS_GAIN);
+                        break;
+                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                        dispatch(AUDIO_FOCUS_LOSS_TRANSIENT);
+                        break;
+                }
+            }};
+        }
+        return audioFocusListener;
+    }
+
+    private static AudioManager getAudioManager() {
+        if (audioManager == null)
+            audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        return audioManager;
     }
 
     private static void startPlayCycle() {
@@ -127,5 +188,30 @@ public class Player {
         for (ProgressListener listener : listeners) {
             listener.updateProgress(mediaPlayer.getCurrentPosition());
         }
+    }
+
+    private static void setNormalVolume() {
+        setNormalVolume(lastState);
+    }
+
+    private static void setNormalVolume(State state) {
+        int outputVolume = state.volumeSettings.get(state.outputActive);
+        float playerVolume = outputVolume == 100
+                ? 1f
+                : (float) (1 - (Math.log(MAX_VOLUME - outputVolume) / Math.log(MAX_VOLUME)));
+        mediaPlayer.setVolume(playerVolume, playerVolume);
+    }
+
+    private static void setDuckVolume() {
+        int duck;
+        if (lastState != null) {
+            int currentVolume = lastState.volumeSettings.get(lastState.outputActive);
+            duck = Math.min(currentVolume, DUCK_VOLUME);
+        } else {
+            duck = DUCK_VOLUME;
+        }
+
+        float duckVolume = (float) (1 - (Math.log(MAX_VOLUME - duck) / Math.log(MAX_VOLUME)));
+        mediaPlayer.setVolume(duckVolume, duckVolume);
     }
 }

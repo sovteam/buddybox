@@ -59,8 +59,8 @@ import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
 import buddybox.io.BluetoothDetectService;
-import buddybox.io.CallDetectService;
 import buddybox.io.Library;
+import buddybox.io.MediaPlaybackService;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
 import buddybox.model.Model;
@@ -102,10 +102,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private SeekBar headphoneSeekBar;
     private SeekBar speakerSeekBar;
     private SeekBar bluetoothSeekBar;
-
-    private int  lastKeyPressed;
-    private long lastKeyPressedStamp;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,44 +166,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         Player.init(this);
         Library.init();
         Sampler.init(this);
-        CallDetectService.init(this);
         System.out.println("%%%%%%%%%%%%%%%%%%%% Call BT init");
         BluetoothDetectService.init(this);
         dispatch(SYNC_LIBRARY);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        /*
-        * 88 - skip previous
-        * 87 - skip next
-        * pause?
-        * play?
-        * stop?
-        *
-        * volume up/down for headset control ?
-        * */
-        System.out.println(">>>> Should SKIP " + (keyCode == lastKeyPressed && (System.currentTimeMillis() - lastKeyPressedStamp) < 600));
-
-        if (keyCode == lastKeyPressed && (System.currentTimeMillis() - lastKeyPressedStamp) < 600)
-            return super.onKeyDown(keyCode, event);
-
-        switch (keyCode) {
-            case 87:
-                dispatch(SKIP_NEXT);
-                break;
-            case 88:
-                dispatch(SKIP_PREVIOUS);
-                break;
-            default:
-                break;
-        }
-
-        lastKeyPressed = keyCode;
-        lastKeyPressedStamp = System.currentTimeMillis();
-
-        System.out.println("######## Key down code: " + keyCode);
-        return super.onKeyDown(keyCode, event);
     }
 
     private void checkWriteExternalStoragePermission() {
