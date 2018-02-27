@@ -301,14 +301,33 @@ public class Model implements IModel {
 
     private void shufflePlay() {
         if (selectedPlaylist.isEmpty()) {
-            if (currentPlaylist == selectedPlaylist && !isPaused)
+            if (currentPlaylist == selectedPlaylist && !isPaused) {
                 playPauseCurrent();
+                currentPlaylist = null;
+            }
             return;
         }
 
         isShuffle = true;
         currentPlaylist = selectedPlaylist;
-        doPlay(currentPlaylist, currentPlaylist.firstShuffleIndex());
+
+        // Skip missing songs
+        int firstSongIndex = currentPlaylist.firstShuffleIndex();
+        int nextSongIndex = firstSongIndex;
+        boolean loop = false;
+        while (currentPlaylist.song(nextSongIndex).isMissing && !loop) {
+            nextSongIndex = currentPlaylist.songAfter(nextSongIndex, 1, true);
+            loop = nextSongIndex == firstSongIndex;
+        }
+
+        // Pause if all songs are missing
+        if (loop) {
+            playPauseCurrent();
+            currentPlaylist = null;
+            return;
+        }
+
+        doPlay(currentPlaylist, nextSongIndex);
     }
 
     private void removeSongFromPlaylist(PlaylistRemoveSong event) {
@@ -641,6 +660,7 @@ public class Model implements IModel {
         }
 
         if (currentPlaylist.size() == 1) {
+            seekTo = 0;
             doPlay(currentPlaylist, 0);
             return;
         }
@@ -653,6 +673,9 @@ public class Model implements IModel {
 
         if (songAfter != null)
             doPlay(currentPlaylist, songAfter);
+
+        if (Objects.equals(songAfter, currentSongIndex))
+            seekTo = 0;
     }
 
     private void play(Play event) {
