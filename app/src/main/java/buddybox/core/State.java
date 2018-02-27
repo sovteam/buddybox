@@ -46,11 +46,12 @@ public class State {
     public final Boolean isStopped;
     public final boolean isShuffle;
     public final Song selectedSong;
+    public final boolean showDuration;
     public final String outputActive;
     public final Map<String, Integer> volumeSettings;
     public final boolean hasAudioFocus;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus) {
         this.seekTo = seekTo;
         this.isStopped = isStopped;
         this.isShuffle = isShuffle;
@@ -64,6 +65,7 @@ public class State {
         this.isPaused = isPaused;
         this.repeatAll = repeatAll;
         this.repeatSong = repeatSong;
+        this.showDuration = showDuration;
         this.playlistsBySong = playlistsBySong;
 
         this.isSampling = isSampling;

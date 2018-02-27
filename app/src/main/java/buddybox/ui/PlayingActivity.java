@@ -30,6 +30,7 @@ import buddybox.ui.util.FlowLayout;
 
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
+import static buddybox.core.events.Play.TOGGLE_DURATION_REMAINING;
 import static buddybox.ui.ModelProxy.dispatch;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
@@ -42,6 +43,8 @@ public class PlayingActivity extends AppCompatActivity {
     private boolean seekBarTouching;
     private IModel.StateListener stateListener;
     private Player.ProgressListener progressListener;
+    private int lastProgress = 0;
+    private boolean showDuration = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,7 @@ public class PlayingActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.stay,R.anim.slide_out_down);
         }});
         findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openSongOptionsDialog(); }});
+        findViewById(R.id.songDuration).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(TOGGLE_DURATION_REMAINING); }});
 
         findViewById(R.id.playingPlayPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
         findViewById(R.id.skipNext).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SKIP_NEXT);
@@ -88,7 +92,6 @@ public class PlayingActivity extends AppCompatActivity {
                 seekBarTouching = false;
             }
         });
-
     }
 
     private void openSongOptionsDialog() {
@@ -125,8 +128,12 @@ public class PlayingActivity extends AppCompatActivity {
         if (!seekBarTouching) {
             seekBar.setProgress(progress);
         }
-        if (playing != null)
-            ((TextView)findViewById(R.id.songProgress)).setText(playing.formatTime(progress));
+        if (playing != null) {
+            ((TextView) findViewById(R.id.songProgress)).setText(playing.formatTime(progress));
+            if (!showDuration)
+                ((TextView) findViewById(R.id.songDuration)).setText(String.format("-%s", playing.formatTime(playing.duration - progress)));
+        }
+        lastProgress = progress;
     }
 
     private void updateState(State state) {
@@ -140,12 +147,14 @@ public class PlayingActivity extends AppCompatActivity {
             seekBar.setProgress(0);
             seekBar.setMax(state.songPlaying.duration);
             ((TextView)findViewById(R.id.songProgress)).setText(state.songPlaying.formatTime(0));
-            ((TextView)findViewById(R.id.songDuration)).setText(state.songPlaying.duration());
         }
         seekBar.getProgressDrawable().setColorFilter(new PorterDuffColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.MULTIPLY));
         seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.SRC_IN);
 
         playing = state.songPlaying;
+
+        showDuration = state.showDuration;
+        updateSongDuration();
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
@@ -185,7 +194,13 @@ public class PlayingActivity extends AppCompatActivity {
                     ? R.drawable.ic_repeat_blue
                     : R.drawable.ic_repeat);
 
-
         ((ImageButton)findViewById(R.id.playingPlayPause)).setImageResource(state.isPaused ? R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
+    }
+
+    private void updateSongDuration() {
+        String print = showDuration
+                ? playing.formatTime(playing.duration)
+                : "-" + playing.formatTime(playing.duration - lastProgress);
+        ((TextView) findViewById(R.id.songDuration)).setText(print);
     }
 }

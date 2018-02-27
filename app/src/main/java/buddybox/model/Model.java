@@ -65,6 +65,7 @@ import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
+import static buddybox.core.events.Play.TOGGLE_DURATION_REMAINING;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
@@ -117,6 +118,7 @@ public class Model implements IModel {
     private boolean isBluetoothConnected;
     private Map<String,Integer>  volumeSettings;
     private boolean hasAudioFocus = false;
+    private boolean showDuration = true;
 
     public Model(Context context) {
         this.context = context;
@@ -148,6 +150,7 @@ public class Model implements IModel {
         if (event == REPEAT) repeat();
         if (event == SHUFFLE) shuffle();
         if (event == FINISHED_PLAYING) finishedPlaying();
+        if (event == TOGGLE_DURATION_REMAINING) toggleDurationRemaining();
 
         // sound output
         if (event == HEADPHONES_CONNECTED) headphonesConnected();
@@ -196,6 +199,10 @@ public class Model implements IModel {
         if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
 
         updateListeners();
+    }
+
+    private void toggleDurationRemaining() {
+        showDuration = !showDuration;
     }
 
     private void audioFocusLossTransient() {
@@ -706,6 +713,7 @@ public class Model implements IModel {
                 isShuffle,
                 repeatAll,
                 repeatSong,
+                showDuration,
                 playlistsBySong,
                 isSampling,
                 samplerPlaylist,
