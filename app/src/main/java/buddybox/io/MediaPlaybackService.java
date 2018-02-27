@@ -23,6 +23,7 @@ import com.adalbertosoares.buddybox.R;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.ui.ModelProxy;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Play.PAUSE;
@@ -121,7 +122,8 @@ public class MediaPlaybackService extends Service {
         stateListener = new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }};
-        addStateListener(stateListener);
+        if (ModelProxy.isInitialized())
+            addStateListener(stateListener);
 
         MediaButtonReceiver.handleIntent(mediaSession, intent);
 
@@ -224,6 +226,16 @@ public class MediaPlaybackService extends Service {
             return;
         }
         mediaSession.setMetadata(null);
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) {
+            System.out.println(">>> Close Main Notification");
+            manager.cancel(NOTIFICATION_ID);
+        }
+        super.onTaskRemoved(rootIntent);
     }
 
     @Override
