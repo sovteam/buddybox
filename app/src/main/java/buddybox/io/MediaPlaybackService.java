@@ -2,12 +2,13 @@ package buddybox.io;
 
 import android.app.NotificationManager;
 import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -19,6 +20,9 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.KeyEvent;
 
 import com.adalbertosoares.buddybox.R;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import buddybox.core.IModel;
 import buddybox.core.Song;
@@ -138,7 +142,7 @@ public class MediaPlaybackService extends Service {
 
     private void updateState(State state) {
         setMediaPlaybackState(state);
-        setMediaPlaybackMetadata(state);
+        setMediaPlaybackMetadata(this, state.songPlaying);
 
         if (state.hasAudioFocus)
             mediaSession.setActive(true);
@@ -178,7 +182,7 @@ public class MediaPlaybackService extends Service {
                 MediaStyleHelper.getActionIntent(this, "SKIP_NEXT", KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD)
         ));
         builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
-                .setShowActionsInCompactView(0)
+                .setShowActionsInCompactView(0, 1, 2)
                 .setMediaSession(mediaSession.getSessionToken())
         );
         nm.notify(NOTIFICATION_ID, builder.build());
@@ -213,8 +217,17 @@ public class MediaPlaybackService extends Service {
         mediaSession.setPlaybackState(builder.build());
     }
 
-    private static void setMediaPlaybackMetadata(State state) {
-        Song song = state.songPlaying;
+    private static void setMediaPlaybackMetadata(Context context, Song song) {
+        AssetManager assetManager = context.getAssets();
+        InputStream istr;
+        Bitmap bitmap = null;
+        try {
+            istr = assetManager.open("sneer2.jpg");
+            bitmap = BitmapFactory.decodeStream(istr);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         if (song != null) {
             MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
             builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.name);
@@ -222,6 +235,7 @@ public class MediaPlaybackService extends Service {
             builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album);
             builder.putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.genre);
             builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration);
+            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap);
             mediaSession.setMetadata(builder.build());
             return;
         }

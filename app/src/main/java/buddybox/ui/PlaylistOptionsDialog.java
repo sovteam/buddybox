@@ -63,6 +63,6 @@ public class PlaylistOptionsDialog extends DialogFragment {
 
     private void deletePlaylist(Long playlistId) {
         dispatch(new DeletePlaylist(playlistId));
-        Toast.makeText(getContext(), "Playlist deleted", Toast.LENGTH_SHORT).show(); // TODO model should toast?
+        Toast.makeText(getContext(), "Playlist deleted", Toast.LENGTH_SHORT).show();
     }
 }
