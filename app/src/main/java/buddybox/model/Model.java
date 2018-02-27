@@ -945,25 +945,39 @@ public class Model implements IModel {
         isHeadphoneConnected = false;
     }
 
+    // Volume Settings
+
     private void setSpeakerVolume(SetSpeakerVolume event) {
-        getVolumeSettings().put(SPEAKER, event.volume);
+        updateVolumeSettings(SPEAKER, event.volume);
     }
 
     private void setHeadphonesVolume(SetHeadphonesVolume event) {
-        getVolumeSettings().put(HEADPHONES, event.volume);
+        updateVolumeSettings(HEADPHONES, event.volume);
     }
 
     private void setBluetoothVolume(SetBluetoothVolume event) {
-        getVolumeSettings().put(BLUETOOTH, event.volume);
+        updateVolumeSettings(BLUETOOTH, event.volume);
     }
 
     private Map<String, Integer> getVolumeSettings() {
         if (volumeSettings == null) {
             volumeSettings = new HashMap<>();
-            volumeSettings.put(HEADPHONES, 50);
-            volumeSettings.put(BLUETOOTH, 70);
-            volumeSettings.put(SPEAKER, 100);
+            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM VOLUME_SETTINGS", null);
+            while (cursor.moveToNext()) {
+                String output = cursor.getString(cursor.getColumnIndex("OUTPUT"));
+                Integer volume = cursor.getInt(cursor.getColumnIndex("VOLUME"));
+                volumeSettings.put(output, volume);
+            }
+            cursor.close();
         }
         return volumeSettings;
+    }
+
+    private void updateVolumeSettings(String output, Integer volume) {
+        getVolumeSettings().put(output, volume);
+
+        ContentValues vals = new ContentValues();
+        vals.put("VOLUME", volume);
+        DatabaseHelper.getInstance(context).getReadableDatabase().update("VOLUME_SETTINGS", vals, "OUTPUT=?", new String[]{output});
     }
 }
