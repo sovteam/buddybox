@@ -31,6 +31,7 @@ public class ArtistsFragment extends Fragment {
     private List<Artist> artists;
     private IModel.StateListener listener;
     private FragmentActivity activity;
+    private State lastState;
 
     public ArtistsFragment() {}
 
@@ -120,15 +121,26 @@ public class ArtistsFragment extends Fragment {
             return artistA.name.compareTo(artistB.name);
         }});
 
-        updateArtists();
+        updateArtists(state);
+        lastState = state;
     }
 
     private void updateArtists() {
+        if (lastState != null)
+            updateArtists(lastState);
+    }
+
+    private void updateArtists(State state) {
         artistsAdapter.update(artists);
-        if (artists.isEmpty()) {
-            view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
-            view.findViewById(R.id.artists).setVisibility(View.INVISIBLE);
-            return;
+        if (state.syncLibraryPending) {
+            view.findViewById(R.id.footerLoading).setVisibility(View.VISIBLE);
+        } else {
+            view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
+            if (artists.isEmpty()) {
+                view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.artists).setVisibility(View.INVISIBLE);
+                return;
+            }
         }
         view.findViewById(R.id.library_empty).setVisibility(View.INVISIBLE);
         view.findViewById(R.id.artists).setVisibility(View.VISIBLE);

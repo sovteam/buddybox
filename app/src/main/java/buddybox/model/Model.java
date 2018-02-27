@@ -123,8 +123,8 @@ public class Model implements IModel {
     public Model(Context context) {
         this.context = context;
 
-        // DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLISTS");
-        // DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLIST_SONG");
+        //DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLISTS");
+        //DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLIST_SONG");
 
         System.out.println(DatabaseHelper.getInstance(context));
 

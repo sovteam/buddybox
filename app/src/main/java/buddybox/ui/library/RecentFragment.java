@@ -42,6 +42,7 @@ public class RecentFragment extends Fragment {
     private Song songPlaying;
     private IModel.StateListener listener;
     private FragmentActivity activity;
+    private State lastState;
 
     public RecentFragment(){}
 
@@ -57,6 +58,8 @@ public class RecentFragment extends Fragment {
 
         // List recent songs
         ListView list = view.findViewById(R.id.recentPlayables);
+        View footer = inflater.inflate(R.layout.list_footer, list, false);
+        list.addFooterView(footer);
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
             dispatch(new SongSelected(recentPlaylist.song(pos).hash.toString()));
             startActivity(new Intent(getContext(), EditSongActivity.class));
@@ -65,8 +68,6 @@ public class RecentFragment extends Fragment {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             dispatch(new Play(recentPlaylist, i));
         }});
-        View footer = inflater.inflate(R.layout.list_footer, list, false);
-        list.addFooterView(footer);
         playables = new PlayablesArrayAdapter();
         list.setAdapter(playables);
 
@@ -175,15 +176,29 @@ public class RecentFragment extends Fragment {
         recentPlaylist = state.allSongsPlaylist;
         playlists = state.playlists;
 
-        updatePlaylist();
+        updatePlaylist(state);
+        lastState = state;
     }
 
     private void updatePlaylist() {
+        if (lastState != null)
+            updatePlaylist(lastState);
+    }
+
+    private void updatePlaylist(State state) {
         playables.updateState();
-        if (recentPlaylist.songs.isEmpty()) {
-            view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
-            view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
-            return;
+
+        // show/hide footers
+        if (state.syncLibraryPending) {
+            view.findViewById(R.id.footerLoading).setVisibility(View.VISIBLE);
+        } else {
+            view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
+
+            if (recentPlaylist.songs.isEmpty()) {
+                view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
+                view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
+                return;
+            }
         }
         view.findViewById(R.id.library_empty).setVisibility(View.INVISIBLE);
         view.findViewById(R.id.recentPlayables).setVisibility(View.VISIBLE);
