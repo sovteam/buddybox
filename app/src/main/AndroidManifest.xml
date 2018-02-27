@@ -15,6 +15,7 @@
 
         <activity
             android:name="buddybox.ui.MainActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,11 +25,16 @@
 
         <activity
             android:name="buddybox.ui.PlayingActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait" />
         <activity
             android:name="buddybox.ui.PlaylistActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name="buddybox.ui.EditSongActivity" />
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="buddybox.ui.EditSongActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
 
         <receiver android:name="buddybox.ui.notification.NotificationDismissedReceiver"    android:exported="false" />
         <receiver android:name="buddybox.ui.notification.NotificationPlayPauseReceiver"    android:exported="false" />

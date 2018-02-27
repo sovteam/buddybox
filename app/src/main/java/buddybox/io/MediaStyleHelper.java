@@ -8,6 +8,10 @@ import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.view.KeyEvent;
+
+import buddybox.ui.MainActivity;
+import buddybox.ui.PlayingActivity;
 
 public class MediaStyleHelper {
 
@@ -24,8 +28,19 @@ public class MediaStyleHelper {
                 .setSubText(description.getDescription())
                 .setLargeIcon(description.getIconBitmap())
                 .setContentIntent(controller.getSessionActivity())
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-                // .setDeleteIntent(PendingIntent.getActionIntent(context, KeyEvent.KEYCODE_MEDIA_PAUSE));
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setDeleteIntent(getActionIntent(context, "CloseApp", KeyEvent.KEYCODE_MEDIA_PAUSE));
+
+        Intent resultIntent = new Intent(context, PlayingActivity.class);
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(context,
+                        42,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        builder.setContentIntent(resultPendingIntent);
+
         return builder;
     }
 
