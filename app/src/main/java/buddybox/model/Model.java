@@ -116,6 +116,7 @@ public class Model implements IModel {
     private boolean wasPlayingBeforeLostAudioFocus = false;
     private boolean isBluetoothConnected;
     private Map<String,Integer>  volumeSettings;
+    private boolean hasAudioFocus = false;
 
     public Model(Context context) {
         this.context = context;
@@ -204,13 +205,15 @@ public class Model implements IModel {
     }
 
     private void audioFocusGain() {
+        hasAudioFocus = true;
         if (wasPlayingBeforeLostAudioFocus && isPaused)
             playPauseCurrent();
         wasPlayingBeforeLostAudioFocus = false;
     }
 
     private void audioFocusLoss() {
-        isPaused = true;
+        hasAudioFocus = false;
+        isPaused = true; // should stop?
     }
 
     private void bluetoothDisconnect() {
@@ -719,7 +722,8 @@ public class Model implements IModel {
                 selectedPlaylist,
                 songSelected,
                 getOutputConnected(),
-                getVolumeSettings());
+                getVolumeSettings(),
+                hasAudioFocus);
     }
 
     private Integer reportSeekTo() {

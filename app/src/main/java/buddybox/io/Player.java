@@ -109,8 +109,7 @@ public class Player {
         if (!canPlay) {
             int result = audioManager.requestAudioFocus(audioFocusListener(), AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             canPlay = result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
-            if (canPlay)
-                MediaPlaybackService.init(context);
+            dispatch(AUDIO_FOCUS_GAIN);
         }
         return canPlay;
     }
@@ -188,10 +187,6 @@ public class Player {
         for (ProgressListener listener : listeners) {
             listener.updateProgress(mediaPlayer.getCurrentPosition());
         }
-    }
-
-    private static void setNormalVolume() {
-        setNormalVolume(lastState);
     }
 
     private static void setNormalVolume(State state) {

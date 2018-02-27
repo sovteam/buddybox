@@ -1,8 +1,6 @@
 package buddybox.ui;
 
 import android.Manifest;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -20,12 +18,10 @@ import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.HapticFeedbackConstants;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -67,16 +63,10 @@ import buddybox.model.Model;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
-import buddybox.ui.notification.NotificationDismissedReceiver;
-import buddybox.ui.notification.NotificationPlayPauseReceiver;
-import buddybox.ui.notification.NotificationSkipNextReceiver;
-import buddybox.ui.notification.NotificationSkipPreviousReceiver;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.core.events.Play.SKIP_NEXT;
-import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
@@ -93,9 +83,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private LovedPlayablesArrayAdapter lovedPlayables;
     private Playlist lovedPlaylist;
-
-    NotificationCompat.Builder mainNotification;
-    private int notificationId = 0; // TODO move to a better place
 
     private Song sampling;
     private HeadsetPlugReceiver headsetPlugReceiver;
@@ -166,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         Player.init(this);
         Library.init();
         Sampler.init(this);
-        System.out.println("%%%%%%%%%%%%%%%%%%%% Call BT init");
+        MediaPlaybackService.init(this);
         BluetoothDetectService.init(this);
         dispatch(SYNC_LIBRARY);
     }
@@ -243,8 +230,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     @Override
     protected void onDestroy() {
-        closeMainNotification();
-
         if (headsetPlugReceiver != null) {
             unregisterReceiver(headsetPlugReceiver);
             headsetPlugReceiver = null;
@@ -509,8 +494,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
         ((TextView) findViewById(R.id.libraryText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.libraryNavbarBtn)).setImageResource(R.drawable.ic_library_music_blue);
-
-        // TODO add main notification
     }
 
     private void updateLibraryState(State state) {
@@ -519,77 +502,12 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         if (songPlaying == null || state.isSampling) {
             playingBar.setVisibility(View.INVISIBLE);
-            closeMainNotification();
         } else {
             playingBar.setVisibility(View.VISIBLE);
             ((TextView)findViewById(R.id.playingName)).setText(songPlaying.name());
             ((TextView)findViewById(R.id.playingSubtitle)).setText(songPlaying.subtitle());
             ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
-            updateMainNotification(state);
         }
-    }
-
-    private NotificationCompat.Builder mainNotification() {
-        if (mainNotification == null) {
-            mainNotification = new NotificationCompat.Builder(this, "Main Notification");
-            mainNotification.setAutoCancel(false);
-            mainNotification.setSmallIcon(R.drawable.ic_play);
-
-            // Close app on dismiss
-            Intent intentDismiss = new Intent(this, NotificationDismissedReceiver.class);
-            intentDismiss.putExtra("com.my.app.notificationId", notificationId);
-            PendingIntent pendingDelete = PendingIntent.getBroadcast(this, notificationId, intentDismiss, 0);
-            mainNotification.setDeleteIntent(pendingDelete);
-
-            // Set focus to MainActivity
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            PendingIntent pendingContent = PendingIntent.getBroadcast(this, notificationId, intent, 0);
-            mainNotification.setContentIntent(pendingContent);
-        }
-        return mainNotification;
-    }
-
-    private void updateMainNotification(State state) {
-        NotificationCompat.Builder notification = mainNotification();
-        notification.mActions.clear();
-
-        Song songPlaying = state.songPlaying;
-        notification.setContentTitle(songPlaying.name);
-        notification.setContentText(songPlaying.artist);
-        notification.setTicker("Playing " + songPlaying.name);
-
-        // Skip previous action
-        Intent intentSkipPrevious = new Intent(this, NotificationSkipPreviousReceiver.class);
-        intentSkipPrevious.putExtra("com.my.app.notificationId", notificationId);
-        PendingIntent pendingPrevious = PendingIntent.getBroadcast(this, notificationId, intentSkipPrevious, 0);
-        notification.addAction(R.drawable.ic_skip_previous, "", pendingPrevious);
-
-        // Play/pause action
-        Intent intentPlayPause = new Intent(this, NotificationPlayPauseReceiver.class);
-        intentPlayPause.putExtra("com.my.app.notificationId", notificationId);
-        PendingIntent pendingPlayPause = PendingIntent.getBroadcast(this, notificationId, intentPlayPause, 0);
-        notification.addAction(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause, "", pendingPlayPause);
-
-        // Skip next action
-        Intent intentSkipNext = new Intent(this, NotificationSkipNextReceiver.class);
-        intentSkipNext.putExtra("com.my.app.notificationId", notificationId);
-        PendingIntent pendingNext = PendingIntent.getBroadcast(this, notificationId, intentSkipNext, 0);
-        notification.addAction(R.drawable.ic_skip_next, "", pendingNext);
-
-        notify(notificationId, notification);
-    }
-
-    private void closeMainNotification() {
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        assert nm != null;
-        nm.cancel(notificationId);
-    }
-
-    private void notify(int id, NotificationCompat.Builder notificationBuilder) {
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        assert nm != null;
-        nm.notify(id, notificationBuilder.build());
     }
 
     private void setHeadsetPlugObserver() {
