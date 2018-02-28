@@ -671,11 +671,12 @@ public class Model implements IModel {
             songAfter = currentPlaylist.songAfter(songAfter, step, isShuffle);
         }
 
+        if (Objects.equals(songAfter, currentSongIndex)) {
+            seekTo = 0;
+        }
+
         if (songAfter != null)
             doPlay(currentPlaylist, songAfter);
-
-        if (Objects.equals(songAfter, currentSongIndex))
-            seekTo = 0;
     }
 
     private void play(Play event) {
