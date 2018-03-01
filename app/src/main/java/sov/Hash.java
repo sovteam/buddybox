@@ -1,7 +1,6 @@
 package sov;
 
 import android.util.Base64;
-
 import java.util.Arrays;
 
 public class Hash {
