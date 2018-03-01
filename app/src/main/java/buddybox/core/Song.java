@@ -2,7 +2,7 @@ package buddybox.core;
 
 import java.util.Locale;
 
-import utils.Hash;
+import sov.Hash;
 
 public class Song implements Playable {
 

@@ -55,7 +55,7 @@ import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
 import buddybox.core.events.SongSelected;
 import buddybox.core.events.SongUpdate;
-import utils.Hash;
+import sov.Hash;
 
 import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_GAIN;
 import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_LOSS;

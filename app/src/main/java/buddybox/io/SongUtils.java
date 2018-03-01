@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import utils.Hash;
+import sov.Hash;
 import buddybox.core.Song;
 
 public class SongUtils {

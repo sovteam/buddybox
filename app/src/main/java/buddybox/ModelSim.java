@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import utils.Hash;
+import sov.Hash;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
