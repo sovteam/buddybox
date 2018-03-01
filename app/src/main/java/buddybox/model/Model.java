@@ -6,24 +6,18 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
-import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.widget.ImageView;
-
-import com.adalbertosoares.buddybox.R;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1002,12 +996,40 @@ public class Model implements IModel {
         if (song == null)
             return getDefaultArt();
 
+        Bitmap art = getEmbeddedArt(song);
+        if (art != null)
+            return art;
+
+        art = getArtFromSongDir(song);
+        if (art != null)
+            return art;
+
+        return getDefaultArt();
+    }
+
+    private Bitmap getArtFromSongDir(Song song) {
+        // get all images at the same song path
+        File fileDir = new File(song.fileDir());
+        File[] images = fileDir.listFiles(new FilenameFilter() { @Override public boolean accept(File dir, String name) {
+            return name.endsWith(".jpg") || name.endsWith(".jpeg");
+        }});
+
+        if (images.length == 0)
+            return null;
+
+        // get largest image
+        Arrays.sort(images, new Comparator<File>() { @Override public int compare(File a, File b) {
+            return (int) (b.length() - a.length());
+        }});
+        return BitmapFactory.decodeFile(images[0].getAbsolutePath());
+    }
+
+    private Bitmap getEmbeddedArt(Song song) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(song.filePath);
         byte[] art = retriever.getEmbeddedPicture();
-        System.out.println("******* passou " + (art == null));
         if (art == null)
-            return getDefaultArt();
+            return null;
 
         return BitmapFactory.decodeByteArray(art, 0, art.length);
     }
@@ -1024,16 +1046,10 @@ public class Model implements IModel {
         return defaultArt;
     }
 
-    private static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
-        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
-        if (drawable == null)
-           return null;
+    /**
+     * Get art embedded OR
+     * Get largest art file (folder OR album OR cover) OR
+     * Get default art
+     **/
 
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-
-        return bitmap;
-    }
 }

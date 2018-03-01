@@ -115,4 +115,8 @@ public class Song implements Playable {
     public String printFileLength() {
         return String.format(Locale.getDefault(), "%.1f", (double) fileLength / 1024 / 1024) + " MB";
     }
+
+    public String fileDir() {
+        return filePath.substring(0, filePath.lastIndexOf("/"));
+    }
 }
