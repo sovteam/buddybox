@@ -1,17 +1,16 @@
 package buddybox.ui;
 
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -155,6 +154,8 @@ public class PlayingActivity extends AppCompatActivity {
 
         showDuration = state.showDuration;
         updateSongDuration();
+
+        ((ImageView) findViewById(R.id.art)).setImageBitmap(state.art);
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);

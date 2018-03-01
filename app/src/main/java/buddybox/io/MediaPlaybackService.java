@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -18,6 +19,7 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.KeyEvent;
+import android.widget.ImageView;
 
 import com.adalbertosoares.buddybox.R;
 
@@ -142,7 +144,7 @@ public class MediaPlaybackService extends Service {
 
     private void updateState(State state) {
         setMediaPlaybackState(state);
-        setMediaPlaybackMetadata(this, state.songPlaying);
+        setMediaPlaybackMetadata(state);
 
         if (state.hasAudioFocus)
             mediaSession.setActive(true);
@@ -217,17 +219,8 @@ public class MediaPlaybackService extends Service {
         mediaSession.setPlaybackState(builder.build());
     }
 
-    private static void setMediaPlaybackMetadata(Context context, Song song) {
-        AssetManager assetManager = context.getAssets();
-        InputStream istr;
-        Bitmap bitmap = null;
-        try {
-            istr = assetManager.open("sneer2.jpg");
-            bitmap = BitmapFactory.decodeStream(istr);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+    private static void setMediaPlaybackMetadata(State state) {
+        Song song = state.songPlaying;
         if (song != null) {
             MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
             builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.name);
@@ -235,8 +228,7 @@ public class MediaPlaybackService extends Service {
             builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album);
             builder.putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.genre);
             builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration);
-            if (bitmap != null)
-                builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap);
+            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, state.art);
             mediaSession.setMetadata(builder.build());
             return;
         }

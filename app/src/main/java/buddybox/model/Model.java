@@ -2,14 +2,27 @@ package buddybox.model;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.widget.ImageView;
+
+import com.adalbertosoares.buddybox.R;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -119,6 +132,7 @@ public class Model implements IModel {
     private Map<String,Integer>  volumeSettings;
     private boolean hasAudioFocus = false;
     private boolean showDuration = true;
+    private Bitmap defaultArt;
 
     public Model(Context context) {
         this.context = context;
@@ -731,6 +745,7 @@ public class Model implements IModel {
                 null,
                 currentSong(),
                 currentPlaylist,
+                getArt(),
                 reportSeekTo(),
                 isStopped,
                 isPaused,
@@ -977,8 +992,48 @@ public class Model implements IModel {
     private void updateVolumeSettings(String output, Integer volume) {
         getVolumeSettings().put(output, volume);
 
-        ContentValues vals = new ContentValues();
-        vals.put("VOLUME", volume);
-        DatabaseHelper.getInstance(context).getReadableDatabase().update("VOLUME_SETTINGS", vals, "OUTPUT=?", new String[]{output});
+        ContentValues values = new ContentValues();
+        values.put("VOLUME", volume);
+        DatabaseHelper.getInstance(context).getReadableDatabase().update("VOLUME_SETTINGS", values, "OUTPUT=?", new String[]{output});
+    }
+
+    private Bitmap getArt() {
+        Song song = currentSong();
+        if (song == null)
+            return getDefaultArt();
+
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(song.filePath);
+        byte[] art = retriever.getEmbeddedPicture();
+        System.out.println("******* passou " + (art == null));
+        if (art == null)
+            return getDefaultArt();
+
+        return BitmapFactory.decodeByteArray(art, 0, art.length);
+    }
+
+    private Bitmap getDefaultArt() {
+        if (defaultArt == null) {
+            AssetManager assetManager = context.getAssets();
+            try {
+                defaultArt = BitmapFactory.decodeStream(assetManager.open("sneer2.jpg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return defaultArt;
+    }
+
+    private static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Drawable drawable = ContextCompat.getDrawable(context, drawableId);
+        if (drawable == null)
+           return null;
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
     }
 }
