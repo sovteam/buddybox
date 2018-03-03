@@ -16,7 +16,7 @@ public class Sov {
 
     //////////////////Files
 
-    static Hash serve(File file) {}
+    static Hash serve(File file) { return null; }
 
     void requestFile(Hash hash, long fromContactId, File toWrite) {}
 

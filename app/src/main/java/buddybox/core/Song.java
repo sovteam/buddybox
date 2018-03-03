@@ -29,6 +29,8 @@ public class Song implements Playable {
     public boolean isMissing;
     public boolean isDeleted;
 
+    public boolean hasRetrievedMediaInfo = false; // transient
+
     public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
                 long fileLength, long lastModified, boolean isMissing, boolean isDeleted) {
         this.id = id;
@@ -118,5 +120,13 @@ public class Song implements Playable {
 
     public String fileDir() {
         return filePath.substring(0, filePath.lastIndexOf("/"));
+    }
+
+    public void setHasRetrievedMediaInfo() {
+        hasRetrievedMediaInfo = true;
+    }
+
+    public void setHasNotRetrievedMediaInfo() {
+        hasRetrievedMediaInfo = false;
     }
 }

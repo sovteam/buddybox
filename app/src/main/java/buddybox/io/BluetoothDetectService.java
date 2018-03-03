@@ -23,7 +23,7 @@ public class BluetoothDetectService extends Service {
         public void onReceive(Context context, Intent intent) {
         System.out.println(">>> Broadcast received!");
         final String action = intent.getAction();
-        // BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            // BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
         if (action == null)
             return;
@@ -77,8 +77,8 @@ public class BluetoothDetectService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         unregisterReceiver(receiver);
+        super.onDestroy();
     }
 
     @Nullable

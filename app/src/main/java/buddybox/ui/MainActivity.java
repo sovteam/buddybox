@@ -56,6 +56,7 @@ import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
 import buddybox.io.BluetoothDetectService;
 import buddybox.io.Library;
+import buddybox.io.MediaInfoRetriever;
 import buddybox.io.MediaPlaybackService;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
@@ -156,6 +157,8 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         MediaPlaybackService.init(this);
         BluetoothDetectService.init(this);
         dispatch(SYNC_LIBRARY);
+
+        MediaInfoRetriever.init(this);
     }
 
     private void checkWriteExternalStoragePermission() {

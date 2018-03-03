@@ -72,7 +72,6 @@ public class MediaPlaybackService extends Service {
     public MediaPlaybackService() {}
 
     public static void init(Context context) {
-        System.out.println(">>> INIT MediaPlaybackService");
         mediaSession = new MediaSessionCompat(context, "LOG TAG");
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
@@ -123,8 +122,6 @@ public class MediaPlaybackService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        System.out.println(">>> MediaPlaybackService onStartCommand");
-
         stateListener = new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
         }};

@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
@@ -17,7 +16,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -35,6 +33,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.events.DeletePlaylist;
+import buddybox.core.events.DownloadCompleted;
 import buddybox.core.events.Play;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistChangeSongPosition;
@@ -55,6 +54,7 @@ import buddybox.core.events.SongFound;
 import buddybox.core.events.SongMissing;
 import buddybox.core.events.SongSelected;
 import buddybox.core.events.SongUpdate;
+import buddybox.io.MediaInfoRetriever;
 import sov.Hash;
 
 import static buddybox.core.events.AudioFocus.AUDIO_FOCUS_GAIN;
@@ -78,6 +78,7 @@ import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
 import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_CONNECTED;
 import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
+import static buddybox.io.MediaInfoRetriever.ALBUMS_FOLDER_PATH;
 
 /**
  * The Model is modified only through dispatched events, handled sequentially.
@@ -127,6 +128,8 @@ public class Model implements IModel {
     private boolean hasAudioFocus = false;
     private boolean showDuration = true;
     private Bitmap defaultArt;
+
+    private HashMap<String, File> albumArtFiles;
 
     public Model(Context context) {
         this.context = context;
@@ -206,7 +209,23 @@ public class Model implements IModel {
         if (event == BLUETOOTH_CONNECT) bluetoothConnect();
         if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
 
+        // download
+        if (cls == DownloadCompleted.class) downloadCompleted((DownloadCompleted) event);
+
         updateListeners();
+    }
+
+    private void downloadCompleted(DownloadCompleted event) {
+        if (albumArtFiles == null)
+            return;
+
+        String fileName = event.fileName;
+        String key = fileName.substring(0, fileName.lastIndexOf("."));
+
+        File dir = Environment.getExternalStoragePublicDirectory(ALBUMS_FOLDER_PATH);
+        File image = new File(dir.getAbsolutePath(), fileName);
+
+        albumArtFiles.put(key, image);
     }
 
     private void toggleDurationRemaining() {
@@ -996,7 +1015,7 @@ public class Model implements IModel {
         if (song == null)
             return getDefaultArt();
 
-        Bitmap art = getEmbeddedArt(song);
+        Bitmap art = MediaInfoRetriever.getEmbeddedBitmap(song);
         if (art != null)
             return art;
 
@@ -1008,30 +1027,37 @@ public class Model implements IModel {
     }
 
     private Bitmap getArtFromSongDir(Song song) {
-        // get all images at the same song path
-        File fileDir = new File(song.fileDir());
-        File[] images = fileDir.listFiles(new FilenameFilter() { @Override public boolean accept(File dir, String name) {
-            return name.endsWith(".jpg") || name.endsWith(".jpeg");
-        }});
+        final String namePattern = MediaInfoRetriever.fileNamePattern(song);
+        File art = albumArtFiles().get(namePattern);
+        if (art == null)
+            return getDefaultArt();
 
-        if (images.length == 0)
+        if (!art.exists()) {
+            removeAlbumArtFile(namePattern);
+            song.setHasNotRetrievedMediaInfo();
             return null;
+        }
 
-        // get largest image
-        Arrays.sort(images, new Comparator<File>() { @Override public int compare(File a, File b) {
-            return (int) (b.length() - a.length());
-        }});
-        return BitmapFactory.decodeFile(images[0].getAbsolutePath());
+        return BitmapFactory.decodeFile(art.getAbsolutePath());
     }
 
-    private Bitmap getEmbeddedArt(Song song) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(song.filePath);
-        byte[] art = retriever.getEmbeddedPicture();
-        if (art == null)
-            return null;
+    private void removeAlbumArtFile(String namePattern) {
+        albumArtFiles.remove(namePattern);
+    }
 
-        return BitmapFactory.decodeByteArray(art, 0, art.length);
+    private Map<String,File> albumArtFiles() {
+        if (albumArtFiles == null) {
+            albumArtFiles = new HashMap<>();
+            File fileDir = Environment.getExternalStoragePublicDirectory(ALBUMS_FOLDER_PATH);
+            File[] images = fileDir.listFiles(new FilenameFilter() { @Override public boolean accept(File dir, String name) {
+                return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
+            }});
+            for (File image : images) {
+                String name = image.getName().substring(0, image.getName().lastIndexOf("."));
+                albumArtFiles.put(name.toLowerCase(), image);
+            }
+        }
+        return albumArtFiles;
     }
 
     private Bitmap getDefaultArt() {
@@ -1045,11 +1071,5 @@ public class Model implements IModel {
         }
         return defaultArt;
     }
-
-    /**
-     * Get art embedded OR
-     * Get largest art file (folder OR album OR cover) OR
-     * Get default art
-     **/
 
 }

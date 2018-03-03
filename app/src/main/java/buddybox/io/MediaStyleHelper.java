@@ -10,7 +10,6 @@ import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.view.KeyEvent;
 
-import buddybox.ui.MainActivity;
 import buddybox.ui.PlayingActivity;
 
 public class MediaStyleHelper {
