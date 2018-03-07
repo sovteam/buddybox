@@ -52,6 +52,7 @@
 
         <service
             android:name="buddybox.io.BluetoothDetectService"
+            android:stopWithTask="true"
             android:enabled="true"
             android:exported="false">
             <intent-filter android:priority="0">
@@ -65,7 +66,9 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-        <service android:name="buddybox.io.MediaInfoRetriever" />
+        <service
+            android:name="buddybox.io.MediaInfoRetriever"
+            android:stopWithTask="true"/>
 
     </application>
 

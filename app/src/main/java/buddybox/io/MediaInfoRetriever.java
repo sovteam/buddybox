@@ -84,9 +84,12 @@ public class MediaInfoRetriever extends Service {
 
         initAlbumsFolder();
 
-        stateListener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
-        }};
+        stateListener = new IModel.StateListener() {
+            @Override
+            public void update(State state) {
+                updateState(state);
+            }
+        };
         addStateListener(stateListener);
 
         return super.onStartCommand(intent, flags, startId);
