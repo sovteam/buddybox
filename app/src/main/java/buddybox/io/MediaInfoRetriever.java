@@ -217,6 +217,7 @@ public class MediaInfoRetriever extends Service {
         InputStream result;
         try {
             urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestProperty("User-Agent", "Buddy Box App");
             responseCode = urlConnection.getResponseCode();
             result = urlConnection.getInputStream();
             // check response code
