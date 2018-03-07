@@ -125,8 +125,14 @@ public class MediaInfoRetriever extends Service {
     }
 
     private static byte[] getEmbeddedPicture(Song song) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(song.filePath);
+        MediaMetadataRetriever retriever;
+        try {
+            retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(song.filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
         byte[] ret;
         try {
