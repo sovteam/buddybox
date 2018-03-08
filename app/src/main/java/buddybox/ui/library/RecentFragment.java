@@ -1,6 +1,7 @@
 package buddybox.ui.library;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,11 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
 import buddybox.core.events.SongSelected;
+import buddybox.io.MediaInfoRetriever;
 import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
 import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
@@ -108,16 +112,16 @@ public class RecentFragment extends Fragment {
                     ? activity.getLayoutInflater().inflate(R.layout.song_item, parent, false)
                     : convertView;
 
-            Playable item = getItem(position);
-            if (item == null)
+            Playable song = getItem(position);
+            if (song == null)
                 return rowView;
 
             TextView text1 = rowView.findViewById(R.id.songName);
             TextView text2 = rowView.findViewById(R.id.text2);
-            text1.setText(item.name());
-            text2.setText(item.subtitle());
+            text1.setText(song.name());
+            text2.setText(song.subtitle());
 
-            if (item == songPlaying) {
+            if (song == songPlaying) {
                 text1.setTextColor(Color.parseColor("#4fc3f7"));
                 text2.setTextColor(Color.parseColor("#4fc3f7"));
             } else {
@@ -131,6 +135,8 @@ public class RecentFragment extends Fragment {
                     openSelectPlaylistDialog(recentPlaylist.songs.get(position));
                 }
             });
+
+            ((ImageView)rowView.findViewById(R.id.albumArt)).setImageBitmap(((Song)song).getArt());
 
             return rowView;
         }

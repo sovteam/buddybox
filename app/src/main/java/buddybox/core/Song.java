@@ -1,5 +1,7 @@
 package buddybox.core;
 
+import android.graphics.Bitmap;
+
 import java.util.Locale;
 
 import sov.Hash;
@@ -30,6 +32,8 @@ public class Song implements Playable {
     public boolean isDeleted;
 
     public boolean hasRetrievedMediaInfo = false; // transient
+    private Bitmap embeddedArt;
+    private Bitmap art;
 
     public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
                 long fileLength, long lastModified, boolean isMissing, boolean isDeleted) {
@@ -128,5 +132,24 @@ public class Song implements Playable {
 
     public void setHasNotRetrievedMediaInfo() {
         hasRetrievedMediaInfo = false;
+    }
+
+    public void setEmbeddedArt(Bitmap embeddedArt) {
+        this.embeddedArt = embeddedArt;
+    }
+
+    public void setArt(Bitmap art) {
+        this.art = art;
+    }
+
+    public Bitmap getArt() {
+        if (embeddedArt != null)
+            return embeddedArt;
+
+        return art;
+    }
+
+    public boolean hasEmbeddedArt() {
+        return embeddedArt != null;
     }
 }

@@ -225,7 +225,7 @@ public class MediaPlaybackService extends Service {
             builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album);
             builder.putString(MediaMetadataCompat.METADATA_KEY_GENRE, song.genre);
             builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration);
-            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, state.art);
+            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, song.getArt());
             mediaSession.setMetadata(builder.build());
             return;
         }

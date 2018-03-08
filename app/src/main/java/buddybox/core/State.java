@@ -15,7 +15,6 @@ public class State {
     // Playing
     public final Song songPlaying;
     public final Playlist playlistPlaying;
-    public final Bitmap art;
     public final boolean isPaused;
     public final Map<String, List<Playlist>> playlistsBySong;
 
@@ -54,7 +53,7 @@ public class State {
     public final Map<String, Integer> volumeSettings;
     public final boolean hasAudioFocus;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Bitmap art, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus) {
         this.seekTo = seekTo;
         this.isStopped = isStopped;
         this.isShuffle = isShuffle;
@@ -65,7 +64,6 @@ public class State {
 
         this.songPlaying = playing;
         this.playlistPlaying = playlistPlaying;
-        this.art = art;
         this.isPaused = isPaused;
         this.repeatAll = repeatAll;
         this.repeatSong = repeatSong;

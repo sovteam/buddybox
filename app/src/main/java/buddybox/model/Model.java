@@ -226,6 +226,18 @@ public class Model implements IModel {
         File image = new File(dir.getAbsolutePath(), fileName);
 
         albumArtFiles.put(key, image);
+        updateSongsArt(key, image);
+    }
+
+    private void updateSongsArt(String artKey, File image) {
+        Bitmap art = BitmapFactory.decodeFile(image.getAbsolutePath());
+        for (Song song : allSongs) {
+            if (!song.hasEmbeddedArt()) {
+                String songKey = MediaInfoRetriever.fileNamePattern(song);
+                if (songKey.equals(artKey))
+                    song.setArt(art);
+            }
+        }
     }
 
     private void toggleDurationRemaining() {
@@ -758,7 +770,6 @@ public class Model implements IModel {
                 null,
                 currentSong(),
                 currentPlaylist,
-                getArt(),
                 reportSeekTo(),
                 isStopped,
                 isPaused,
@@ -819,7 +830,7 @@ public class Model implements IModel {
             allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
-            while(cursor.moveToNext()) {
+            while (cursor.moveToNext()) {
                 Song song = new Song(
                         cursor.getLong(cursor.getColumnIndex("ID")),
                         new Hash(cursor.getString(cursor.getColumnIndex("HASH"))),
@@ -834,6 +845,7 @@ public class Model implements IModel {
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1);
                 addSong(song);
+                setSongArt(song);
             }
             cursor.close();
         }
@@ -1010,22 +1022,6 @@ public class Model implements IModel {
         DatabaseHelper.getInstance(context).getReadableDatabase().update("VOLUME_SETTINGS", values, "OUTPUT=?", new String[]{output});
     }
 
-    private Bitmap getArt() {
-        Song song = currentSong();
-        if (song == null)
-            return getDefaultArt();
-
-        Bitmap art = MediaInfoRetriever.getEmbeddedBitmap(song);
-        if (art != null)
-            return art;
-
-        art = getArtFromSongDir(song);
-        if (art != null)
-            return art;
-
-        return getDefaultArt();
-    }
-
     private Bitmap getArtFromSongDir(Song song) {
         final String namePattern = MediaInfoRetriever.fileNamePattern(song);
         File art = albumArtFiles().get(namePattern);
@@ -1072,4 +1068,18 @@ public class Model implements IModel {
         return defaultArt;
     }
 
+    private void setSongArt(Song song) {
+        if (song.isMissing)
+            return;
+
+        Bitmap art = MediaInfoRetriever.getEmbeddedBitmap(song);
+        if (art != null)
+            song.setEmbeddedArt(art);
+
+        art = getArtFromSongDir(song);
+        if (art != null)
+            song.setArt(art);
+        else
+            song.setArt(getDefaultArt());
+    }
 }

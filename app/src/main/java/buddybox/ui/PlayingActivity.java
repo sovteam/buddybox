@@ -155,7 +155,7 @@ public class PlayingActivity extends AppCompatActivity {
         showDuration = state.showDuration;
         updateSongDuration();
 
-        ((ImageView) findViewById(R.id.art)).setImageBitmap(state.art);
+        ((ImageView) findViewById(R.id.art)).setImageBitmap(playing.getArt());
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
