@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="30dp">
+
+    <ImageView
+        android:id="@+id/albumArt"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/album_art"
+        app:srcCompat="@drawable/ic_audiotrack" />
+
+    <TextView
+        android:id="@+id/albumName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/albumArt"
+        android:text="@string/album_name"
+        android:textSize="18sp" />
+
+    <ImageButton
+        android:id="@+id/albumShufflePlay"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/albumArt"
+        android:layout_below="@+id/albumName"
+        android:layout_toEndOf="@+id/albumPlayAll"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/album_shuffle"
+        app:srcCompat="@drawable/ic_shuffle" />
+
+    <ImageButton
+        android:id="@+id/albumPlayAll"
+        style="@android:style/Widget.DeviceDefault.ImageButton"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/albumArt"
+        android:layout_below="@+id/albumName"
+        android:layout_toEndOf="@+id/albumArt"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/album_play"
+        app:srcCompat="@drawable/ic_play" />
+
+    <LinearLayout
+        android:id="@+id/songsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/albumPlayAll"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"></LinearLayout>
+
+
+</RelativeLayout>

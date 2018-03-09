@@ -248,6 +248,7 @@ public class Model implements IModel {
         updateSongsArt(key, image);
     }
 
+    synchronized
     private void updateSongsArt(String artKey, File image) {
         Bitmap art = BitmapFactory.decodeFile(image.getAbsolutePath());
         for (Song song : allSongs) {

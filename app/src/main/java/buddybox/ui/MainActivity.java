@@ -269,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void updateSharing(State state) {
-        ((TextView)findViewById(R.id.songsCount)).setText(Integer.toString(state.allSongsPlaylist.size()));
+        ((TextView)findViewById(R.id.songDuration)).setText(Integer.toString(state.allSongsPlaylist.size()));
 
         if (state.syncLibraryPending) {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.VISIBLE);

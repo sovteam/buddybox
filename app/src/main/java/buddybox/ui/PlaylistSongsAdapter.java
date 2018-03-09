@@ -83,7 +83,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
         ViewHolder(final View itemView) {
             super(itemView, mGrabHandleId, mDragOnLongPress);
             drag = itemView.findViewById(R.id.drag);
-            songName = itemView.findViewById(R.id.name);
+            songName = itemView.findViewById(R.id.songName);
             songArtist = itemView.findViewById(R.id.songArtist);
             ((ListSwipeItem) itemView).setSupportedSwipeDirection(ListSwipeItem.SwipeDirection.RIGHT);
         }

@@ -113,8 +113,8 @@ public class RecentFragment extends Fragment {
             if (song == null)
                 return rowView;
 
-            TextView text1 = rowView.findViewById(R.id.name);
-            TextView text2 = rowView.findViewById(R.id.songsCount);
+            TextView text1 = rowView.findViewById(R.id.songName);
+            TextView text2 = rowView.findViewById(R.id.songDuration);
             text1.setText(song.name());
             text2.setText(song.subtitle());
 

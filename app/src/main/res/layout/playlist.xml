@@ -65,7 +65,7 @@
         android:background="@drawable/rounded_background"
         android:backgroundTint="#01579b"
         android:foreground="?attr/selectableItemBackground"
-        android:text="Shuffle Play" />
+        android:text="@string/shuffle_play" />
 
     <!--<ListView
         android:id="@+id/playlistSongs"

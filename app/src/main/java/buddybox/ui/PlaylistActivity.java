@@ -95,8 +95,8 @@ public class PlaylistActivity extends AppCompatActivity {
 
         @Override
         public void onBindDragView(View clickedView, View dragView) {
-            CharSequence name = ((TextView) clickedView.findViewById(R.id.name)).getText();
-            ((TextView) dragView.findViewById(R.id.name)).setText(name);
+            CharSequence name = ((TextView) clickedView.findViewById(R.id.songName)).getText();
+            ((TextView) dragView.findViewById(R.id.songName)).setText(name);
             CharSequence artist = ((TextView) clickedView.findViewById(R.id.songArtist)).getText();
             ((TextView) dragView.findViewById(R.id.songArtist)).setText(artist);
             dragView.findViewById(R.id.item_layout).setBackgroundColor(Color.parseColor("#1976d2"));

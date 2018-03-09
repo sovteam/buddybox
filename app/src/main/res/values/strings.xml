@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Buddy Box</string>
     <string name="play">Play</string>
+    <string name="shuffle_play">Shuffle Play</string>
     <string name="no_song_playing">No song playing</string>
     <string name="music_library">Music Library</string>
     <string name="loved">Loved</string>
@@ -24,4 +25,16 @@
     <string name="skip_next">skip next</string>
     <string name="artist_bar_title">Artist</string>
     <string name="close_activity">Close Activity</string>
+    <string name="album_name">Album Name</string>
+    <string name="album_art">Album Art</string>
+    <string name="album_shuffle">Play All Album Song</string>
+    <string name="album_play">Play All Album Songs</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="song_name">Song Name</string>
+    <string name="song_duration">3:01</string>
+    <string name="artist_picture">Artist Picture</string>
+    <string name="artist_name">Artist Name</string>
+    <string name="songs_count">42 songs</string>
 </resources>
