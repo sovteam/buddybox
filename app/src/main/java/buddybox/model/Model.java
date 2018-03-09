@@ -33,6 +33,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.AlbumArtDownloadCompleted;
 import buddybox.core.events.ArtistPictureDownloadCompleted;
+import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.Play;
@@ -132,6 +133,7 @@ public class Model implements IModel {
 
     private HashMap<String, File> albumArtFiles;
     private ArrayList<Artist> artists;
+    private Artist artistSelected;
 
     public Model(Context context) {
         this.context = context;
@@ -215,7 +217,14 @@ public class Model implements IModel {
         if (cls == AlbumArtDownloadCompleted.class) albumArtDownloadCompleted((AlbumArtDownloadCompleted) event);
         if (cls == ArtistPictureDownloadCompleted.class) artistPictureDownloadCompleted((ArtistPictureDownloadCompleted) event);
 
+        // artist
+        if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
+
         updateListeners();
+    }
+
+    private void artistSelected(ArtistSelected event) {
+        artistSelected = event.artist;
     }
 
     private void artistPictureDownloadCompleted(ArtistPictureDownloadCompleted event) {
@@ -835,7 +844,8 @@ public class Model implements IModel {
                 songSelected,
                 getOutputConnected(),
                 getVolumeSettings(),
-                hasAudioFocus);
+                hasAudioFocus,
+                artistSelected);
     }
 
     private Integer reportSeekTo() {

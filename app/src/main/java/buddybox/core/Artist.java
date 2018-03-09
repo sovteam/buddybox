@@ -24,6 +24,14 @@ public class Artist {
         return songs.size();
     }
 
+    public String songsCountPrint() {
+        int count = songsCount();
+        String ret = Integer.toString(count) + " song";
+        if (count != 1)
+            ret += "s";
+        return ret;
+    }
+
     public void setPicture(Bitmap picture) {
         this.picture = picture;
     }

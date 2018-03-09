@@ -7,11 +7,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import sov.Hash;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import sov.Hash;
 import utils.Daemon;
 
 import static utils.Utils.sleepQuietly;
@@ -65,6 +65,6 @@ public class ModelSim implements IModel {
 
         boolean isPaused = count % 2 == 0;
         for (StateListener listener : listeners)
-            listener.update(new State(1, null, song, null, null, false, isPaused, false, false, false, true, null, false, null, null, null, null, 1, count * 1024, 0L, recent, null, false, null, null, null, null, new HashMap<String, Integer>(), true));
+            listener.update(new State(1, null, song, null, null, false, isPaused, false, false, false, true, null, false, null, null, null, null, 1, count * 1024, 0L, recent, null, false, null, null, null, null, new HashMap<String, Integer>(), true, null));
     }
 }

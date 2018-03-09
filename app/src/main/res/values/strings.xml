@@ -22,4 +22,6 @@
     <string name="pause">pause</string>
     <string name="skip_previous">skip previous</string>
     <string name="skip_next">skip next</string>
+    <string name="artist_bar_title">Artist</string>
+    <string name="close_activity">Close Activity</string>
 </resources>

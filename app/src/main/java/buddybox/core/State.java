@@ -1,7 +1,5 @@
 package buddybox.core;
 
-import android.graphics.Bitmap;
-
 import java.util.List;
 import java.util.Map;
 
@@ -52,8 +50,9 @@ public class State {
     public final String outputActive;
     public final Map<String, Integer> volumeSettings;
     public final boolean hasAudioFocus;
+    public final Artist artistSelected;
 
-    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus) {
+    public State(int songCount, String[] musicFolders, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus, Artist artistSelected) {
         this.seekTo = seekTo;
         this.isStopped = isStopped;
         this.isShuffle = isShuffle;
@@ -86,5 +85,6 @@ public class State {
         this.selectedSong = selectedSong;
         this.volumeSettings = volumeSettings;
         this.hasAudioFocus = hasAudioFocus;
+        this.artistSelected = artistSelected;
     }
 }

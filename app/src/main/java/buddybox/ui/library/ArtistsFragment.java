@@ -1,5 +1,6 @@
 package buddybox.ui.library;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -23,7 +24,12 @@ import java.util.List;
 import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.State;
+import buddybox.core.events.ArtistSelected;
+import buddybox.ui.ArtistActivity;
+import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
+
+import static buddybox.ui.ModelProxy.dispatch;
 
 public class ArtistsFragment extends Fragment {
 
@@ -92,13 +98,21 @@ public class ArtistsFragment extends Fragment {
                     ? activity.getLayoutInflater().inflate(R.layout.artist_item, parent, false)
                     : convertView;
 
-            Artist artist = getItem(position);
+            final Artist artist = getItem(position);
             if (artist == null)
                 return rowView;
 
             setText(rowView, R.id.name, artist.name);
             setText(rowView, R.id.songsCount, Integer.toString(artist.songsCount()) + " songs");
             ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(artist.picture);
+
+            rowView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                dispatch(new ArtistSelected(artist));
+                startActivity(new Intent(getContext(), ArtistActivity.class));
+                }
+            });
 
             return rowView;
         }
