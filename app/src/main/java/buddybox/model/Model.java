@@ -31,9 +31,10 @@ import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.AlbumArtDownloadCompleted;
+import buddybox.core.events.ArtistPictureDownloadCompleted;
 import buddybox.core.events.CreatePlaylist;
 import buddybox.core.events.DeletePlaylist;
-import buddybox.core.events.DownloadCompleted;
 import buddybox.core.events.Play;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistChangeSongPosition;
@@ -130,6 +131,7 @@ public class Model implements IModel {
     private Bitmap defaultArt;
 
     private HashMap<String, File> albumArtFiles;
+    private ArrayList<Artist> artists;
 
     public Model(Context context) {
         this.context = context;
@@ -210,12 +212,20 @@ public class Model implements IModel {
         if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
 
         // download
-        if (cls == DownloadCompleted.class) downloadCompleted((DownloadCompleted) event);
+        if (cls == AlbumArtDownloadCompleted.class) albumArtDownloadCompleted((AlbumArtDownloadCompleted) event);
+        if (cls == ArtistPictureDownloadCompleted.class) artistPictureDownloadCompleted((ArtistPictureDownloadCompleted) event);
 
         updateListeners();
     }
 
-    private void downloadCompleted(DownloadCompleted event) {
+    private void artistPictureDownloadCompleted(ArtistPictureDownloadCompleted event) {
+        File dir = Environment.getExternalStoragePublicDirectory(ALBUMS_FOLDER_PATH);
+        File image = new File(dir.getAbsolutePath(), event.fileName);
+        Bitmap picture = BitmapFactory.decodeFile(image.getAbsolutePath());
+        event.artist.setPicture(picture);
+    }
+
+    private void albumArtDownloadCompleted(AlbumArtDownloadCompleted event) {
         if (albumArtFiles == null)
             return;
 
@@ -233,7 +243,7 @@ public class Model implements IModel {
         Bitmap art = BitmapFactory.decodeFile(image.getAbsolutePath());
         for (Song song : allSongs) {
             if (!song.hasEmbeddedArt()) {
-                String songKey = MediaInfoRetriever.fileNamePattern(song);
+                String songKey = MediaInfoRetriever.albumArtFileName(song);
                 if (songKey.equals(artKey))
                     song.setArt(art);
             }
@@ -429,6 +439,9 @@ public class Model implements IModel {
         if (current != null && current.equals(song))
             currentSongIndex = null;
 
+        updateMediaStorageUsed(-song.fileLength);
+        removeSongFromArtist(song);
+
         printDBSongs();
     }
 
@@ -472,6 +485,15 @@ public class Model implements IModel {
         DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", values, "HASH=?", new String[]{event.song.hash.toString()});
         event.song.setMissing();
         updateMediaStorageUsed(-event.song.fileLength);
+        removeSongFromArtist(event.song);
+    }
+
+    private void removeSongFromArtist(Song song) {
+        Artist artist = getArtist(song.artist);
+        if (artist == null)
+            return;
+
+        artist.removeSong(song);
     }
 
     private void songFound(SongFound event) {
@@ -485,14 +507,30 @@ public class Model implements IModel {
             song.setNotMissing();
             updateSong(song);
         }
+
+        // add song to artist
+        Artist artist = getArtist(event.song.artist);
+        if (artist == null) {
+            artist = new Artist(event.song.artist);
+            artists.add(artist);
+        }
+        artist.addSong(event.song);
     }
 
     private void addSong(Song song) {
         System.out.println("@@@ ADD SONG: " + song.name);
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
-        if (!song.isMissing)
+        if (!song.isMissing) {
             updateMediaStorageUsed(song.fileLength);
+        }
+    }
+
+    private Artist getArtist(String artist) {
+        for (Artist a : artists)
+            if (a.name.equals(artist))
+                return a;
+        return null;
     }
 
     private void updateMediaStorageUsed(long fileLength) {
@@ -538,18 +576,21 @@ public class Model implements IModel {
     }
 
     private ArrayList<Artist> artists() {
-        Map<String, Artist> artistsByName = new HashMap<>();
-        for (Song song : allSongs()) {
-            if (song.isMissing)
-                continue;
-            Artist artist = artistsByName.get(song.artist);
-            if (artist == null) {
-                artist = new Artist(song.artist);
-                artistsByName.put(song.artist, artist);
+        if (artists == null) {
+            Map<String, Artist> artistsByName = new HashMap<>();
+            for (Song song : allSongs()) {
+                if (song.isMissing)
+                    continue;
+                Artist artist = artistsByName.get(song.artist);
+                if (artist == null) {
+                    artist = new Artist(song.artist);
+                    artistsByName.put(song.artist, artist);
+                }
+                artist.addSong(song);
             }
-            artist.addSong(song);
+            artists = new ArrayList<>(artistsByName.values());
         }
-        return new ArrayList<>(artistsByName.values());
+        return artists;
     }
 
     private void finishedPlaying() {
@@ -1023,14 +1064,14 @@ public class Model implements IModel {
     }
 
     private Bitmap getArtFromSongDir(Song song) {
-        final String namePattern = MediaInfoRetriever.fileNamePattern(song);
+        final String namePattern = MediaInfoRetriever.albumArtFileName(song);
         File art = albumArtFiles().get(namePattern);
         if (art == null)
-            return getDefaultArt();
+            return null;
 
         if (!art.exists()) {
             removeAlbumArtFile(namePattern);
-            song.setHasNotRetrievedMediaInfo();
+            song.setArt(null);
             return null;
         }
 
@@ -1044,8 +1085,8 @@ public class Model implements IModel {
     private Map<String,File> albumArtFiles() {
         if (albumArtFiles == null) {
             albumArtFiles = new HashMap<>();
-            File fileDir = Environment.getExternalStoragePublicDirectory(ALBUMS_FOLDER_PATH);
-            File[] images = fileDir.listFiles(new FilenameFilter() { @Override public boolean accept(File dir, String name) {
+            File fileFolder = MediaInfoRetriever.getAlbumsFolder();
+            File[] images = fileFolder.listFiles(new FilenameFilter() { @Override public boolean accept(File dir, String name) {
                 return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
             }});
             for (File image : images) {
@@ -1079,7 +1120,5 @@ public class Model implements IModel {
         art = getArtFromSongDir(song);
         if (art != null)
             song.setArt(art);
-        else
-            song.setArt(getDefaultArt());
     }
 }

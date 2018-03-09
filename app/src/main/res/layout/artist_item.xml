@@ -1,29 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/artistItem"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:id="@+id/songItem"
-    android:paddingLeft="16dp">
-
-    <ImageView
-        android:layout_width="56dp"
-        android:layout_height="match_parent"
-        android:id="@+id/songMore"
-        android:src="@drawable/ic_playlist_add"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:contentDescription="Add to Playlist"
-        android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:paddingRight="16dp"
-        android:paddingLeft="16dp" />
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:layout_toStartOf="@+id/songMore">
 
         <ImageView
@@ -44,17 +32,18 @@
             android:layout_marginTop="8dp"
             android:layout_toEndOf="@+id/picture"
             android:singleLine="true"
-            android:text="Item"
+            android:text="Artist"
             android:textAppearance="?attr/textAppearanceListItem" />
 
-        <TextView android:id="@+id/songsCount"
+        <TextView
+            android:id="@+id/songsCount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/name"
             android:layout_alignStart="@+id/name"
-            android:text="subtitle"
+            android:layout_below="@+id/name"
             android:layout_marginBottom="8dp"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:text="42 songs" />
 
     </RelativeLayout>
 

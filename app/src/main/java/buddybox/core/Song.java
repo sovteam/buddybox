@@ -31,7 +31,6 @@ public class Song implements Playable {
     public boolean isMissing;
     public boolean isDeleted;
 
-    public boolean hasRetrievedMediaInfo = false; // transient
     private Bitmap embeddedArt;
     private Bitmap art;
 
@@ -124,14 +123,6 @@ public class Song implements Playable {
 
     public String fileDir() {
         return filePath.substring(0, filePath.lastIndexOf("/"));
-    }
-
-    public void setHasRetrievedMediaInfo() {
-        hasRetrievedMediaInfo = true;
-    }
-
-    public void setHasNotRetrievedMediaInfo() {
-        hasRetrievedMediaInfo = false;
     }
 
     public void setEmbeddedArt(Bitmap embeddedArt) {

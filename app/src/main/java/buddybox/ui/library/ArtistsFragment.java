@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -88,15 +89,16 @@ public class ArtistsFragment extends Fragment {
         @Override
         public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
             View rowView = (convertView == null)
-                    ? activity.getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
+                    ? activity.getLayoutInflater().inflate(R.layout.artist_item, parent, false)
                     : convertView;
 
             Artist artist = getItem(position);
             if (artist == null)
                 return rowView;
 
-            setText(rowView, android.R.id.text1, artist.name);
-            setText(rowView, android.R.id.text2, Integer.toString(artist.songsCount()) + " songs");
+            setText(rowView, R.id.name, artist.name);
+            setText(rowView, R.id.songsCount, Integer.toString(artist.songsCount()) + " songs");
+            ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(artist.picture);
 
             return rowView;
         }

@@ -1,7 +1,6 @@
 package buddybox.ui.library;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,7 +18,6 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +28,6 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
 import buddybox.core.events.SongSelected;
-import buddybox.io.MediaInfoRetriever;
 import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
 import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
@@ -116,8 +113,8 @@ public class RecentFragment extends Fragment {
             if (song == null)
                 return rowView;
 
-            TextView text1 = rowView.findViewById(R.id.songName);
-            TextView text2 = rowView.findViewById(R.id.text2);
+            TextView text1 = rowView.findViewById(R.id.name);
+            TextView text2 = rowView.findViewById(R.id.songsCount);
             text1.setText(song.name());
             text2.setText(song.subtitle());
 
@@ -136,7 +133,7 @@ public class RecentFragment extends Fragment {
                 }
             });
 
-            ((ImageView)rowView.findViewById(R.id.albumArt)).setImageBitmap(((Song)song).getArt());
+            ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(((Song)song).getArt());
 
             return rowView;
         }

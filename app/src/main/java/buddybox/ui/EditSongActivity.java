@@ -73,7 +73,7 @@ public class EditSongActivity extends AppCompatActivity {
             song = state.selectedSong;
 
             // Set fields
-            EditText name = findViewById(R.id.songName);
+            EditText name = findViewById(R.id.name);
             name.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
             name.setText(song.name);
 
@@ -147,7 +147,7 @@ public class EditSongActivity extends AppCompatActivity {
 
     private Map<String, String> getValues() {
         Map<String,String> ret = new HashMap<>();
-        ret.put("name", ((EditText)findViewById(R.id.songName)).getText().toString().trim());
+        ret.put("name", ((EditText)findViewById(R.id.name)).getText().toString().trim());
         ret.put("artist", ((EditText)findViewById(R.id.songArtist)).getText().toString().trim());
         ret.put("album", ((EditText)findViewById(R.id.songAlbum)).getText().toString().trim());
         ret.put("genre", ((Spinner)findViewById(R.id.songGenre)).getSelectedItem().toString());

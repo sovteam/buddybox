@@ -151,14 +151,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private void initApp() {
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
+        MediaInfoRetriever.init(this);
         Player.init(this);
         Library.init();
         Sampler.init(this);
         MediaPlaybackService.init(this);
         BluetoothDetectService.init(this);
         dispatch(SYNC_LIBRARY);
-
-        MediaInfoRetriever.init(this);
     }
 
     private void checkWriteExternalStoragePermission() {
