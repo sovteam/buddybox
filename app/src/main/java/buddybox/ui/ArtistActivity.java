@@ -18,6 +18,7 @@ import buddybox.core.State;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+import static buddybox.core.events.Play.SHUFFLE_PLAY_ARTIST;
 
 public class ArtistActivity extends AppCompatActivity {
 
@@ -37,7 +38,7 @@ public class ArtistActivity extends AppCompatActivity {
         findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dispatch(PLAY_PAUSE_CURRENT); // TODO shuffle play artist
+            dispatch(SHUFFLE_PLAY_ARTIST);
             }
         });
 

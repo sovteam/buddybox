@@ -72,6 +72,7 @@ import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
+import static buddybox.core.events.Play.SHUFFLE_PLAY_ARTIST;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Play.TOGGLE_DURATION_REMAINING;
@@ -158,6 +159,7 @@ public class Model implements IModel {
         if (cls == Play.class) play((Play) event);
         if (cls == SeekTo.class) seekTo((SeekTo) event);
         if (event == SHUFFLE_PLAY) shufflePlay();
+        if (event == SHUFFLE_PLAY_ARTIST) shufflePlayArtist();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == PAUSE) pause();
         if (event == SKIP_NEXT) skip(+1);
@@ -387,6 +389,15 @@ public class Model implements IModel {
         }
 
         doPlay(currentPlaylist, nextSongIndex);
+    }
+
+    private void shufflePlayArtist() {
+        /**
+         * TODO auto create/update a playlist for each artist
+         * do not show artist playlist at custom playlists
+         */
+        selectedPlaylist = new Playlist(System.currentTimeMillis(), artistSelected.name, new ArrayList<>(artistSelected.songs));
+        shufflePlay();
     }
 
     private void removeSongFromPlaylist(PlaylistRemoveSong event) {
