@@ -16,6 +16,9 @@ import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
 
+import static buddybox.core.Dispatcher.dispatch;
+import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
+
 public class ArtistActivity extends AppCompatActivity {
 
     private IModel.StateListener listener;
@@ -29,6 +32,12 @@ public class ArtistActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+        findViewById(R.id.shufflePlay).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dispatch(PLAY_PAUSE_CURRENT); // TODO shuffle play artist
             }
         });
 
@@ -58,26 +67,24 @@ public class ArtistActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.songDuration)).setText(state.artistSelected.songsCountPrint());
 
         // songs by album
-        System.out.println("* Artist: " + state.artistSelected.name);
         Map<String, List<Song>> map = state.artistSelected.songsByAlbum();
-        for (String album : map.keySet()) {
-            inflateAlbum(album, map.get(album));
-            System.out.println("** Album: " + album);
-            for (Song song : map.get(album))
-                System.out.println("*** Song: " + song.name);
-        }
-
-    }
-
-    private void inflateAlbum(String album, List<Song> songs) {
         LinearLayout albumsContainer = findViewById(R.id.albums_container);
 
-        LinearLayout ll = new LinearLayout(this);
-        ll.setOrientation(LinearLayout.HORIZONTAL);
-        ll.setId(View.generateViewId());
+        for (String album : map.keySet()) {
+            LinearLayout albumView = albumsContainer.findViewWithTag(album);
+            if (albumView == null) {
+                albumView = inflateAlbum(album);
+                albumsContainer.addView(albumView);
+            }
+        }
+    }
 
-        getFragmentManager().beginTransaction().add(ll.getId(), AlbumFragment.newInstance(album)).commit();
-
-        albumsContainer.addView(ll);
+    private LinearLayout inflateAlbum(String album) {
+        LinearLayout albumView = new LinearLayout(this);
+        albumView.setTag(album);
+        albumView.setOrientation(LinearLayout.HORIZONTAL);
+        albumView.setId(View.generateViewId());
+        getFragmentManager().beginTransaction().add(albumView.getId(), AlbumFragment.newInstance(album)).commit();
+        return albumView;
     }
 }
