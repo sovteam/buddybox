@@ -1,25 +1,19 @@
 package buddybox.ui;
 
-import android.os.Bundle;
 import android.app.Fragment;
-import android.support.annotation.NonNull;
+import android.graphics.Color;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
 import java.util.List;
 
-import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
@@ -75,22 +69,32 @@ public class AlbumFragment extends Fragment {
         List<Song> songs = state.artistSelected.getAlbumSongs(album);
         ((ImageView) view.findViewById(R.id.albumArt)).setImageBitmap(songs.get(0).getArt());
 
-        // TODO optimize add/remove
         LinearLayout songsContainer = view.findViewById(R.id.songsContainer);
-        songsContainer.removeAllViews();
         for (Song song : songs) {
-            View view = inflater.inflate(R.layout.album_song, null);
-            //view.setId(song.hashCode());
-            ((TextView) view.findViewById(R.id.songName)).setText(song.name);
-            ((TextView) view.findViewById(R.id.songDuration)).setText(song.duration());
-            view.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    System.out.println("* Add song to playlist");
-                }
-            });
-            songsContainer.addView(view);
+            View songView = songsContainer.findViewWithTag(song.hash.toString());
+            if (songView == null) {
+                // Create new song container
+                songView = inflateSongContainer(song);
+                songsContainer.addView(songView);
+            }
+            int color = state.songPlaying.hash.toString().equals(songView.getTag())
+                    ? Color.parseColor("#03a9f4")
+                    : Color.WHITE;
+
+            ((TextView) songView.findViewById(R.id.songName)).setTextColor(color);
+            ((TextView) songView.findViewById(R.id.songDuration)).setTextColor(color);
         }
+    }
+
+    private View inflateSongContainer(Song song) {
+        View songView = inflater.inflate(R.layout.album_song, null);
+        songView.setTag(song.hash.toString());
+        ((TextView) songView.findViewById(R.id.songName)).setText(song.name);
+        ((TextView) songView.findViewById(R.id.songDuration)).setText(song.duration());
+        songView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            System.out.println("* Add song to playlist"); // TODO implement add song to playlist
+        }});
+        return songView;
     }
 
 }
