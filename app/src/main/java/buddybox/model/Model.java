@@ -28,6 +28,7 @@ import java.util.Set;
 import buddybox.core.Artist;
 import buddybox.core.Dispatcher;
 import buddybox.core.IModel;
+import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
@@ -141,8 +142,6 @@ public class Model implements IModel {
 
         //DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLISTS");
         //DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLIST_SONG");
-
-        System.out.println(DatabaseHelper.getInstance(context));
 
         Dispatcher.addListener(new Dispatcher.Listener() { @Override public void onEvent(Dispatcher.Event event) {
             handle(event);
@@ -336,6 +335,7 @@ public class Model implements IModel {
     }
 
     private void songUpdate(SongUpdate event) {
+        // TODO update artists if event.artist != song.artist
         Song song = event.song;
         song.setName(event.name);
         song.setArtist(event.artist);
@@ -518,8 +518,6 @@ public class Model implements IModel {
     }
 
     private void songFound(SongFound event) {
-        System.out.println(">>> SONG FOunD");
-
         Song song = findSongByHash(event.song.hash);
         if (song == null) {
             insertNewSong(event.song);
@@ -535,7 +533,8 @@ public class Model implements IModel {
             artist = new Artist(event.song.artist);
             artists.add(artist);
         }
-        artist.addSong(event.song);
+        if (!artist.hasSong(event.song))
+            artist.addSong(event.song);
     }
 
     private void addSong(Song song) {
@@ -883,6 +882,17 @@ public class Model implements IModel {
         for (Song song : allSongs())
            if (!song.isMissing)
                ret.add(song);
+
+        Collections.sort(ret, new Comparator<Playable>() {
+            @Override
+            public int compare(Playable p1, Playable p2) {
+                int subtitleCompare = p1.subtitle().compareTo(p2.subtitle());
+                if (subtitleCompare == 0)
+                    return p1.name().compareTo(p2.name());
+                return subtitleCompare;
+            }
+        });
+
         return ret;
     }
 

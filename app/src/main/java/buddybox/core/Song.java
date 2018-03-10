@@ -143,4 +143,5 @@ public class Song implements Playable {
     public boolean hasEmbeddedArt() {
         return embeddedArt != null;
     }
+
 }

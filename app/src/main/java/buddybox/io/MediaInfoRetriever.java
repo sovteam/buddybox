@@ -31,8 +31,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import buddybox.core.Artist;
 import buddybox.core.IModel;
@@ -61,6 +64,7 @@ public class MediaInfoRetriever extends Service {
 
     private IModel.StateListener stateListener;
     private LongSparseArray<ImageDownload> pendingDownloads = new LongSparseArray<>();
+    private Set<String> filesRequested = new HashSet<>();
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -81,6 +85,7 @@ public class MediaInfoRetriever extends Service {
                         dispatch(new AlbumArtDownloadCompleted(download.fileName));
                     }
                     pendingDownloads.remove(id);
+                    filesRequested.remove(download.fileName);
                 }
             }
         }
@@ -97,7 +102,7 @@ public class MediaInfoRetriever extends Service {
         return getAssetFolder(ALBUMS_FOLDER_PATH);
     }
 
-    public static File getAtistsFolder() {
+    public static File getArtistsFolder() {
         return getAssetFolder(ARTISTS_FOLDER_PATH);
     }
 
@@ -135,7 +140,7 @@ public class MediaInfoRetriever extends Service {
                     artist.setPicture(art);
                 } else {
                     artist.setPicture(getDefaultArtistPicture());
-                    artistsQueue.offer(artist);
+                    artistsQueue.offer(artist); // TODO enqueue {artist: , album: } if !queue.contains it
                 }
             }
         }
@@ -151,7 +156,7 @@ public class MediaInfoRetriever extends Service {
     }
 
     private Bitmap getArtistPictureFromLocalFolder(final Artist artist) {
-        File fileFolder = MediaInfoRetriever.getAtistsFolder();
+        File fileFolder = MediaInfoRetriever.getArtistsFolder();
         File[] images = fileFolder.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.equals(artistPictureFullFileName(artist));
@@ -164,7 +169,6 @@ public class MediaInfoRetriever extends Service {
     }
 
     private void consumeArtistQueue() {
-        System.out.println(">> >> MediaInfoRetriever: CONSUME ARTISTS QUEUE, isConsumingArtists: " + isConsumingArtists + ", EMPTY: " + artistsQueue.isEmpty() + ", NETWORK HAS CONNECTION: " + Network.hasConnection(this));
         if (isConsumingArtists || artistsQueue.isEmpty() || !Network.hasConnection(this)) // TODO send connection to Model
             return;
 
@@ -177,7 +181,6 @@ public class MediaInfoRetriever extends Service {
 
     private void consumeNextArtist() {
         if (artistsQueue.isEmpty()) {
-            System.out.println(">> MediaInfoRetriever: Artists QUEUE EMPTY");
             isConsumingArtists = false;
             return;
         }
@@ -279,7 +282,6 @@ public class MediaInfoRetriever extends Service {
     }
 
     private void consumeSongsQueue() {
-        System.out.println(">> >> CONSUME QUEUE, isConsumingSongs: " + isConsumingSongs + ", EMPTY: " + songsQueue.isEmpty() + ", NETWORK HAS CONNECTION: " + Network.hasConnection(this));
         if (isConsumingSongs || songsQueue.isEmpty() || !Network.hasConnection(this)) // TODO send connection to Model
             return;
 
@@ -298,7 +300,7 @@ public class MediaInfoRetriever extends Service {
 
         Song song = songsQueue.peek();
 
-        if (!hasLocalAlbumArtFile(song)) {
+        if (!filesRequested.contains(albumArtFullFileName(song)) && !hasLocalAlbumArtFile(song)) {
             retrieveAlbumArt(song);
 
             // breath between API calls
@@ -471,6 +473,7 @@ public class MediaInfoRetriever extends Service {
         assert man != null;
         long id = man.enqueue(request);
         pendingDownloads.put(id, download);
+        filesRequested.add(download.fileName);
     }
 
     public static String encode(String fileName) {

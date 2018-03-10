@@ -81,4 +81,8 @@ public class Artist {
     public List<Song> getAlbumSongs(String album) {
         return songsByAlbum().get(album);
     }
+
+    public boolean hasSong(Song song) {
+        return songs.contains(song);
+    }
 }

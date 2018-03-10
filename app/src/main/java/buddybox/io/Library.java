@@ -64,12 +64,10 @@ public class Library {
     }
 
     private static void synchronizeLibrary() {
-        System.out.println("222 sync lib");
         List<File> mp3Files = SongUtils.listLibraryMp3Files();
 
         Map<String, Song> songByPath = new HashMap<>();
         for (Song song : getState().allSongsPlaylist.songs) {
-            System.out.println(">>> songByPath path " + song.filePath);
             if (!song.isMissing)
                 songByPath.put(song.filePath, song);
         }
@@ -81,7 +79,7 @@ public class Library {
         }
 
         for (Song missing : songByPath.values()) {
-            System.out.println("222 song missing " + missing.name);
+            System.out.println("*** song missing? " + missing.name);
             dispatch(new SongMissing(missing));
         }
         dispatch(SYNC_LIBRARY_FINISHED);
