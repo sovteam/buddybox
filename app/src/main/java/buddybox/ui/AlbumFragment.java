@@ -77,10 +77,12 @@ public class AlbumFragment extends Fragment {
                 songView = inflateSongContainer(song);
                 songsContainer.addView(songView);
             }
-            int color = state.songPlaying.hash.toString().equals(songView.getTag())
+            ((TextView) songView.findViewById(R.id.songName)).setText(song.name);
+            ((TextView) songView.findViewById(R.id.songDuration)).setText(song.duration());
+
+            int color = state.songPlaying != null && state.songPlaying.hash.toString().equals(songView.getTag())
                     ? Color.parseColor("#03a9f4")
                     : Color.WHITE;
-
             ((TextView) songView.findViewById(R.id.songName)).setTextColor(color);
             ((TextView) songView.findViewById(R.id.songDuration)).setTextColor(color);
         }
@@ -89,8 +91,6 @@ public class AlbumFragment extends Fragment {
     private View inflateSongContainer(Song song) {
         View songView = inflater.inflate(R.layout.album_song, null);
         songView.setTag(song.hash.toString());
-        ((TextView) songView.findViewById(R.id.songName)).setText(song.name);
-        ((TextView) songView.findViewById(R.id.songDuration)).setText(song.duration());
         songView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             System.out.println("* Add song to playlist"); // TODO implement add song to playlist
         }});
