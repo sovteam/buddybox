@@ -21,6 +21,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,10 +55,10 @@ import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
-import buddybox.io.BluetoothDetectService;
+import buddybox.io.BluetoothListener;
 import buddybox.io.Library;
 import buddybox.io.MediaInfoRetriever;
-import buddybox.io.MediaPlaybackService;
+import buddybox.io.MediaPlayback;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
 import buddybox.model.Model;
@@ -144,8 +145,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         setHeadsetPlugObserver(); // TODO Extract to io class
         setVolumeControls();
 
-        System.out.println(">>> Main Activity: onCreate");
-
         checkWriteExternalStoragePermission();
     }
 
@@ -153,12 +152,18 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
         MediaInfoRetriever.init(this);
         Player.init(this);
-        Library.init();
+        Library.init(this);
         Sampler.init(this);
-        MediaPlaybackService.init(this);
-        BluetoothDetectService.init(this);
+        MediaPlayback.init(this);
+        BluetoothListener.init(this);
+
+        ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
+            updateState(state);
+        }});
+
         dispatch(SYNC_LIBRARY);
     }
+
 
     private void checkWriteExternalStoragePermission() {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -183,12 +188,11 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission was granted
-                System.out.println("<<< Permission Granted >>>");
                 findViewById(R.id.permission).setVisibility(View.GONE);
                 initApp();
             } else {
                 // Permission denied
-                System.out.println("<<< Permission Denied >>>");
+                Log.d("MainActivity", "WRITE_EXTERNAL_STORAGE: Permission denied");
             }
         }
     }
@@ -239,16 +243,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         super.onDestroy();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (ModelProxy.isInitialized())
-            ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
-                updateState(state);
-            }});
-    }
-
     private void updateState(State state) {
         updateLibraryState(state);
         updateSamplerState(state);
@@ -269,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void updateSharing(State state) {
-        ((TextView)findViewById(R.id.songDuration)).setText(Integer.toString(state.allSongsPlaylist.size()));
+        ((TextView)findViewById(R.id.songDuration)).setText(String.format(Locale.getDefault(), "%d", state.allSongsPlaylist.size()));
 
         if (state.syncLibraryPending) {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.VISIBLE);

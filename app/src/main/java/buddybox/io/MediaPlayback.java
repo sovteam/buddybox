@@ -6,10 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -18,18 +14,14 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 import android.view.KeyEvent;
-import android.widget.ImageView;
 
 import com.adalbertosoares.buddybox.R;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.ui.ModelProxy;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Play.PAUSE;
@@ -39,7 +31,7 @@ import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.ui.ModelProxy.removeStateListener;
 
-public class MediaPlaybackService extends Service {
+public class MediaPlayback extends Service {
 
     private static final int NOTIFICATION_ID = 999;
     private static MediaSessionCompat mediaSession;
@@ -48,7 +40,6 @@ public class MediaPlaybackService extends Service {
     private static final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            System.out.println(">>> MediaPlaybackService Broadcast received!");
             final String action = intent.getAction();
             if (action == null)
                 return;
@@ -69,7 +60,7 @@ public class MediaPlaybackService extends Service {
         }
     };
 
-    public MediaPlaybackService() {}
+    public MediaPlayback() {}
 
     public static void init(Context context) {
         mediaSession = new MediaSessionCompat(context, "LOG TAG");
@@ -77,57 +68,51 @@ public class MediaPlaybackService extends Service {
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
-                System.out.println(">>> MEDIA onPlay");
+                Log.d("MediaPlayback", "onPlay");
                 dispatch(PLAY_PAUSE_CURRENT);
                 super.onPlay();
             }
 
             @Override
             public void onPause() {
-                System.out.println(">>> MEDIA onPause");
+                Log.d("MediaPlayback", "onPause");
                 dispatch(PAUSE);
                 super.onPause();
             }
 
             @Override
             public void onSkipToNext() {
-                System.out.println(">>> MEDIA onSkipToNext");
+                Log.d("MediaPlayback", "onSkipToNext");
                 dispatch(SKIP_NEXT);
                 super.onSkipToNext();
             }
 
             @Override
             public void onSkipToPrevious() {
-                System.out.println(">>> MEDIA onSkipToPrevious");
+                Log.d("MediaPlayback", "onSkipToPrevious");
                 dispatch(SKIP_PREVIOUS);
                 super.onSkipToPrevious();
             }
 
             @Override
             public void onStop() {
-                System.out.println(">>> MEDIA onStop");
+                Log.d("MediaPlayback", "onStop");
                 super.onStop();
             }
 
             @Override
             public void onSeekTo(long pos) {
-                System.out.println(">>> MEDIA onSkipTo");
+                Log.d("MediaPlayback", "onSkipTo");
                 super.onSeekTo(pos);
             }
         });
 
-        Intent intent = new Intent(context, MediaPlaybackService.class);
+        Intent intent = new Intent(context, MediaPlayback.class);
         context.startService(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        stateListener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
-        }};
-        if (ModelProxy.isInitialized())
-            addStateListener(stateListener);
-
         MediaButtonReceiver.handleIntent(mediaSession, intent);
 
         IntentFilter filter = new IntentFilter();
@@ -137,6 +122,24 @@ public class MediaPlaybackService extends Service {
         registerReceiver(receiver, filter);
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        stateListener = new IModel.StateListener() { @Override public void update(State state) {
+            updateState(state);
+        }};
+        addStateListener(stateListener);
+    }
+
+    @Override
+    public void onDestroy() {
+        removeStateListener(stateListener);
+        mediaSession.setActive(false);
+
+        super.onDestroy();
     }
 
     private void updateState(State state) {
@@ -236,17 +239,9 @@ public class MediaPlaybackService extends Service {
     public void onTaskRemoved(Intent rootIntent) {
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) {
-            System.out.println(">>> Close Main Notification");
             manager.cancel(NOTIFICATION_ID);
         }
         super.onTaskRemoved(rootIntent);
-    }
-
-    @Override
-    public void onDestroy() {
-        removeStateListener(stateListener);
-        mediaSession.setActive(false);
-        super.onDestroy();
     }
 
     @Nullable

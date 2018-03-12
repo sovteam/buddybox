@@ -33,7 +33,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -229,10 +228,12 @@ public class MediaInfoRetriever extends Service {
         // fetch response
         String ret;
         try {
-            JSONObject artist = json.getJSONObject("artist");
-            if (artist == null)
+            if (!json.has("artist"))
                 return null;
+            JSONObject artist = json.getJSONObject("artist");
 
+            if (!artist.has("image"))
+                return null;
             JSONArray images = artist.getJSONArray("image");
             if (images.length() != 0) {
                 JSONObject picture = images.getJSONObject(images.length() -1); // TODO select image by size
@@ -450,7 +451,7 @@ public class MediaInfoRetriever extends Service {
         }
     }
 
-    class ArtistPictureDownload extends ImageDownload {
+    private class ArtistPictureDownload extends ImageDownload {
         private final Artist artist;
 
         private ArtistPictureDownload(String fileName, Artist artist){

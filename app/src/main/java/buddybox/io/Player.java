@@ -1,10 +1,14 @@
 package buddybox.io;
 
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.IBinder;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +23,14 @@ import static buddybox.core.events.Play.FINISHED_PLAYING;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.ui.ModelProxy.dispatch;
+import static buddybox.ui.ModelProxy.removeStateListener;
 
-public class Player {
+public class Player extends Service {
     private final static int MAX_VOLUME = 100;
     private final static int DUCK_VOLUME = 30;
 
-    private static MediaPlayer mediaPlayer;
     private static Context context;
+    private static MediaPlayer mediaPlayer;
 
     private static Handler handler = new Handler();
     private static boolean playCycleRunning = false;
@@ -35,27 +40,45 @@ public class Player {
     private static AudioManager.OnAudioFocusChangeListener audioFocusListener;
 
     private static boolean canPlay;
+
     private static State lastState;
+    private IModel.StateListener stateListener;
 
     public static void init(Context context) {
         Player.context = context;
+
+        Intent intent = new Intent(context, Player.class);
+        context.startService(intent);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() { @Override public void onCompletion(MediaPlayer mediaPlayer) {
             dispatch(FINISHED_PLAYING);
         }});
 
-        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
+        stateListener = new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
-        }});
+        }};
+        addStateListener(stateListener);
     }
 
-    private static void updateState(State state) {
+    @Override
+    public void onDestroy() {
+        removeStateListener(stateListener);
+        super.onDestroy();
+    }
+
+    private void updateState(State state) {
         updatePlayerState(state);
         lastState = state;
     }
 
-    private static void updatePlayerState(State state) {
+    private void updatePlayerState(State state) {
         // set player volume
         setNormalVolume(state);
 
@@ -208,5 +231,11 @@ public class Player {
 
         float duckVolume = (float) (1 - (Math.log(MAX_VOLUME - duck) / Math.log(MAX_VOLUME)));
         mediaPlayer.setVolume(duckVolume, duckVolume);
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 }

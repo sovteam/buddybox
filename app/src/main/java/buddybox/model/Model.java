@@ -11,6 +11,9 @@ import android.media.AudioManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.StatFs;
+import android.util.Log;
+import android.util.LongSparseArray;
+import android.util.SparseArray;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -108,7 +111,7 @@ public class Model implements IModel {
     private Set<Song> allSongs;
     private Map<String, Song> songsByHash;
     private ArrayList<Playlist> playlists;
-    private HashMap<Long, Playlist> playlistsById;
+    private LongSparseArray<Playlist> playlistsById = new LongSparseArray<>();
 
     private boolean isPaused = true;
     private boolean isStopped = true;
@@ -131,7 +134,6 @@ public class Model implements IModel {
     private Map<String,Integer>  volumeSettings;
     private boolean hasAudioFocus = false;
     private boolean showDuration = true;
-    private Bitmap defaultArt;
 
     private HashMap<String, File> albumArtFiles;
     private ArrayList<Artist> artists;
@@ -152,7 +154,11 @@ public class Model implements IModel {
 
     private void handle(Dispatcher.Event event) {
         Class<? extends Dispatcher.Event> cls = event.getClass();
-        System.out.println("@@@ Event class " + cls);
+
+        if (event.getClass() != Dispatcher.Event.class && event.getClass().isAssignableFrom(Dispatcher.Event.class))
+            System.out.println("@@@ Event class " + cls);
+        else
+            System.out.println("@@@ Event " + event.type);
 
         // player
         if (cls == Play.class) play((Play) event);
@@ -440,7 +446,6 @@ public class Model implements IModel {
     }
 
     private void songDeleteRequest(SongDeleteRequest event) {
-        System.out.println(">>> Delete Song Request");
         deleteSong = songsByHash.get(event.songHash);
     }
 
@@ -524,7 +529,7 @@ public class Model implements IModel {
             addSong(event.song);
         } else {
             song.setNotMissing();
-            updateSong(song);
+            updateSong(event.song);
         }
 
         // add song to artist
@@ -538,7 +543,6 @@ public class Model implements IModel {
     }
 
     private void addSong(Song song) {
-        System.out.println("@@@ ADD SONG: " + song.name);
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
         if (!song.isMissing) {
@@ -567,9 +571,7 @@ public class Model implements IModel {
     }
 
     private void insertNewSong(Song song) {
-        ContentValues newSong = songContents(song);
-        newSong.put("HASH", song.hash.toString());
-        DatabaseHelper.getInstance(context).getReadableDatabase().insert("SONGS", null, newSong);
+        DatabaseHelper.getInstance(context).getReadableDatabase().insert("SONGS", null, songContents(song));
     }
 
     private void updateSong(Song song) {
@@ -579,6 +581,7 @@ public class Model implements IModel {
     private ContentValues songContents(Song song) {
         ContentValues ret = new ContentValues();
         ret.put("NAME", song.name);
+        ret.put("HASH", song.hash.toString());
         ret.put("GENRE", song.genre);
         ret.put("ARTIST", song.artist);
         ret.put("ALBUM", song.album);
@@ -634,7 +637,7 @@ public class Model implements IModel {
             long playlistId = DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLISTS", null, contents);
 
             if (playlistId == -1) {
-                System.out.println("Insert Playlist Error");
+                Log.d("Model.createPlaylist", "Insert Playlist Error");
                 return;
             }
             playlist = new Playlist(playlistId, event.playlistName, new ArrayList<Song>());
@@ -664,14 +667,14 @@ public class Model implements IModel {
         // delete from table
         int rowsP = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLISTS", "ID=?", new String[]{Long.toString(event.playlistId)});
         if (rowsP != 1) {
-            System.out.println("Unable to delete playlist in DB");
+            Log.d("Model.deletePlaylist", "Unable to delete playlist in DB");
             return;
         }
 
         // delete associations to songs
         int rowsA = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=?", new String[]{Long.toString(event.playlistId)});
         if (rowsA != playlist.songs.size()) {
-            System.out.println("Unable to delete all playlists-song associations");
+            Log.d("Model.deletePlaylist", "Unable to delete all playlists-song associations");
             return;
         }
 
@@ -690,13 +693,10 @@ public class Model implements IModel {
             currentPlaylist = null;
             currentSongIndex = null;
         }
-
-        System.out.println(">>> Playlist deleted: " + playlist.name);
     }
 
     private void addSongToPlaylist(PlaylistAddSong event) {
         insertAssociationSongToPlaylist(event.songHash, event.playlistId);
-        System.out.println("@@@ Dispatched Event: addSongToPlaylist. Playlist id: " + event.playlistId + ", song: " + event.songHash);
     }
 
     private void insertAssociationSongToPlaylist(String songHash, long playlistId) {
@@ -711,7 +711,6 @@ public class Model implements IModel {
 
     private void lovedViewed() {
         // TODO move to Sampler?
-        System.out.println(">>> Model Loved VIEWED");
         for (Song song : lovedPlaylist().songs) {
             if (!song.isLovedViewed())
                 song.setLovedViewed();
@@ -899,7 +898,7 @@ public class Model implements IModel {
 
     private Set<Song> allSongs() {
         if (allSongs == null) {
-            System.out.println(">>> INIT ALL SONGS");
+            long start = System.currentTimeMillis();
             allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
@@ -917,10 +916,12 @@ public class Model implements IModel {
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1);
+
                 addSong(song);
                 setSongArt(song);
             }
             cursor.close();
+            System.out.println(">>> INIT ALL SONGS: " + (System.currentTimeMillis() - start));
         }
         return allSongs;
     }
@@ -928,7 +929,6 @@ public class Model implements IModel {
     private List<Playlist> playlists() {
         if (playlists == null) {
             playlists = new ArrayList<>();
-            playlistsById = new HashMap<>();
 
             // Create playlist map
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM PLAYLISTS", null);
@@ -1013,15 +1013,21 @@ public class Model implements IModel {
             musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
             if (!musicDirectory.exists())
                 if (!musicDirectory.mkdirs())
-                    System.out.println("Unable to create folder: " + musicDirectory);
+                    Log.d("Model.musicDirectory()", "Unable to create folder: " + musicDirectory);
         }
         return musicDirectory;
     }
 
     @Override
-    public void addStateListener(StateListener listener) {
+    public void addStateListener(final StateListener listener) {
         this.listeners.add(listener);
-        updateListener(listener);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                updateListener(listener);
+            }
+        };
+        handler.post(runnable);
     }
 
     @Override
@@ -1127,18 +1133,6 @@ public class Model implements IModel {
             }
         }
         return albumArtFiles;
-    }
-
-    private Bitmap getDefaultArt() {
-        if (defaultArt == null) {
-            AssetManager assetManager = context.getAssets();
-            try {
-                defaultArt = BitmapFactory.decodeStream(assetManager.open("sneer2.jpg"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return defaultArt;
     }
 
     private void setSongArt(Song song) {

@@ -37,6 +37,10 @@
             android:name="buddybox.ui.EditSongActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
+        <activity
+            android:name="buddybox.ui.ArtistActivity"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
 
         <receiver
             android:name="buddybox.ui.notification.NotificationDismissedReceiver"
@@ -57,26 +61,32 @@
         </receiver>
 
         <service
-            android:name="buddybox.io.BluetoothDetectService"
+            android:name="buddybox.io.BluetoothListener"
             android:enabled="true"
             android:exported="false"
             android:stopWithTask="true">
-            <intent-filter android:priority="0">
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
         </service>
         <service
-            android:name="buddybox.io.MediaPlaybackService"
-            android:exported="false">
+            android:name="buddybox.io.MediaPlayback"
+            android:exported="false"
+            android:stopWithTask="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
         <service
             android:name="buddybox.io.MediaInfoRetriever"
+            android:exported="false"
+            android:stopWithTask="true" />
+        <service
+            android:name="buddybox.io.Player"
+            android:exported="false"
+            android:stopWithTask="true" />
+        <service
+            android:name="buddybox.io.Library"
+            android:exported="false"
             android:stopWithTask="true" />
 
-        <activity android:name="buddybox.ui.ArtistActivity"></activity>
     </application>
 
 </manifest>
