@@ -47,7 +47,7 @@ public class PlayingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println(">>> Playing onCreated");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.playing);
+        setContentView(R.layout.activity_playing);
 
         // Set events
         findViewById(R.id.playingMinimize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
@@ -159,7 +159,7 @@ public class PlayingActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
         ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
 
-        // Show playlists that includes song playing
+        // Show playlists that includes song activity_playing
         FlowLayout container = findViewById(R.id.playlistsChips);
         container.removeAllViews();
 

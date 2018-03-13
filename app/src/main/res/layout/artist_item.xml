@@ -23,7 +23,7 @@
             android:layout_alignTop="@+id/songName"
             android:layout_marginRight="12dp"
             android:visibility="visible"
-            app:srcCompat="@drawable/ic_audiotrack" />
+            app:srcCompat="@mipmap/sneer2" />
 
         <TextView
             android:id="@+id/songName"

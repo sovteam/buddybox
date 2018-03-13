@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
@@ -17,6 +16,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.LongSparseArray;
+
+import com.adalbertosoares.buddybox.R;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,8 +32,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -40,8 +43,9 @@ import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.AlbumArtDownloadCompleted;
-import buddybox.core.events.ArtistPictureDownloadCompleted;
+import buddybox.core.events.AlbumArtEmbeddedFound;
+import buddybox.core.events.AlbumArtFound;
+import buddybox.core.events.ArtistPictureFound;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.ui.ModelProxy.addStateListener;
@@ -54,16 +58,18 @@ public class MediaInfoRetriever extends Service {
     public static String ALBUMS_FOLDER_PATH = ASSETS_FOLDER_PATH + File.separator + "Albums";
     public static String ARTISTS_FOLDER_PATH = ASSETS_FOLDER_PATH + File.separator + "Artists";
 
-    private static Queue<Song> songsQueue = new LinkedList<>();
-    private static Boolean isConsumingSongs = false;
+    private static Queue<AlbumArtRequest> albumQueue = new LinkedList<>();
+    private static Boolean isConsumingAlbums = false;
 
     private Queue<Artist> artistsQueue = new LinkedList<>();
     private Boolean isConsumingArtists = false;
     private Bitmap defaultArtistPicture;
 
     private IModel.StateListener stateListener;
-    private LongSparseArray<ImageDownload> pendingDownloads = new LongSparseArray<>();
-    private Set<String> filesRequested = new HashSet<>();
+    private LongSparseArray<ImageRequest> pendingDownloads = new LongSparseArray<>();
+
+    Map<String,Bitmap> albumsArt = new HashMap<>();
+    Set<String> artistsRequested = new HashSet<>();
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
@@ -74,17 +80,18 @@ public class MediaInfoRetriever extends Service {
                     return;
 
                 Long id = extras.getLong(DownloadManager.EXTRA_DOWNLOAD_ID);
-                ImageDownload download = pendingDownloads.get(id);
-                if (download != null) {
-                    if (download.getClass() == ArtistPictureDownload.class) {
-                        // artist pic download
-                        dispatch(new ArtistPictureDownloadCompleted(download.fileName, ((ArtistPictureDownload)download).artist));
-                    } else {
+                ImageRequest request = pendingDownloads.get(id);
+                if (request != null) {
+                    Bitmap image = BitmapFactory.decodeFile(request.getFileName());
+                    if (request.getClass() == AlbumArtRequest.class) {
                         // album art download
-                        dispatch(new AlbumArtDownloadCompleted(download.fileName));
+                        AlbumArtRequest albumRequest = (AlbumArtRequest) request;
+                        dispatch(new AlbumArtFound(albumRequest.artist, albumRequest.albumName, image));
+                    } else {
+                        // artist picture download
+                        dispatch(new ArtistPictureFound(((ArtistPictureRequest)request).artist, image));
                     }
                     pendingDownloads.remove(id);
-                    filesRequested.remove(download.fileName);
                 }
             }
         }
@@ -106,7 +113,9 @@ public class MediaInfoRetriever extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCreate() {
+        super.onCreate();
+
         IntentFilter filter = new IntentFilter();
         filter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
         registerReceiver(receiver, filter);
@@ -118,8 +127,6 @@ public class MediaInfoRetriever extends Service {
             }
         };
         addStateListener(stateListener);
-
-        return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
@@ -129,42 +136,131 @@ public class MediaInfoRetriever extends Service {
         super.onDestroy();
     }
 
-    synchronized
-    private void updateState(State state) {
-        // artist picture queue
-        for (Artist artist : state.artists) {
-            if (artist.picture == null) {
-                Bitmap art = getArtistPictureFromLocalFolder(artist);
-                if (art != null) {
-                    artist.setPicture(art);
-                } else {
-                    artist.setPicture(getDefaultArtistPicture());
-                    artistsQueue.offer(artist); // TODO enqueue {artist: , album: } if !queue.contains it
-                }
-            }
-        }
-        consumeArtistQueue();
-
-        // album art queue
-        for (Song song : state.allSongsPlaylist.songs)
-            if (song.getArt() == null) {
-                song.setArt(getDefaultArtistPicture());
-                songsQueue.offer(song);
-            }
-        consumeSongsQueue();
+    interface ImageRequest {
+        String getFileName();
     }
 
-    private Bitmap getArtistPictureFromLocalFolder(final Artist artist) {
+    private class ArtistPictureRequest implements ImageRequest {
+        public final Artist artist;
+
+        ArtistPictureRequest(Artist artist) {
+            this.artist = artist;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            return obj != null
+                    && obj.getClass() == AlbumArtRequest.class
+                    && ((ArtistPictureRequest) obj).artist.name.equals(artist.name);
+        }
+
+        public String getFileName() {
+            return artistPictureFileName(artist);
+        }
+    }
+
+    private class AlbumArtRequest implements ImageRequest {
+        private final Artist artist;
+        private final String albumName;
+
+        AlbumArtRequest(Artist artist, String albumName) {
+            this.artist = artist;
+            this.albumName = albumName;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj != null
+                    && obj.getClass() == AlbumArtRequest.class
+                    && ((AlbumArtRequest) obj).artist.name.equals(artist.name)
+                    && ((AlbumArtRequest) obj).albumName.equals(albumName);
+        }
+
+        public String getFileName() {
+            return albumArtFullFileName(artist.name, albumName);
+        }
+    }
+
+    synchronized
+    private void updateState(State state) {
+
+        for (Artist artist : state.artists) {
+            // TODO refactor
+            if (artistsRequested.contains(artist.name))
+                continue;
+            artistsRequested.add(artist.name);
+
+            for (String album : artist.songsByAlbum().keySet()) {
+                boolean missingEmbedded = false;
+                for (Song song : artist.songsByAlbum().get(album)) {
+                    if (song.getArt() != null)
+                        continue;
+                    Bitmap art = getEmbeddedBitmap(song);
+                    if (art != null)
+                        dispatch(new AlbumArtEmbeddedFound(song, art));
+                    else
+                        missingEmbedded = true;
+                }
+                if (missingEmbedded)
+                    findLocalAlbumArtOrEnqueueDownload(artist, album);
+            }
+            if (artist.picture == null)
+                findLocalArtistPictureOrEnqueueDownload(artist);
+        }
+        consumeAlbumQueue();
+        consumeArtistQueue();
+    }
+
+    private void findLocalArtistPictureOrEnqueueDownload(Artist artist) {
+        Bitmap pic = getArtistPictureFromAssetsFolder(artist);
+        if (pic != null) {
+            dispatch(new ArtistPictureFound(artist, pic));
+        } else if (!artistsQueue.contains(artist)) {
+            artistsQueue.offer(artist);
+        }
+    }
+
+    private void findLocalAlbumArtOrEnqueueDownload(Artist artist, String album) {
+        String albumKey = albumArtFileName(artist.name, album);
+        Bitmap art = getAlbumArtBitmap(albumKey);
+        if (art != null) {
+            dispatch(new AlbumArtFound(artist, album, art));
+        } else {
+            AlbumArtRequest request = new AlbumArtRequest(artist, album);
+            if (!albumQueue.contains(request))
+                albumQueue.offer(request);
+        }
+    }
+
+    private Bitmap getAlbumArtBitmap(final String albumKey) {
+        if (albumsArt.containsKey(albumKey))
+            return albumsArt.get(albumKey);
+
+        File fileFolder = MediaInfoRetriever.getAlbumsFolder();
+        File[] images = fileFolder.listFiles(new FilenameFilter() { @Override public boolean accept(File dir, String name) {
+            return name.equals(albumKey + ".png") || name.equals(albumKey + ".jpg") || name.equals(albumKey + ".jpeg");
+        }});
+
+        if (images.length > 0) {
+            Bitmap art = BitmapFactory.decodeFile(images[0].getPath());
+            albumsArt.put(albumKey, art);
+        } else {
+            albumsArt.put(albumKey, null);
+        }
+
+        return albumsArt.get(albumKey);
+    }
+
+    private Bitmap getArtistPictureFromAssetsFolder(final Artist artist) {
         File fileFolder = MediaInfoRetriever.getArtistsFolder();
         File[] images = fileFolder.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.equals(artistPictureFullFileName(artist));
+            return name.startsWith(artistPictureFileName(artist));
             }
         });
         if (images.length == 0)
             return null;
 
-        return BitmapFactory.decodeFile(images[0].getAbsolutePath());
+        return BitmapFactory.decodeFile(images[0].getPath());
     }
 
     private void consumeArtistQueue() {
@@ -205,15 +301,20 @@ public class MediaInfoRetriever extends Service {
         final String urlString = "https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + artistName + "&api_key=" + API_KEY + "&format=json";
 
         JSONObject response = getHttpResponse(urlString);
-        if (response == null)
+        if (response == null) {
+            dispatch(new ArtistPictureFound(artist, getDefaultArtistPicture()));
             return;
+        }
 
         String artistPictureUrl = getArtistPictureUrl(response);
-        if (artistPictureUrl == null)
+        System.out.println(">>> artistPictureUrl: " + artist.name);
+        if (artistPictureUrl == null || artistPictureUrl.isEmpty()) {
+            dispatch(new ArtistPictureFound(artist, getDefaultArtistPicture()));
             return;
+        }
 
-        ArtistPictureDownload download = new ArtistPictureDownload(artistPictureFullFileName(artist), artist);
-        downloadImage(artistPictureUrl, ARTISTS_FOLDER_PATH, download);
+        ArtistPictureRequest request = new ArtistPictureRequest(artist);
+        downloadImage(artistPictureUrl, ARTISTS_FOLDER_PATH, request);
     }
 
     private String artistPictureFullFileName(Artist artist) {
@@ -235,6 +336,7 @@ public class MediaInfoRetriever extends Service {
             if (!artist.has("image"))
                 return null;
             JSONArray images = artist.getJSONArray("image");
+
             if (images.length() != 0) {
                 JSONObject picture = images.getJSONObject(images.length() -1); // TODO select image by size
                 ret = picture.getString("#text");
@@ -282,60 +384,56 @@ public class MediaInfoRetriever extends Service {
         return ret;
     }
 
-    private void consumeSongsQueue() {
-        if (isConsumingSongs || songsQueue.isEmpty() || !Network.hasConnection(this)) // TODO send connection to Model
+    private void consumeAlbumQueue() {
+        if (isConsumingAlbums || albumQueue.isEmpty() || !Network.hasConnection(this)) // TODO send connection to Model
             return;
 
-        isConsumingSongs = true;
+        isConsumingAlbums = true;
         Thread thread = new Thread(new Runnable() { @Override public void run() {
-            consumeNextSong();
+            consumeNextAlbum();
         }});
         thread.start();
     }
 
-    private void consumeNextSong() {
-        if (songsQueue.isEmpty()) {
-            isConsumingSongs = false;
+    private void consumeNextAlbum() {
+        if (albumQueue.isEmpty()) {
+            isConsumingAlbums = false;
             return;
         }
 
-        Song song = songsQueue.peek();
+        AlbumArtRequest request = albumQueue.peek();
+        retrieveAlbumArt(request);
 
-        if (!filesRequested.contains(albumArtFullFileName(song)) && !hasLocalAlbumArtFile(song)) {
-            retrieveAlbumArt(song);
-
-            // breath between API calls
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                isConsumingSongs = false;
-                return;
-            }
+        // breath between API calls
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            isConsumingAlbums = false;
+            return;
         }
-        songsQueue.remove();
-        consumeNextSong();
+
+        albumQueue.remove();
+        consumeNextAlbum();
     }
 
-    private boolean hasLocalAlbumArtFile(Song song) {
-        File dir = Environment.getExternalStoragePublicDirectory(ALBUMS_FOLDER_PATH);
-        File image = new File(dir.getAbsolutePath(), albumArtFileName(song));
-        return image.exists();
-    }
-
-    private void retrieveAlbumArt(Song song) {
-        String artist = Uri.encode(song.artist);
+    private void retrieveAlbumArt(AlbumArtRequest request) {
+        String artist = Uri.encode(request.artist.name);
         final String urlString = "https://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist=" + artist + "&autocorrect=1&api_key=" + API_KEY + "&format=json";
 
         JSONObject response = getHttpResponse(urlString);
-        if (response == null)
+        if (response == null) {
+            dispatch(new AlbumArtFound(request.artist, request.albumName, getDefaultArtistPicture()));
             return;
+        }
 
-        String imageUrl = getImageUrl(response);
-        if (imageUrl == null)
+        String imageUrl = getAlbumImageUrl(response);
+        if (imageUrl == null) {
+            dispatch(new AlbumArtFound(request.artist, request.albumName, getDefaultArtistPicture()));
             return;
+        }
 
-        downloadImage(imageUrl, ALBUMS_FOLDER_PATH, new ImageDownload(albumArtFullFileName(song)));
+        downloadImage(imageUrl, ALBUMS_FOLDER_PATH, request);
     }
 
     private JSONObject getHttpResponse(String urlString) {
@@ -398,18 +496,27 @@ public class MediaInfoRetriever extends Service {
         return ret;
     }
 
-    private String getImageUrl(JSONObject json) {
+    private String getAlbumImageUrl(JSONObject json) {
         // fetch response
         String ret;
         try {
+            if (!json.has("topalbums"))
+                return null;
             JSONObject top = json.getJSONObject("topalbums");
+
+            if (!top.has("album"))
+                return null;
             JSONArray albums = top.getJSONArray("album");
+
+            if (albums.length() == 0)
+                return null;
             JSONObject album = albums.getJSONObject(0);
+
             if (album != null) {
                 JSONArray images = album.getJSONArray("image");
                 if (images.length() != 0) {
                     // get largest image
-                    JSONObject largestImage = images.getJSONObject(images.length() - 1); // TODO select image size properly
+                    JSONObject largestImage = images.getJSONObject(images.length() - 1); // TODO select image by size properly
                     ret = largestImage.getString("#text");
                 } else {
                     Log.d("MediaInfoRetriever", "JSON image empty");
@@ -431,8 +538,12 @@ public class MediaInfoRetriever extends Service {
         return encode(song.artist + "-" + song.album).toLowerCase();
     }
 
-    public static String albumArtFullFileName(Song song) {
-        return albumArtFileName(song) + ".png";
+    public static String albumArtFileName(String artist, String album) {
+        return encode(artist + "-" + album).toLowerCase();
+    }
+
+    public static String albumArtFullFileName(String artist, String album) {
+        return albumArtFileName(artist, album) + ".png";
     }
 
     private static File getAssetFolder(String folderPath) {
@@ -443,38 +554,20 @@ public class MediaInfoRetriever extends Service {
         return folder;
     }
 
-    class ImageDownload {
-        private final String fileName;
-
-        private ImageDownload(String fileName) {
-            this.fileName = fileName;
-        }
-    }
-
-    private class ArtistPictureDownload extends ImageDownload {
-        private final Artist artist;
-
-        private ArtistPictureDownload(String fileName, Artist artist){
-            super(fileName);
-            this.artist = artist;
-        }
-    }
-
-    void downloadImage(String url, String folder, ImageDownload download) {
+    void downloadImage(String url, String folder, ImageRequest imageRequest) {
         Uri downloadUri = Uri.parse(url);
-        DownloadManager.Request request = new DownloadManager.Request(downloadUri);
+        DownloadManager.Request downloadRequest = new DownloadManager.Request(downloadUri);
 
-        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI) // TODO enable according to user preferences  | DownloadManager.Request.NETWORK_MOBILE
+        downloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI) // TODO enable according to user preferences  | DownloadManager.Request.NETWORK_MOBILE
                 .setAllowedOverRoaming(false)
                 .setVisibleInDownloadsUi(false)
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN)
-                .setDestinationInExternalPublicDir(folder, download.fileName);
+                .setDestinationInExternalPublicDir(folder, imageRequest.getFileName());
 
         DownloadManager man = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         assert man != null;
-        long id = man.enqueue(request);
-        pendingDownloads.put(id, download);
-        filesRequested.add(download.fileName);
+        long id = man.enqueue(downloadRequest);
+        pendingDownloads.put(id, imageRequest);
     }
 
     public static String encode(String fileName) {
@@ -488,14 +581,8 @@ public class MediaInfoRetriever extends Service {
     }
 
     public Bitmap getDefaultArtistPicture() {
-        if (defaultArtistPicture == null) {
-            AssetManager assetManager = getAssets();
-            try {
-                defaultArtistPicture = BitmapFactory.decodeStream(assetManager.open("sneer2.jpg"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        if (defaultArtistPicture == null)
+            defaultArtistPicture = BitmapFactory.decodeResource(getBaseContext().getResources(), R.mipmap.sneer2);
         return defaultArtistPicture;
     }
 }

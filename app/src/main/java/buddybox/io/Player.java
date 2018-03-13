@@ -189,7 +189,7 @@ public class Player extends Service {
     }
 
     /**
-     * Keep track of song playing progress
+     * Keep track of song activity_playing progress
      * and notify listeners
      */
     private static void playCycle() {

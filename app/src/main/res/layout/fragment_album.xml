@@ -11,7 +11,7 @@
         android:layout_height="60dp"
         android:layout_marginEnd="12dp"
         android:contentDescription="@string/album_art"
-        app:srcCompat="@drawable/ic_audiotrack" />
+        app:srcCompat="@mipmap/sneer2" />
 
     <TextView
         android:id="@+id/albumName"

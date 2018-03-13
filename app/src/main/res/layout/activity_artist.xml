@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/artist_picture"
-                app:srcCompat="@drawable/ic_audiotrack" />
+                app:srcCompat="@mipmap/sneer2" />
 
             <RelativeLayout
                 android:id="@+id/artistDetails"
