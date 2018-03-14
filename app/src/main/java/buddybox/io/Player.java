@@ -1,14 +1,10 @@
 package buddybox.io;
 
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +19,8 @@ import static buddybox.core.events.Play.FINISHED_PLAYING;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.ui.ModelProxy.addStateListener;
 import static buddybox.ui.ModelProxy.dispatch;
-import static buddybox.ui.ModelProxy.removeStateListener;
 
-public class Player extends Service {
+public class Player {
     private final static int MAX_VOLUME = 100;
     private final static int DUCK_VOLUME = 30;
 
@@ -42,18 +37,9 @@ public class Player extends Service {
     private static boolean canPlay;
 
     private static State lastState;
-    private IModel.StateListener stateListener;
 
     public static void init(Context context) {
         Player.context = context;
-
-        Intent intent = new Intent(context, Player.class);
-        context.startService(intent);
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
 
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -61,24 +47,17 @@ public class Player extends Service {
             dispatch(FINISHED_PLAYING);
         }});
 
-        stateListener = new IModel.StateListener() { @Override public void update(State state) {
+        addStateListener(new IModel.StateListener() { @Override public void update(State state) {
             updateState(state);
-        }};
-        addStateListener(stateListener);
+        }});
     }
 
-    @Override
-    public void onDestroy() {
-        removeStateListener(stateListener);
-        super.onDestroy();
-    }
-
-    private void updateState(State state) {
+    private static void updateState(State state) {
         updatePlayerState(state);
         lastState = state;
     }
 
-    private void updatePlayerState(State state) {
+    private static void updatePlayerState(State state) {
         // set player volume
         setNormalVolume(state);
 
@@ -140,7 +119,6 @@ public class Player extends Service {
     private static AudioManager.OnAudioFocusChangeListener audioFocusListener() {
         if (audioFocusListener == null) {
             audioFocusListener = new AudioManager.OnAudioFocusChangeListener() { @Override public void onAudioFocusChange(int i) {
-                System.out.println(">>>> audio focus changed " + i);
                 switch (i) {
                     case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                         setDuckVolume();
@@ -189,7 +167,7 @@ public class Player extends Service {
     }
 
     /**
-     * Keep track of song activity_playing progress
+     * Keep track of song playing progress
      * and notify listeners
      */
     private static void playCycle() {
@@ -231,11 +209,5 @@ public class Player extends Service {
 
         float duckVolume = (float) (1 - (Math.log(MAX_VOLUME - duck) / Math.log(MAX_VOLUME)));
         mediaPlayer.setVolume(duckVolume, duckVolume);
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 }

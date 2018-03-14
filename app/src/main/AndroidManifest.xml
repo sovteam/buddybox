@@ -74,19 +74,6 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-        <service
-            android:name="buddybox.io.MediaInfoRetriever"
-            android:exported="false"
-            android:stopWithTask="true" />
-        <service
-            android:name="buddybox.io.Player"
-            android:exported="false"
-            android:stopWithTask="true" />
-        <service
-            android:name="buddybox.io.Library"
-            android:exported="false"
-            android:stopWithTask="true" />
-
     </application>
 
 </manifest>

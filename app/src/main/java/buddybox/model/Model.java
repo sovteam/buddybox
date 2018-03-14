@@ -86,6 +86,8 @@ import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
  */
 public class Model implements IModel {
 
+    private static final String TAG = "Model";
+
     public static final String HEADPHONES = "headphones";
     public static final String SPEAKER = "speaker";
     public static final String BLUETOOTH = "bluetooth";
@@ -140,19 +142,15 @@ public class Model implements IModel {
         Dispatcher.addListener(new Dispatcher.Listener() { @Override public void onEvent(Dispatcher.Event event) {
             handle(event);
         }});
-
-        printDBSongs();
-
-
     }
 
     private void handle(Dispatcher.Event event) {
         Class<? extends Dispatcher.Event> cls = event.getClass();
 
         if (event.getClass() != Dispatcher.Event.class && event.getClass().isAssignableFrom(Dispatcher.Event.class))
-            System.out.println("@@@ Event class " + cls);
+            Log.i(TAG, "EVENT " + cls);
         else
-            System.out.println("@@@ Event " + event.type);
+            Log.i(TAG, "EVENT " + event.type);
 
         // player
         if (cls == Play.class) play((Play) event);
@@ -235,9 +233,11 @@ public class Model implements IModel {
     }
 
     private void albumArtFound(AlbumArtFound event) {
-        List<Song> songs = event.artist.songsByAlbum().get(event.album);
-        for (Song song : songs)
-            song.setArt(event.art);
+        for (Song song : allSongs)
+            if (song.getArt() == null
+                    && song.artist.equals(event.artist)
+                    && song.album.equals(event.album))
+                song.setArt(event.art);
     }
 
     private void albumArtEmbeddedFound(AlbumArtEmbeddedFound event) {
@@ -443,10 +443,10 @@ public class Model implements IModel {
         updateMediaStorageUsed(-song.fileLength);
         removeSongFromArtist(song);
 
-        printDBSongs();
+        // printDBSongs();
     }
 
-    private void printDBSongs() {
+    /*private void printDBSongs() {
         Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
         while(cursor.moveToNext()) {
             System.out.println(
@@ -462,7 +462,7 @@ public class Model implements IModel {
                 "IS_DELETED: " + (cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1));
         }
         cursor.close();
-    }
+    }*/
 
     private void repeat() {
         if (repeatSong) {
@@ -877,7 +877,6 @@ public class Model implements IModel {
             allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
             Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
-            System.out.println("Songs total: " + cursor.getCount());
             while (cursor.moveToNext()) {
                 Song song = new Song(
                         cursor.getLong(cursor.getColumnIndex("ID")),
@@ -895,7 +894,7 @@ public class Model implements IModel {
                 addSong(song);
             }
             cursor.close();
-            System.out.println(">>> INIT ALL SONGS: " + (System.currentTimeMillis() - start));
+            Log.i(TAG, "initiate allSongs: " + (System.currentTimeMillis() - start) + " ms");
         }
         return allSongs;
     }

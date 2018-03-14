@@ -1,6 +1,7 @@
 package buddybox.ui.library;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -133,7 +134,11 @@ public class RecentFragment extends Fragment {
                 }
             });
 
-            ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(((Song)song).getArt());
+            Bitmap art = ((Song)song).getArt();
+            if (art != null)
+                ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(art);
+            else
+                ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
 
             return rowView;
         }

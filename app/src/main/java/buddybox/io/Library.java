@@ -1,16 +1,13 @@
 package buddybox.io;
 
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import buddybox.core.IModel;
 import buddybox.core.Song;
@@ -23,84 +20,62 @@ import utils.Daemon;
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 import static buddybox.ui.ModelProxy.addStateListener;
-import static buddybox.ui.ModelProxy.removeStateListener;
 
-public class Library extends Service {
+public class Library {
 
-    private State state;
-    private IModel.StateListener stateListener;
+    private static String TAG = "Library";
+    private static State state;
+    private static ExecutorService service = Executors.newCachedThreadPool();
 
-    public static void init(Context context) {
-        Intent intent = new Intent(context, Library.class);
-        context.startService(intent);
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        stateListener = new IModel.StateListener() { @Override public void update(State state) {
+    public static void init() {
+        addStateListener(new IModel.StateListener() { @Override public void update(final State state) {
             updateState(state);
-        }};
-        addStateListener(stateListener);
-
-        return super.onStartCommand(intent, flags, startId);
+        }});
     }
 
-    @Override
-    public boolean stopService(Intent name) {
-        Log.d("Library", "stopService");
-        return super.stopService(name);
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.d("Library", "Remove stateListener: " + (stateListener != null));
-        removeStateListener(stateListener);
-        super.onDestroy();
-    }
-
-    synchronized
-    private void updateState(State state) {
-        boolean wasSyncing = this.state != null && this.state.syncLibraryPending;
+    private static void updateState(final State state) {
+        boolean wasSyncing = Library.state != null && Library.state.syncLibraryPending;
         if (state.syncLibraryPending && !wasSyncing)
-            startSynchronizingLibrary();
+            service.submit(new Runnable() {
+                @Override
+                public void run() {
+                    startSynchronizingLibrary();
+                }
+            });
 
         boolean shawDeleteSong = state.deleteSong != null &&
-                (this.state == null || this.state.deleteSong != state.deleteSong);
+                (Library.state == null || Library.state.deleteSong != state.deleteSong);
         if (shawDeleteSong)
             startDeleteSong(state.deleteSong);
 
-        this.state = state;
+        Library.state = state;
     }
 
-    private void startDeleteSong(final Song song) {
-        new Daemon("Delete Song") { @Override public void run() { // TODO should put in same thread of sync?
+    private static void startDeleteSong(final Song song) {
+        new Daemon("Library.deleteSong") { @Override public void run() {
             deleteSong(song);
         }};
     }
 
-    private void deleteSong(Song song) {
+    private static void deleteSong(Song song) {
+        Log.i(TAG,"DELETE song");
         if (SongUtils.deleteSong(song))
             dispatch(new SongDeleted(song));
     }
 
-    synchronized
-    private State getState() {
-        return state;
+    private static void startSynchronizingLibrary() {
+        synchronizeLibrary();
     }
 
-    private void startSynchronizingLibrary() {
-        new Daemon("Library Sync") { @Override public void run() {
-            synchronizeLibrary();
-        }};
-    }
-
-    private void synchronizeLibrary() {
+    private static void synchronizeLibrary() {
+        Log.i(TAG,"SYNC started");
         long start = System.currentTimeMillis();
         List<File> mp3Files = SongUtils.listLibraryMp3Files();
 
         Map<String, Song> songByPath = new HashMap<>();
-        for (Song song : getState().allSongsPlaylist.songs)
-            songByPath.put(song.filePath, song);
+        if (state != null)
+            for (Song song : state.allSongsPlaylist.songs)
+                songByPath.put(song.filePath, song);
 
         for (File mp3 : mp3Files) {
             Song song = songByPath.remove(mp3.getPath());
@@ -112,12 +87,6 @@ public class Library extends Service {
             dispatch(new SongMissing(missing));
 
         dispatch(SYNC_LIBRARY_FINISHED);
-        System.out.println(">>> SYNC LIB FINISHED: " + (System.currentTimeMillis() - start));
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+        Log.i(TAG,"SYNC finished: " + (System.currentTimeMillis() - start));
     }
 }

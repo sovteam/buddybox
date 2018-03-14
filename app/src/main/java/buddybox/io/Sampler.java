@@ -7,11 +7,11 @@ import java.io.File;
 import java.util.List;
 
 import buddybox.core.Dispatcher;
+import buddybox.core.Song;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
-import buddybox.core.Song;
 import buddybox.core.events.SongAdded;
 
 import static buddybox.ui.ModelProxy.dispatch;
