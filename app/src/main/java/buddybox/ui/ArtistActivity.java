@@ -64,8 +64,8 @@ public class ArtistActivity extends AppCompatActivity {
 
         // artist details
         ((ImageView)findViewById(R.id.picture)).setImageBitmap(state.artistSelected.picture);
-        ((TextView)findViewById(R.id.songName)).setText(state.artistSelected.name);
-        ((TextView)findViewById(R.id.songDuration)).setText(state.artistSelected.songsCountPrint());
+        ((TextView)findViewById(R.id.artistName)).setText(state.artistSelected.name);
+        ((TextView)findViewById(R.id.artistSongsCount)).setText(state.artistSelected.songsCountPrint());
 
         // songs by album
         Map<String, List<Song>> map = state.artistSelected.songsByAlbum();

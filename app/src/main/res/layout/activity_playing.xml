@@ -7,51 +7,48 @@
     android:background="#000000">
 
     <RelativeLayout
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="63dp">
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="566dp"
+        <ImageButton
+            android:id="@+id/songMore"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_more_vert" />
+
+        <ImageView
+            android:id="@+id/minimize"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:layout_alignParentStart="true"
-            android:id="@+id/playingMinimize">
+            android:layout_alignParentTop="true"
+            android:background="@android:color/transparent"
+            android:contentDescription="TODO"
+            android:padding="10dp"
+            android:src="@drawable/ic_expand_more" />
 
-            <ImageButton
-                android:id="@+id/songMore"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:background="@android:color/transparent"
-                app:srcCompat="@drawable/ic_more_vert" />
-
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:background="@android:color/transparent"
-                android:contentDescription="TODO"
-                android:padding="10dp"
-                android:src="@drawable/ic_expand_more" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="@string/song_playing"
-                android:id="@+id/textView5"
-                android:textAlignment="gravity"
-                android:layout_centerVertical="true"
-                android:layout_centerHorizontal="true" />
-        </RelativeLayout>
+        <TextView
+            android:id="@+id/barTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="@string/song_playing"
+            android:textAlignment="gravity"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="20sp" />
     </RelativeLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.97"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:gravity="center_horizontal"
         android:paddingLeft="20dp"
         android:paddingRight="20dp">
@@ -70,7 +67,7 @@
                 android:layout_height="match_parent"
                 android:layout_above="@+id/playingSongName"
                 android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
+                android:layout_alignParentTop="true"
                 android:adjustViewBounds="false"
                 android:cropToPadding="false"
                 app:srcCompat="@mipmap/sneer2" />
@@ -85,7 +82,7 @@
                 android:text="@string/song"
                 android:textAlignment="center"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textSize="26sp" />
+                android:textSize="24sp" />
 
             <TextView
                 android:id="@+id/playingSongArtist"
@@ -136,52 +133,6 @@
         android:layout_marginBottom="20dp">
 
         <ImageButton
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:id="@+id/playingPlayPause"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_play_circle"
-            android:scaleType="fitCenter"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp" android:contentDescription="TODO" />
-
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/skipNext"
-            android:layout_centerVertical="true"
-            android:layout_toEndOf="@+id/playingPlayPause"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_skip_next"
-            android:scaleType="fitCenter" android:contentDescription="TODO" />
-
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:id="@+id/skipPrevious"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_skip_previous"
-            android:scaleType="fitCenter"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/playingPlayPause" android:contentDescription="TODO" />
-
-        <ImageButton
-            android:id="@+id/shuffle"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignTop="@+id/skipNext"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="20dp"
-            android:layout_toEndOf="@+id/skipNext"
-            android:background="@android:color/transparent"
-            android:contentDescription="TODO"
-            android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_shuffle" />
-
-        <ImageButton
             android:id="@+id/repeat"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -193,6 +144,57 @@
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_repeat_one" />
+
+        <ImageButton
+            android:id="@+id/skipPrevious"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/playingPlayPause"
+            android:background="@android:color/transparent"
+            android:contentDescription="TODO"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_skip_previous" />
+
+        <ImageButton
+            android:id="@+id/playingPlayPause"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@android:color/transparent"
+            android:contentDescription="TODO"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_play_circle" />
+
+        <ImageButton
+            android:id="@+id/skipNext"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/playingPlayPause"
+            android:background="@android:color/transparent"
+            android:contentDescription="TODO"
+            android:padding="4dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_skip_next" />
+
+        <ImageButton
+            android:id="@+id/shuffle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignTop="@+id/skipNext"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="10dp"
+            android:layout_toEndOf="@+id/skipNext"
+            android:background="@android:color/transparent"
+            android:contentDescription="TODO"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_shuffle" />
 
     </RelativeLayout>
 

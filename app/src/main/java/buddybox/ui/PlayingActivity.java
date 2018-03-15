@@ -20,6 +20,7 @@ import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.SeekTo;
 import buddybox.io.Player;
@@ -50,10 +51,11 @@ public class PlayingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_playing);
 
         // Set events
-        findViewById(R.id.playingMinimize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+        findViewById(R.id.minimize).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             finish();
             overridePendingTransition(R.anim.stay,R.anim.slide_out_down);
         }});
+
         findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openSongOptionsDialog(); }});
         findViewById(R.id.songDuration).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(TOGGLE_DURATION_REMAINING); }});
 

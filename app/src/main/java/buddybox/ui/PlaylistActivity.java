@@ -36,7 +36,7 @@ public class PlaylistActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.playlist);
+        setContentView(R.layout.activity_playlist);
 
         // set events
         findViewById(R.id.back).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
