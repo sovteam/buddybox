@@ -60,8 +60,9 @@
             android:id="@+id/songContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/playlistsScroll"
-            android:layout_alignParentStart="true">
+            android:layout_above="@+id/seekBar"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="20dp">
 
             <ImageView
                 android:id="@+id/art"
@@ -70,7 +71,6 @@
                 android:layout_above="@+id/playingSongName"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_marginTop="10dp"
                 android:adjustViewBounds="false"
                 android:cropToPadding="false"
                 app:srcCompat="@mipmap/sneer2" />
@@ -91,57 +91,14 @@
                 android:id="@+id/playingSongArtist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_above="@+id/playingSongGenre"
+                android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
                 android:text="@string/artist"
                 android:textAlignment="center"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
-            <TextView
-                android:id="@+id/playingSongGenre"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentStart="true"
-                android:text="@string/genre"
-                android:textAlignment="center"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="12sp" />
-
 
         </RelativeLayout>
-
-        <ScrollView
-            android:id="@+id/playlistsScroll"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:layout_above="@+id/seekBar"
-            android:layout_alignParentStart="true"
-            android:layout_marginBottom="20dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <buddybox.ui.util.FlowLayout
-                    android:id="@+id/playlistsChips"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="6dip"
-                    android:paddingRight="12dip"
-                    android:paddingTop="6dip">
-
-                    <TextView
-                        android:id="@+id/playlistsText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_alignParentTop="true"
-                        android:text="In playlists: " />
-                </buddybox.ui.util.FlowLayout>
-            </LinearLayout>
-        </ScrollView>
 
         <SeekBar
             android:id="@+id/seekBar"
@@ -158,7 +115,8 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
             android:layout_marginLeft="16dp"
-            android:text="0:05" />
+            android:text="0:05"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/songDuration"
@@ -167,7 +125,8 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_marginRight="16dp"
-            android:text="4:06" />
+            android:text="4:06"
+            android:textSize="12sp" />
 
     </RelativeLayout>
 

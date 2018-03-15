@@ -382,32 +382,32 @@ public class Model implements IModel {
     }
 
     private void removeSongFromPlaylist(PlaylistRemoveSong event) {
-        Song song = songsByHash.get(event.songHash);
-        Playlist playlist = playlistsById.get(selectedPlaylist.id);
-        int songPosition = playlist.songs.indexOf(song);
+        String songHash = event.song.hash.toString();
+        Playlist playlist = event.playlist;
+        int songPosition = playlist.songs.indexOf(event.song);
 
         // update position-1 for relations.position > song index
         DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = POSITION -1 " +
-                        "WHERE PLAYLIST_ID = " + selectedPlaylist.id + " " +
-                        "AND SONG_HASH = '" + event.songHash + "' " +
+                        "WHERE PLAYLIST_ID = " + playlist.id + " " +
+                        "AND SONG_HASH = '" + songHash + "' " +
                         "AND POSITION > " + songPosition);
 
         // delete from associations table
-        DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(selectedPlaylist.id), event.songHash});
+        DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.id), songHash});
 
         // remove from playlistsBySong
-        List<Playlist> songPlaylists = playlistsBySong.get(event.songHash);
+        List<Playlist> songPlaylists = playlistsBySong.get(songHash);
         songPlaylists.remove(playlist);
-        playlistsBySong.put(event.songHash, songPlaylists);
+        playlistsBySong.put(songHash, songPlaylists);
 
         // keep activity_playing the current song
         if (currentPlaylist == playlist && currentSongIndex > songPosition)
             currentSongIndex--;
 
         // remove from object
-        playlist.removeSong(song);
+        playlist.removeSong(event.song);
     }
 
     private void playlistSelected(PlaylistSelected event) {

@@ -157,31 +157,6 @@ public class PlayingActivity extends AppCompatActivity {
 
         ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
         ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
-        ((TextView) findViewById(R.id.playingSongGenre)).setText(playing.genre);
-
-        // Show playlists that includes song activity_playing
-        FlowLayout container = findViewById(R.id.playlistsChips);
-        container.removeAllViews();
-
-        List<Playlist> playlists = state.playlistsBySong.get(playing.hash.toString());
-        if (playlists != null && !playlists.isEmpty()) {
-            TextView label = new TextView(this);
-            label.setText("In playlists: ");
-            label.setPadding(0,30,10,12);
-            container.addView(label);
-
-            for (final Playlist p : playlists) {
-                final TextView chip = new TextView(this);
-                chip.setText(p.name());
-                chip.setTextColor(Color.parseColor(state.playlistPlaying == p ? "#03a9f4" : "#FFFFFF" ));
-                chip.setBackgroundResource(R.drawable.shape_chip_grey);
-                chip.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View v) {
-                    dispatch(new PlaylistSelected(p));
-                    startActivity(new Intent(chip.getContext(), PlaylistActivity.class));
-                }});
-                container.addView(chip);
-            }
-        }
 
         ((ImageView) findViewById(R.id.shuffle)).setImageResource(
                 state.isShuffle ? R.drawable.ic_shuffle_blue : R.drawable.ic_shuffle);

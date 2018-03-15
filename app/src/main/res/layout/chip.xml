@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/shape_chip_grey"
+    android:paddingBottom="4dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="4dp"
+    android:paddingTop="4dp">
+
+    <TextView
+        android:id="@+id/chipText"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:text="@string/chip_text" />
+
+    <ImageView
+        android:id="@+id/removeIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="4dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:contentDescription="@string/song_playlist_chip"
+        app:srcCompat="@drawable/ic_cancel_grey" />
+</LinearLayout>

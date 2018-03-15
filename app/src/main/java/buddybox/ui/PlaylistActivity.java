@@ -77,7 +77,7 @@ public class PlaylistActivity extends AppCompatActivity {
                 Pair<Long, Song> adapterItem = (Pair<Long, Song>) item.getTag();
                 final int pos = mDragListView.getAdapter().getPositionForItem(adapterItem);
                 mDragListView.getAdapter().removeItem(pos);
-                dispatch(new PlaylistRemoveSong(adapterItem.second.hash.toString()));
+                dispatch(new PlaylistRemoveSong(playlist, adapterItem.second));
             }
         }});
 

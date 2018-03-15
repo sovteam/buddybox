@@ -37,4 +37,6 @@
     <string name="artist_picture">Artist Picture</string>
     <string name="artist_name">Artist Name</string>
     <string name="songs_count">42 songs</string>
+    <string name="chip_text">chip text</string>
+    <string name="song_playlist_chip">Song playlist chip</string>
 </resources>
