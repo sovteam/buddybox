@@ -1,4 +1,4 @@
-package buddybox.io;
+package buddybox.web;
 
 import android.util.Log;
 
@@ -10,32 +10,13 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-class DownloadUtils {
+public class DownloadUtils {
 
-    static boolean downloadFile(String urlStr, String fileFullPath) {
+    public static byte[] downloadFile(String urlStr) {
         URL url = createUrl(urlStr);
         if (url == null)
-            return false;
+            return null;
 
-        byte[] response = downloadStream(url);
-        if (response == null)
-            return false;
-
-        // save file
-        try {
-            FileOutputStream fos = new FileOutputStream(fileFullPath);
-            fos.write(response);
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.d("DownloadUtils", "IOException writing file");
-            return false;
-        }
-
-        return true;
-    }
-
-    private static byte[] downloadStream(URL url) {
         byte[] ret;
         try {
             InputStream in = new BufferedInputStream(url.openStream());

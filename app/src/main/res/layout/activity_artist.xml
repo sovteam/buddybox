@@ -91,15 +91,25 @@
                 android:text="@string/songs_count"
                 android:textAlignment="center" />
 
+            <include
+                android:id="@+id/artistBio"
+                layout="@layout/artist_bio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/artistSongsCount"
+                android:layout_marginEnd="12dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="20dp" />
+
             <LinearLayout
                 android:id="@+id/albums_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_below="@+id/artistSongsCount"
+                android:layout_below="@+id/artistBio"
                 android:layout_marginTop="20dp"
                 android:orientation="vertical"
-                android:padding="12dp"></LinearLayout>
+                android:padding="12dp" />
 
         </RelativeLayout>
 

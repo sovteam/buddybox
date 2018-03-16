@@ -1,4 +1,4 @@
-package buddybox.io;
+package buddybox.web;
 
 import android.util.Log;
 
@@ -15,7 +15,7 @@ import java.net.URL;
 
 public class HttpUtils {
 
-    static JSONObject getHttpResponse(String urlString) {
+    public static JSONObject getHttpResponse(String urlString) {
         // build URL
         URL url;
         try {

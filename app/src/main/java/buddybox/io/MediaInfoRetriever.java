@@ -15,7 +15,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -31,7 +33,10 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtFound;
+import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
+import buddybox.web.DownloadUtils;
+import buddybox.web.HttpUtils;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.ui.ModelProxy.addStateListener;
@@ -236,6 +241,10 @@ public class MediaInfoRetriever {
             return;
         }
 
+        String bio = getArtistBio(response);
+        if (bio != null)
+            dispatch(new ArtistBioFound(artist, bio));
+
         String artistPictureUrl = getArtistPictureUrl(response);
         if (artistPictureUrl == null || artistPictureUrl.isEmpty()) {
             Log.d(TAG, "no picture url");
@@ -276,6 +285,27 @@ public class MediaInfoRetriever {
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
+        }
+
+        return ret;
+    }
+
+    private static String getArtistBio(JSONObject json) {
+        String ret = null;
+
+        if (!json.has("artist"))
+            return null;
+
+        try {
+            JSONObject artist = json.getJSONObject("artist");
+            if (!artist.has("bio"))
+                return null;
+            JSONObject bio = artist.getJSONObject("bio");
+            if (!bio.has("content"))
+                return null;
+            ret = bio.getString("content");
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
         return ret;
@@ -410,15 +440,27 @@ public class MediaInfoRetriever {
     }
 
     private static void downloadImage(String urlStr, ImageRequest imageRequest) {
-        boolean success = DownloadUtils.downloadFile(urlStr, imageRequest.getFileFullPath());
-
-        // finish request
-        if (success) {
-            Bitmap image = BitmapFactory.decodeFile(imageRequest.getFileFullPath());
-            imageRequest.finish(image);
-        } else {
+        // download image
+        byte[] response = DownloadUtils.downloadFile(urlStr);
+        if (response == null) {
             imageRequest.finish(getDefaultImage());
+            return;
         }
+
+        // save downloaded image
+        try {
+            FileOutputStream fos = new FileOutputStream(imageRequest.getFileFullPath());
+            fos.write(response);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("DownloadUtils", "IOException writing file");
+            imageRequest.finish(getDefaultImage());
+            return;
+        }
+
+        Bitmap image = BitmapFactory.decodeFile(imageRequest.getFileFullPath());
+        imageRequest.finish(image);
     }
 
     private static String encode(String fileName) {

@@ -31,6 +31,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtFound;
+import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.CreatePlaylist;
@@ -132,6 +133,7 @@ public class Model implements IModel {
 
     private ArrayList<Artist> artists;
     private Artist artistSelected;
+    private HashMap<String, String> bios;
 
     public Model(Context context) {
         this.context = context;
@@ -212,15 +214,37 @@ public class Model implements IModel {
         if (event == BLUETOOTH_CONNECT) bluetoothConnect();
         if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
 
-        // media images
+        // media info
         if (cls == AlbumArtFound.class) albumArtFound((AlbumArtFound) event);
         if (cls == AlbumArtEmbeddedFound.class) albumArtEmbeddedFound((AlbumArtEmbeddedFound) event);
         if (cls == ArtistPictureFound.class) artistPictureFound((ArtistPictureFound) event);
+        if (cls == ArtistBioFound.class) artistBioFound((ArtistBioFound) event);
 
         // artist
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
 
         updateListeners();
+    }
+
+    private void artistBioFound(ArtistBioFound event) {
+        ContentValues values = new ContentValues();
+        values.put("ARTIST_NAME", event.artist.name);
+        values.put("CONTENT", event.content);
+
+        if (event.artist.bio == null)
+            DatabaseHelper.getInstance(context).getReadableDatabase().insert(
+                    "ARTIST_BIO",
+                    null,
+                    values);
+        else
+            DatabaseHelper.getInstance(context).getReadableDatabase().update(
+                "ARTIST_BIO",
+                values,
+                "ARTIST_NAME=?",
+                new String[]{event.artist.name});
+
+        bios.put(event.artist.name, event.content);
+        event.artist.setBio(event.content);
     }
 
 
@@ -511,6 +535,7 @@ public class Model implements IModel {
         Artist artist = getArtist(event.song.artist);
         if (artist == null) {
             artist = new Artist(event.song.artist);
+            artist.setBio(bios.get(event.song.artist));
             artists.add(artist);
         }
         if (!artist.hasSong(event.song))
@@ -575,6 +600,7 @@ public class Model implements IModel {
 
     private ArrayList<Artist> artists() {
         if (artists == null) {
+            loadBios();
             Map<String, Artist> artistsByName = new HashMap<>();
             for (Song song : allSongs()) {
                 if (song.isMissing)
@@ -582,6 +608,7 @@ public class Model implements IModel {
                 Artist artist = artistsByName.get(song.artist);
                 if (artist == null) {
                     artist = new Artist(song.artist);
+                    artist.setBio(bios.get(song.artist));
                     artistsByName.put(song.artist, artist);
                 }
                 artist.addSong(song);
@@ -589,6 +616,15 @@ public class Model implements IModel {
             artists = new ArrayList<>(artistsByName.values());
         }
         return artists;
+    }
+
+    private void loadBios() {
+        bios = new HashMap<>();
+        Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM ARTIST_BIO", null);
+        while (cursor.moveToNext())
+            bios.put(cursor.getString(cursor.getColumnIndex("ARTIST_NAME")),
+                    cursor.getString(cursor.getColumnIndex("CONTENT")));
+        cursor.close();
     }
 
     private void finishedPlaying() {

@@ -56,6 +56,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FOREIGN KEY(SONG_HASH) REFERENCES SONGS(HASH)," +
                 "FOREIGN KEY(PLAYLIST_ID) REFERENCES PLAYLISTS(ID))");
 
+        db.execSQL("CREATE TABLE IF NOT EXISTS ARTIST_BIO (" +
+                "ARTIST_NAME TEXT PRIMARY KEY," +
+                "CONTENT TEXT NOT NULL)");
+
         db.execSQL("CREATE TABLE IF NOT EXISTS VOLUME_SETTINGS (" +
                 "OUTPUT TEXT PRIMARY KEY," +
                 "VOLUME INTEGER NOT NULL)");

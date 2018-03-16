@@ -15,6 +15,7 @@ public class Artist {
     public Set<Song> songs;
     public Bitmap picture;
     private Map<String, List<Song>> songsByAlbum;
+    public String bio;
 
     public Artist(String name) {
         this.name = name;
@@ -84,5 +85,9 @@ public class Artist {
 
     public boolean hasSong(Song song) {
         return songs.contains(song);
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
     }
 }
