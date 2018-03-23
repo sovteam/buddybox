@@ -12,14 +12,14 @@ import java.util.Set;
 public class Artist {
 
     public final String name;
-    public Set<Song> songs;
+    public List<Song> songs;
     public Bitmap picture;
     private Map<String, List<Song>> songsByAlbum;
     public String bio;
 
     public Artist(String name) {
         this.name = name;
-        this.songs = new HashSet<>();
+        this.songs = new ArrayList<>();
     }
 
     public void addSong(Song song) {

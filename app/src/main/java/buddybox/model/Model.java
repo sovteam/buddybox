@@ -3,6 +3,7 @@ package buddybox.model;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
@@ -90,7 +91,7 @@ public class Model implements IModel {
     public static final String SPEAKER = "speaker";
     public static final String BLUETOOTH = "bluetooth";
 
-    private final Context context;
+    public SQLiteDatabase db;
     private List<StateListener> listeners = new ArrayList<>();
 
     private File musicDirectory;
@@ -132,10 +133,11 @@ public class Model implements IModel {
     private HashMap<String, String> bios;
 
     public Model(Context context) {
-        this.context = context;
+        if (context != null)
+            this.db = DatabaseHelper.getInstance(context).getReadableDatabase();
 
-        //DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLISTS");
-        //DatabaseHelper.getInstance(context).getReadableDatabase().execSQL("delete from PLAYLIST_SONG");
+        // db.execSQL("delete from PLAYLISTS");
+        // db.execSQL("delete from PLAYLIST_SONG");
 
         Dispatcher.addListener(new Dispatcher.Listener() { @Override public void onEvent(Dispatcher.Event event) {
             handle(event);
@@ -228,12 +230,12 @@ public class Model implements IModel {
         values.put("CONTENT", event.content);
 
         if (event.artist.bio == null)
-            DatabaseHelper.getInstance(context).getReadableDatabase().insert(
+            db.insert(
                     "ARTIST_BIO",
                     null,
                     values);
         else
-            DatabaseHelper.getInstance(context).getReadableDatabase().update(
+            db.update(
                 "ARTIST_BIO",
                 values,
                 "ARTIST_NAME=?",
@@ -298,7 +300,7 @@ public class Model implements IModel {
         /* UPDATE DB */
         if (event.fromPosition > event.toPosition) {
             // Slide +1 position songs >= toPosition and < fromPosition
-            DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+            db.execSQL(
                     "UPDATE PLAYLIST_SONG " +
                             "SET POSITION = POSITION +1 " +
                             "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
@@ -306,7 +308,7 @@ public class Model implements IModel {
                             "AND    POSITION >= " + event.toPosition);
         } else {
             // Slide -1 position songs <= toPosition and > fromPosition
-            DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+            db.execSQL(
                     "UPDATE PLAYLIST_SONG " +
                             "SET POSITION = POSITION -1 " +
                             "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
@@ -316,7 +318,7 @@ public class Model implements IModel {
 
         // Update moved song position
         Song song = selectedPlaylist.song(event.fromPosition);
-        DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+        db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = " + event.toPosition + " " +
                         "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
@@ -350,7 +352,7 @@ public class Model implements IModel {
     private void setPlaylistName(PlaylistSetName event) {
         ContentValues values = new ContentValues();
         values.put("NAME", event.playlistName);
-        int rows = DatabaseHelper.getInstance(context).getReadableDatabase().update(
+        int rows = db.update(
                 "PLAYLISTS",
                 values,
                 "ID=?",
@@ -407,7 +409,7 @@ public class Model implements IModel {
         int songPosition = playlist.songs.indexOf(event.song);
 
         // update position-1 for relations.position > song index
-        DatabaseHelper.getInstance(context).getReadableDatabase().execSQL(
+        db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = POSITION -1 " +
                         "WHERE PLAYLIST_ID = " + playlist.id + " " +
@@ -415,7 +417,7 @@ public class Model implements IModel {
                         "AND POSITION > " + songPosition);
 
         // delete from associations table
-        DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.id), songHash});
+        db.delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.id), songHash});
 
         // remove from playlistsBySong
         List<Playlist> songPlaylists = playlistsBySong.get(songHash);
@@ -453,7 +455,7 @@ public class Model implements IModel {
         ContentValues values = new ContentValues();
         values.put("IS_DELETED", true);
         values.put("IS_MISSING", true);
-        DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", values, "HASH=?", new String[]{song.hash.toString()});
+        db.update("SONGS", values, "HASH=?", new String[]{song.hash.toString()});
         song.setDeleted();
 
         Song current = currentSong();
@@ -467,7 +469,7 @@ public class Model implements IModel {
     }
 
     /*private void printDBSongs() {
-        Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM SONGS", null);
         while(cursor.moveToNext()) {
             System.out.println(
                 "HASH: " + cursor.getString(cursor.getColumnIndex("HASH")) + ", " +
@@ -503,7 +505,7 @@ public class Model implements IModel {
     private void songMissing(SongMissing event) {
         ContentValues values = new ContentValues();
         values.put("IS_MISSING", true);
-        DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", values, "HASH=?", new String[]{event.song.hash.toString()});
+        db.update("SONGS", values, "HASH=?", new String[]{event.song.hash.toString()});
         event.song.setMissing();
         updateMediaStorageUsed(-event.song.fileLength);
         removeSongFromArtist(event.song);
@@ -515,27 +517,32 @@ public class Model implements IModel {
             return;
 
         artist.removeSong(song);
+        if (artist.songs.isEmpty()) {
+            artists.remove(artist);
+        }
     }
 
     private void songFound(SongFound event) {
         Song song = findSongByHash(event.song.hash);
         if (song == null) {
             insertNewSong(event.song);
-            addSong(event.song);
         } else {
-            song.setNotMissing();
             updateSong(event.song);
-        }
 
-        // add song to artist
-        Artist artist = getArtist(event.song.artist);
-        if (artist == null) {
-            artist = new Artist(event.song.artist);
-            artist.setBio(bios.get(event.song.artist));
-            artists.add(artist);
+            // remove old song from caches
+            allSongs.remove(song);
+            if (!event.song.artist.equals(song.artist))
+                removeSongFromArtist(song);
         }
-        if (!artist.hasSong(event.song))
-            artist.addSong(event.song);
+        addSong(event.song);
+        addSongToArtist(event.song);
+    }
+
+    private void addSongToArtist(Song song) {
+        // add song to artist
+        Artist artist = getArtist(song.artist);
+        if (!artist.hasSong(song))
+            artist.addSong(song);
     }
 
     private void addSong(Song song) {
@@ -547,10 +554,17 @@ public class Model implements IModel {
     }
 
     private Artist getArtist(String artist) {
+        // find first
         for (Artist a : artists)
             if (a.name.equals(artist))
                 return a;
-        return null;
+
+        // create new
+        Artist newArtist = new Artist(artist);
+        newArtist.setBio(bios.get(artist));
+        artists.add(newArtist);
+
+        return newArtist;
     }
 
     private void updateMediaStorageUsed(long fileLength) {
@@ -567,11 +581,11 @@ public class Model implements IModel {
     }
 
     private void insertNewSong(Song song) {
-        DatabaseHelper.getInstance(context).getReadableDatabase().insert("SONGS", null, songContents(song));
+        db.insert("SONGS", null, songContents(song));
     }
 
     private void updateSong(Song song) {
-        DatabaseHelper.getInstance(context).getReadableDatabase().update("SONGS", songContents(song), "HASH=?", new String[]{song.hash.toString()});
+        db.update("SONGS", songContents(song), "HASH=?", new String[]{song.hash.toString()});
     }
 
     private ContentValues songContents(Song song) {
@@ -597,30 +611,34 @@ public class Model implements IModel {
     private ArrayList<Artist> artists() {
         if (artists == null) {
             loadBios();
-            Map<String, Artist> artistsByName = new HashMap<>();
-            for (Song song : allSongs()) {
-                if (song.isMissing)
-                    continue;
-                Artist artist = artistsByName.get(song.artist);
-                if (artist == null) {
-                    artist = new Artist(song.artist);
-                    artist.setBio(bios.get(song.artist));
-                    artistsByName.put(song.artist, artist);
-                }
-                artist.addSong(song);
-            }
-            artists = new ArrayList<>(artistsByName.values());
+            initializeArtists();
         }
         return artists;
     }
 
     private void loadBios() {
         bios = new HashMap<>();
-        Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM ARTIST_BIO", null);
+        Cursor cursor = db.rawQuery("SELECT * FROM ARTIST_BIO", null);
         while (cursor.moveToNext())
             bios.put(cursor.getString(cursor.getColumnIndex("ARTIST_NAME")),
                     cursor.getString(cursor.getColumnIndex("CONTENT")));
         cursor.close();
+    }
+
+    private void initializeArtists() {
+        Map<String, Artist> artistsByName = new HashMap<>();
+        for (Song song : allSongs()) {
+            if (song.isMissing)
+                continue;
+            Artist artist = artistsByName.get(song.artist);
+            if (artist == null) {
+                artist = new Artist(song.artist);
+                artist.setBio(bios.get(song.artist));
+                artistsByName.put(song.artist, artist);
+            }
+            artist.addSong(song);
+        }
+        artists = new ArrayList<>(artistsByName.values());
     }
 
     private void finishedPlaying() {
@@ -641,7 +659,7 @@ public class Model implements IModel {
             // Creates playlist
             ContentValues contents = new ContentValues();
             contents.put("NAME", event.playlistName);
-            long playlistId = DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLISTS", null, contents);
+            long playlistId = db.insert("PLAYLISTS", null, contents);
 
             if (playlistId == -1) {
                 Log.d("Model.createPlaylist", "Insert Playlist Error");
@@ -672,14 +690,14 @@ public class Model implements IModel {
         Playlist playlist = playlistsById.get(event.playlistId);
 
         // delete from table
-        int rowsP = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLISTS", "ID=?", new String[]{Long.toString(event.playlistId)});
+        int rowsP = db.delete("PLAYLISTS", "ID=?", new String[]{Long.toString(event.playlistId)});
         if (rowsP != 1) {
             Log.d("Model.deletePlaylist", "Unable to delete playlist in DB");
             return;
         }
 
         // delete associations to songs
-        int rowsA = DatabaseHelper.getInstance(context).getReadableDatabase().delete("PLAYLIST_SONG", "PLAYLIST_ID=?", new String[]{Long.toString(event.playlistId)});
+        int rowsA = db.delete("PLAYLIST_SONG", "PLAYLIST_ID=?", new String[]{Long.toString(event.playlistId)});
         if (rowsA != playlist.songs.size()) {
             Log.d("Model.deletePlaylist", "Unable to delete all playlists-song associations");
             return;
@@ -711,7 +729,7 @@ public class Model implements IModel {
         playlistSong.put("PLAYLIST_ID", playlistId);
         playlistSong.put("SONG_HASH", songHash);
         playlistSong.put("POSITION", playlistsById.get(playlistId).size());
-        DatabaseHelper.getInstance(context).getReadableDatabase().insert("PLAYLIST_SONG", null, playlistSong);
+        db.insert("PLAYLIST_SONG", null, playlistSong);
 
         addSongToPlaylist(songHash, playlistId);
     }
@@ -908,7 +926,7 @@ public class Model implements IModel {
             long start = System.currentTimeMillis();
             allSongs = new HashSet<>();
             songsByHash = new HashMap<>();
-            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM SONGS", null);
+            Cursor cursor = db.rawQuery("SELECT * FROM SONGS", null);
             while (cursor.moveToNext()) {
                 Song song = new Song(
                         cursor.getLong(cursor.getColumnIndex("ID")),
@@ -936,7 +954,7 @@ public class Model implements IModel {
             playlists = new ArrayList<>();
 
             // Create playlist map
-            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM PLAYLISTS", null);
+            Cursor cursor = db.rawQuery("SELECT * FROM PLAYLISTS", null);
             while(cursor.moveToNext()) {
                 long playlistId = cursor.getLong(cursor.getColumnIndex("ID"));
                 Playlist playlist = new Playlist(playlistId, cursor.getString(cursor.getColumnIndex("NAME")), new ArrayList<Song>());
@@ -946,7 +964,7 @@ public class Model implements IModel {
 
             // Associates songs to playlists
             playlistsBySong = new HashMap<>();
-            Cursor cursorAssoc = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM PLAYLIST_SONG ORDER BY PLAYLIST_ID, POSITION", null);
+            Cursor cursorAssoc = db.rawQuery("SELECT * FROM PLAYLIST_SONG ORDER BY PLAYLIST_ID, POSITION", null);
             while(cursorAssoc.moveToNext()) {
                 String songHash = cursorAssoc.getString(cursorAssoc.getColumnIndex("SONG_HASH"));
                 Long playlistId = cursorAssoc.getLong(cursorAssoc.getColumnIndex("PLAYLIST_ID"));
@@ -1072,7 +1090,7 @@ public class Model implements IModel {
     private Map<String, Integer> getVolumeSettings() {
         if (volumeSettings == null) {
             volumeSettings = new HashMap<>();
-            Cursor cursor = DatabaseHelper.getInstance(context).getReadableDatabase().rawQuery("SELECT * FROM VOLUME_SETTINGS", null);
+            Cursor cursor = db.rawQuery("SELECT * FROM VOLUME_SETTINGS", null);
             while (cursor.moveToNext()) {
                 String output = cursor.getString(cursor.getColumnIndex("OUTPUT"));
                 Integer volume = cursor.getInt(cursor.getColumnIndex("VOLUME"));
@@ -1088,7 +1106,11 @@ public class Model implements IModel {
 
         ContentValues values = new ContentValues();
         values.put("VOLUME", volume);
-        DatabaseHelper.getInstance(context).getReadableDatabase().update("VOLUME_SETTINGS", values, "OUTPUT=?", new String[]{output});
+        db.update("VOLUME_SETTINGS", values, "OUTPUT=?", new String[]{output});
     }
 
+    void setDatabase(SQLiteDatabase database) {
+        // FORT TEST ONLY!!!
+        db = database;
+    }
 }
