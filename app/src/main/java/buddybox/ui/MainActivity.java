@@ -1,16 +1,14 @@
 package buddybox.ui;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -40,7 +38,6 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import buddybox.ModelSim;
 import buddybox.core.IModel;
@@ -56,6 +53,7 @@ import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
 import buddybox.io.BluetoothListener;
+import buddybox.io.HeadsetPlugListener;
 import buddybox.io.Library;
 import buddybox.io.MediaInfoRetriever;
 import buddybox.io.MediaPlayback;
@@ -72,8 +70,6 @@ import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
-import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_CONNECTED;
-import static buddybox.core.events.SetHeadphonesVolume.HEADPHONES_DISCONNECTED;
 import static buddybox.model.Model.BLUETOOTH;
 import static buddybox.model.Model.HEADPHONES;
 import static buddybox.model.Model.SPEAKER;
@@ -87,10 +83,11 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private Playlist lovedPlaylist;
 
     private Song sampling;
-    private HeadsetPlugReceiver headsetPlugReceiver;
     private SeekBar headphoneSeekBar;
     private SeekBar speakerSeekBar;
     private SeekBar bluetoothSeekBar;
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         navigateTo(R.id.frameLibrary);
 
-        setHeadsetPlugObserver(); // TODO Extract to io class
         setVolumeControls();
 
         checkWriteExternalStoragePermission();
@@ -150,15 +146,20 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private void initApp() {
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
+
         MediaInfoRetriever.init(this);
         Player.init(this);
         Library.init();
         Sampler.init(this);
         MediaPlayback.init(this);
         BluetoothListener.init(this);
+        HeadsetPlugListener.init(this);
 
-        ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
+        ModelProxy.addStateListener(new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() { @Override public void run() {
+                    updateState(state);
+            }};
+            handler.post(runUpdate);
         }});
 
         dispatch(SYNC_LIBRARY);
@@ -232,15 +233,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (headsetPlugReceiver != null) {
-            unregisterReceiver(headsetPlugReceiver);
-            headsetPlugReceiver = null;
-        }
-        super.onDestroy();
     }
 
     private void updateState(State state) {
@@ -505,32 +497,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             ((TextView)findViewById(R.id.playingName)).setText(songPlaying.name());
             ((TextView)findViewById(R.id.playingSubtitle)).setText(songPlaying.subtitle());
             ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
-        }
-    }
-
-    private void setHeadsetPlugObserver() {
-        headsetPlugReceiver = new HeadsetPlugReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("android.intent.action.HEADSET_PLUG");
-        registerReceiver(headsetPlugReceiver, intentFilter);
-    }
-
-    class HeadsetPlugReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (!Objects.equals(intent.getAction(), Intent.ACTION_HEADSET_PLUG)) {
-                return;
-            }
-            boolean connectedHeadphones = (intent.getIntExtra("state", 0) == 1);
-            // boolean connectedMicrophone = (intent.getIntExtra("microphone", 0) == 1) && connectedHeadphones;
-
-            if (connectedHeadphones)
-                dispatch(HEADPHONES_CONNECTED);
-            else
-                dispatch(HEADPHONES_DISCONNECTED);
-
-            // String headsetName = intent.getStringExtra("name");
-            // System.out.println(">>> connectedHeadphones " + connectedHeadphones + " " + headsetName);
         }
     }
 

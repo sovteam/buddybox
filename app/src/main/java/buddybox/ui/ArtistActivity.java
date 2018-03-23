@@ -2,6 +2,8 @@ package buddybox.ui;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
@@ -30,6 +32,7 @@ public class ArtistActivity extends AppCompatActivity {
 
     private IModel.StateListener listener;
     private boolean isBioCollapsed = true;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +69,14 @@ public class ArtistActivity extends AppCompatActivity {
         }});
 
         // set listener
-        listener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
+        listener = new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() {
+                @Override
+                public void run() {
+                    updateState(state);
+                }
+            };
+            handler.post(runUpdate);
         }};
         ModelProxy.addStateListener(listener);
     }

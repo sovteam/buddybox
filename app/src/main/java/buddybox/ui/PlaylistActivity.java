@@ -3,6 +3,8 @@ package buddybox.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,6 +34,7 @@ public class PlaylistActivity extends AppCompatActivity {
     private Playlist playlist;
     private DragListView mDragListView;
     private boolean dragging = false;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +84,22 @@ public class PlaylistActivity extends AppCompatActivity {
             }
         }});
 
-        listener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
+        listener = new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() {
+                @Override
+                public void run() {
+                    updateState(state);
+                }
+            };
+            handler.post(runUpdate);
         }};
         ModelProxy.addStateListener(listener);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ModelProxy.removeStateListener(listener);
     }
 
     private static class MyDragItem extends DragItem {
@@ -92,7 +107,6 @@ public class PlaylistActivity extends AppCompatActivity {
         MyDragItem(Context context, int layoutId) {
             super(context, layoutId);
         }
-
         @Override
         public void onBindDragView(View clickedView, View dragView) {
             CharSequence name = ((TextView) clickedView.findViewById(R.id.songName)).getText();
@@ -101,12 +115,7 @@ public class PlaylistActivity extends AppCompatActivity {
             ((TextView) dragView.findViewById(R.id.songArtist)).setText(artist);
             dragView.findViewById(R.id.item_layout).setBackgroundColor(Color.parseColor("#1976d2"));
         }
-    }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        ModelProxy.removeStateListener(listener);
     }
 
     private void updateState(State state) {

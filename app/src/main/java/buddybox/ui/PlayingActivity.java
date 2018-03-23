@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
@@ -43,6 +45,7 @@ public class PlayingActivity extends AppCompatActivity {
     private Player.ProgressListener progressListener;
     private int lastProgress = 0;
     private boolean showDuration = true;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,10 +110,18 @@ public class PlayingActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        stateListener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
+
+        stateListener = new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() {
+                @Override
+                public void run() {
+                    updateState(state);
+                }
+            };
+            handler.post(runUpdate);
         }};
         ModelProxy.addStateListener(stateListener);
+
         progressListener = new Player.ProgressListener() { @Override public void updateProgress(int progress) { updatePlayerProgress(progress);
         }};
         Player.addListener(progressListener);

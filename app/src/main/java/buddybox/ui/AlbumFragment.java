@@ -3,6 +3,8 @@ package buddybox.ui;
 import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,7 @@ public class AlbumFragment extends Fragment {
     private View view;
     private IModel.StateListener listener;
     private LayoutInflater inflater;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public AlbumFragment() { }
 
@@ -57,8 +60,14 @@ public class AlbumFragment extends Fragment {
         ((TextView) view.findViewById(R.id.albumName)).setText(album);
 
         // add state listener
-        listener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
+        listener = new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() {
+                @Override
+                public void run() {
+                    updateState(state);
+                }
+            };
+            handler.post(runUpdate);
         }};
         ModelProxy.addStateListener(listener);
 

@@ -1,6 +1,8 @@
 package buddybox.ui;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -39,6 +41,7 @@ public class EditSongActivity extends AppCompatActivity {
 
     private IModel.StateListener listener;
     private Song song;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,8 +56,14 @@ public class EditSongActivity extends AppCompatActivity {
         findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { delete(); }});
 
         // set listener
-        listener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
+        listener = new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() {
+                @Override
+                public void run() {
+                    updateState(state);
+                }
+            };
+            handler.post(runUpdate);
         }};
         ModelProxy.addStateListener(listener);
     }

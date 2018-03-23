@@ -2,6 +2,8 @@ package buddybox.ui.library;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -38,6 +40,7 @@ public class ArtistsFragment extends Fragment {
     private IModel.StateListener listener;
     private FragmentActivity activity;
     private State lastState;
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public ArtistsFragment() {}
 
@@ -71,12 +74,16 @@ public class ArtistsFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        if (ModelProxy.isInitialized()) {
-            listener = new IModel.StateListener() { @Override public void update(State state) {
-                updateState(state);
-            }};
-            ModelProxy.addStateListener(listener);
-        }
+        listener = new IModel.StateListener() { @Override public void update(final State state) {
+            Runnable runUpdate = new Runnable() {
+                @Override
+                public void run() {
+                    updateState(state);
+                }
+            };
+            handler.post(runUpdate);
+        }};
+        ModelProxy.addStateListener(listener);
     }
 
     @Override

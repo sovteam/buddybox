@@ -74,6 +74,14 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
+        <service
+            android:name="buddybox.io.HeadsetPlugListener"
+            android:exported="false"
+            android:stopWithTask="true">
+            <intent-filter>
+                <action android:name="android.intent.action.HEADSET_PLUG" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

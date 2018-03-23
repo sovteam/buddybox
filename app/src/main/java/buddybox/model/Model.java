@@ -3,10 +3,7 @@ package buddybox.model;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.media.AudioDeviceInfo;
-import android.media.AudioManager;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.StatFs;
 import android.util.Log;
 import android.util.LongSparseArray;
@@ -94,7 +91,6 @@ public class Model implements IModel {
     public static final String BLUETOOTH = "bluetooth";
 
     private final Context context;
-    private final Handler handler = new Handler();
     private List<StateListener> listeners = new ArrayList<>();
 
     private File musicDirectory;
@@ -123,7 +119,7 @@ public class Model implements IModel {
     private Song songSelected;
     private Integer seekTo;
     private Long mediaStorageUsed;
-    private Boolean isHeadphoneConnected;
+    private boolean isHeadphoneConnected = false;
 
     private boolean wasPlayingBeforeLostAudioFocus = false;
     private boolean isBluetoothConnected;
@@ -815,16 +811,16 @@ public class Model implements IModel {
     }
 
     private void updateListeners() {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                State state = getState();
-                for (StateListener listener : listeners) {
-                    updateListener(listener, state);
-                }
+        final State state = getState();
+        /*Runnable update = new Runnable() { @Override public void run() {
+            for (StateListener listener : listeners) {
+                updateListener(listener, state);
             }
-        };
-        handler.post(runnable);
+        }};
+        handler.post(update);*/
+        for (StateListener listener : listeners) {
+            updateListener(listener, state);
+        }
     }
 
     private void updateListener(StateListener listener) {
@@ -1030,13 +1026,12 @@ public class Model implements IModel {
     @Override
     public void addStateListener(final StateListener listener) {
         this.listeners.add(listener);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                updateListener(listener);
-            }
-        };
-        handler.post(runnable);
+        /*Runnable update = new Runnable() { @Override public void run() {
+            updateListener(listener);
+        }};
+        handler.post(update);*/
+
+        updateListener(listener);
     }
 
     @Override
@@ -1045,25 +1040,11 @@ public class Model implements IModel {
     }
 
     private String getOutputConnected() {
-        return isHeadphonesPlugged()
+        return isHeadphoneConnected
                 ? HEADPHONES
                 : isBluetoothConnected
                     ? BLUETOOTH
                     : SPEAKER;
-    }
-
-    private boolean isHeadphonesPlugged(){
-        if (isHeadphoneConnected == null) {
-            isHeadphoneConnected = false;
-            AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            if (audioManager != null) {
-                AudioDeviceInfo[] audioDevices = audioManager.getDevices(AudioManager.GET_DEVICES_ALL);
-                for (AudioDeviceInfo device : audioDevices)
-                    if (device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADPHONES || device.getType() == AudioDeviceInfo.TYPE_WIRED_HEADSET)
-                        isHeadphoneConnected = true;
-            }
-        }
-        return isHeadphoneConnected;
     }
 
     private void headphonesConnected() {

@@ -14,13 +14,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     static synchronized DatabaseHelper getInstance(Context context) {
         if (INSTANCE == null)
-            INSTANCE = new DatabaseHelper(context.getApplicationContext());
-
+            INSTANCE = context == null
+                ? new DatabaseHelper()
+                : new DatabaseHelper(context.getApplicationContext());
         return INSTANCE;
     }
 
     private DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    private DatabaseHelper() {
+        // creates db in memory
+        super(null, null, null, 1);
     }
 
     @Override
