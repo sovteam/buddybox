@@ -41,5 +41,4 @@ dependencies {
 
     // Testing-only dependencies
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
-
 }

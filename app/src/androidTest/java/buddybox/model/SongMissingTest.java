@@ -38,7 +38,7 @@ public class SongMissingTest extends ModelTest {
     }
 
     @Test
-    public void songMissingDispatched_modelRemovesSong() {
+    public void songMissingDispatched_modelRemovesOnlySong() {
         // dispatch "Jamming" song found
         Hash hash1 = new Hash(Base64.encode("JammingStream".getBytes(), 1));
         Song song1 = new Song(null, hash1, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false);
