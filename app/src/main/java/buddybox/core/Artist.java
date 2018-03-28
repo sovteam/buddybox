@@ -15,7 +15,7 @@ public class Artist {
     public List<Song> songs;
     public Bitmap picture;
     private Map<String, List<Song>> songsByAlbum;
-    public String bio;
+    private String bio;
 
     public Artist(String name) {
         this.name = name;
@@ -89,5 +89,9 @@ public class Artist {
 
     public void setBio(String bio) {
         this.bio = bio;
+    }
+
+    public String getBio() {
+        return bio;
     }
 }

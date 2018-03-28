@@ -91,7 +91,7 @@ public class Model implements IModel {
     public static final String SPEAKER = "speaker";
     public static final String BLUETOOTH = "bluetooth";
 
-    public SQLiteDatabase db;
+    SQLiteDatabase db;
     private List<StateListener> listeners = new ArrayList<>();
 
     private File musicDirectory;
@@ -229,7 +229,7 @@ public class Model implements IModel {
         values.put("ARTIST_NAME", event.artist.name);
         values.put("CONTENT", event.content);
 
-        if (event.artist.bio == null)
+        if (event.artist.getBio() == null)
             db.insert(
                     "ARTIST_BIO",
                     null,

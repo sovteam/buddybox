@@ -99,11 +99,11 @@ public class ArtistActivity extends AppCompatActivity {
         ((TextView)findViewById(R.id.artistName)).setText(state.artistSelected.name);
         ((TextView)findViewById(R.id.artistSongsCount)).setText(state.artistSelected.songsCountPrint());
 
-        if (state.artistSelected.bio == null) {
+        if (state.artistSelected.getBio() == null) {
             findViewById(R.id.artistBio).setVisibility(View.GONE);
         } else {
             findViewById(R.id.artistBio).setVisibility(View.VISIBLE);
-            String bio = state.artistSelected.bio.replace("\n", "<br />");
+            String bio = state.artistSelected.getBio().replace("\n", "<br />");
             ((TextView) findViewById(R.id.bioContent)).setText(Html.fromHtml(bio));
         }
 

@@ -33,7 +33,7 @@ public abstract class ModelTest {
         model.addStateListener(listener);
     }
 
-    void reinitialize() {
+    protected void reinitialize() {
         db = model.db;
         model.removeStateListener(listener);
         initialize();
