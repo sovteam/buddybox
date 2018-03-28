@@ -11,7 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
 
-import buddybox.core.events.DeletePlaylist;
+import buddybox.core.events.PlaylistDelete;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -62,7 +62,7 @@ public class PlaylistOptionsDialog extends DialogFragment {
     }
 
     private void deletePlaylist(Long playlistId) {
-        dispatch(new DeletePlaylist(playlistId));
+        dispatch(new PlaylistDelete(playlistId));
         Toast.makeText(getContext(), "Playlist deleted", Toast.LENGTH_SHORT).show();
     }
 }

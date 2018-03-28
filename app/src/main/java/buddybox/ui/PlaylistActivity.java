@@ -68,7 +68,7 @@ public class PlaylistActivity extends AppCompatActivity {
             @Override
             public void onItemDragEnded(int fromPosition, int toPosition) {
                 if (fromPosition != toPosition) {
-                    dispatch(new PlaylistChangeSongPosition(fromPosition, toPosition));
+                    dispatch(new PlaylistChangeSongPosition(playlist, fromPosition, toPosition));
                 }
                 dragging = false;
             }

@@ -63,14 +63,6 @@ public class AlbumArtFoundTest extends ModelTest {
         assertEquals(null, getSong("Can You Feel It").getArt());
     }
 
-    private Song getSong(String name) {
-        for (Song song : lastState.allSongsPlaylist.songs) {
-            if (song.name.equals(name))
-                return song;
-        }
-        throw new IllegalStateException("Song " + name + " not found");
-    }
-
     @Test
     public void embeddedAlbumArtFound() {
         String artString = "legend album art embedded";

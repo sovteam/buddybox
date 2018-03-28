@@ -32,11 +32,11 @@ import buddybox.core.events.AlbumArtFound;
 import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.core.events.ArtistSelected;
-import buddybox.core.events.CreatePlaylist;
-import buddybox.core.events.DeletePlaylist;
 import buddybox.core.events.Play;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistChangeSongPosition;
+import buddybox.core.events.PlaylistCreate;
+import buddybox.core.events.PlaylistDelete;
 import buddybox.core.events.PlaylistRemoveSong;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.PlaylistSetName;
@@ -174,8 +174,8 @@ public class Model implements IModel {
         if (cls == SetHeadphonesVolume.class) setHeadphonesVolume((SetHeadphonesVolume) event);
 
         // playlist
-        if (cls == CreatePlaylist.class) createPlaylist((CreatePlaylist) event);
-        if (cls == DeletePlaylist.class) deletePlaylist((DeletePlaylist) event);
+        if (cls == PlaylistCreate.class) createPlaylist((PlaylistCreate) event);
+        if (cls == PlaylistDelete.class) deletePlaylist((PlaylistDelete) event);
         if (cls == PlaylistAddSong.class) addSongToPlaylist((PlaylistAddSong) event);
         if (cls == PlaylistRemoveSong.class) removeSongFromPlaylist((PlaylistRemoveSong) event);
         if (cls == PlaylistSetName.class) setPlaylistName((PlaylistSetName) event);
@@ -297,13 +297,15 @@ public class Model implements IModel {
     }
 
     private void playlistChangeSongPosition(PlaylistChangeSongPosition event) {
+        Playlist playlist = event.playlist;
+
         /* UPDATE DB */
         if (event.fromPosition > event.toPosition) {
             // Slide +1 position songs >= toPosition and < fromPosition
             db.execSQL(
                     "UPDATE PLAYLIST_SONG " +
                             "SET POSITION = POSITION +1 " +
-                            "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
+                            "WHERE  PLAYLIST_ID = " + playlist.id + " " +
                             "AND    POSITION <  " + event.fromPosition + " " +
                             "AND    POSITION >= " + event.toPosition);
         } else {
@@ -311,28 +313,28 @@ public class Model implements IModel {
             db.execSQL(
                     "UPDATE PLAYLIST_SONG " +
                             "SET POSITION = POSITION -1 " +
-                            "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
+                            "WHERE  PLAYLIST_ID = " + playlist.id + " " +
                             "AND    POSITION >  " + event.fromPosition + " " +
                             "AND    POSITION <= " + event.toPosition);
         }
 
         // Update moved song position
-        Song song = selectedPlaylist.song(event.fromPosition);
+        Song song = playlist.song(event.fromPosition);
         db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = " + event.toPosition + " " +
-                        "WHERE  PLAYLIST_ID = " + selectedPlaylist.id + " " +
+                        "WHERE  PLAYLIST_ID = " + playlist.id + " " +
                         "AND    SONG_HASH = '" + song.hash.toString() + "'");
 
         /* UPDATE OBJECTS */
         Song currentSong = null;
-        if (currentSongIndex != null && currentPlaylist == selectedPlaylist)
-            currentSong = selectedPlaylist.song(currentSongIndex);
+        if (currentSongIndex != null && currentPlaylist == playlist)
+            currentSong = playlist.song(currentSongIndex);
 
-        selectedPlaylist.changeSongPosition(event.fromPosition, event.toPosition);
+        playlist.changeSongPosition(event.fromPosition, event.toPosition);
 
-        if (currentSong != null && currentPlaylist == selectedPlaylist)
-            currentSongIndex = selectedPlaylist.songs.indexOf(currentSong);
+        if (currentSong != null && currentPlaylist == playlist)
+            currentSongIndex = playlist.songs.indexOf(currentSong);
     }
 
     private void seekTo(SeekTo event) {
@@ -408,6 +410,9 @@ public class Model implements IModel {
         Playlist playlist = event.playlist;
         int songPosition = playlist.songs.indexOf(event.song);
 
+        // delete from associations table
+        db.delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.id), songHash});
+
         // update position-1 for relations.position > song index
         db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
@@ -416,20 +421,19 @@ public class Model implements IModel {
                         "AND SONG_HASH = '" + songHash + "' " +
                         "AND POSITION > " + songPosition);
 
-        // delete from associations table
-        db.delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.id), songHash});
-
         // remove from playlistsBySong
         List<Playlist> songPlaylists = playlistsBySong.get(songHash);
         songPlaylists.remove(playlist);
         playlistsBySong.put(songHash, songPlaylists);
 
-        // keep activity_playing the current song
-        if (currentPlaylist == playlist && currentSongIndex > songPosition)
-            currentSongIndex--;
-
         // remove from object
         playlist.removeSong(event.song);
+
+        // keep activity_playing the current song
+        if (currentPlaylist == playlist && currentSongIndex > songPosition) {
+            currentSongIndex--;
+        }
+
     }
 
     private void playlistSelected(PlaylistSelected event) {
@@ -651,7 +655,7 @@ public class Model implements IModel {
                 skip(+1);
     }
 
-    private void createPlaylist(CreatePlaylist event) {
+    private void createPlaylist(PlaylistCreate event) {
         // Avoid playlists with same name
         Playlist playlist = findPlaylistByName(event.playlistName);
 
@@ -686,7 +690,7 @@ public class Model implements IModel {
         return null;
     }
 
-    private void deletePlaylist(DeletePlaylist event) {
+    private void deletePlaylist(PlaylistDelete event) {
         Playlist playlist = playlistsById.get(event.playlistId);
 
         // delete from table

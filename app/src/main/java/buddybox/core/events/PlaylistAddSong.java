@@ -4,9 +4,9 @@ import buddybox.core.Dispatcher;
 
 public class PlaylistAddSong extends Dispatcher.Event {
     public final String songHash;
-    public final Long playlistId;
+    public final long playlistId;
 
-    public PlaylistAddSong(String songHash, Long playlistId) {
+    public PlaylistAddSong(String songHash, long playlistId) {
         super("PlaylistAddSong songId: " + songHash + ", playlist: " + playlistId);
         this.songHash = songHash;
         this.playlistId = playlistId;

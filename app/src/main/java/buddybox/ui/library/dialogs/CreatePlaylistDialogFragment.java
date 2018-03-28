@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import com.adalbertosoares.buddybox.R;
 
-import buddybox.core.events.CreatePlaylist;
+import buddybox.core.events.PlaylistCreate;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -45,7 +45,7 @@ public class CreatePlaylistDialogFragment extends DialogFragment {
                         }
                         Bundle args = getArguments();
                         if (args != null) {
-                            dispatch(new CreatePlaylist(playlistName, args.getString("songHash")));
+                            dispatch(new PlaylistCreate(playlistName, args.getString("songHash")));
                             Toast.makeText(getContext(), "Playlist created with song", Toast.LENGTH_SHORT).show();
                         }
                     }
