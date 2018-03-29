@@ -660,6 +660,8 @@ public class Model implements IModel {
         else if (!isStopped)
             if (repeatSong)
                 doPlay(currentPlaylist, currentSongIndex);
+            else if (currentPlaylist.isLastSong(currentSongIndex, isShuffle) && !repeatAll)
+                pause();
             else
                 skip(+1);
     }
@@ -791,11 +793,6 @@ public class Model implements IModel {
     }
 
     private void skip(int step) {
-        if (step > 0 && currentPlaylist.isLastSong(currentSongIndex, isShuffle) && !repeatAll) {
-            playPauseCurrent();
-            return;
-        }
-
         if (currentPlaylist.size() == 1) {
             seekTo = 0;
             doPlay(currentPlaylist, 0);

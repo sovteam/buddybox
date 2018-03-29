@@ -7,6 +7,7 @@ import org.junit.Before;
 
 import buddybox.core.Dispatcher;
 import buddybox.core.IModel;
+import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 
@@ -59,5 +60,12 @@ public abstract class ModelTest {
                 return song;
         }
         throw new IllegalStateException("Song " + name + " not found");
+    }
+
+    Playlist getPlaylist(String name) {
+        for (Playlist playlist : lastState.playlists)
+            if (playlist.name.equals(name))
+                return playlist;
+        throw new IllegalStateException("Playlist " + name + " not found");
     }
 }

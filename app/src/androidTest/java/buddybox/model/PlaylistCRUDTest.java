@@ -170,13 +170,6 @@ public class PlaylistCRUDTest extends ModelTest {
         assertEquals("P1", lastState.playlists.get(0).name);
     }
 
-    private Playlist getPlaylist(String name) {
-        for (Playlist playlist : lastState.playlists)
-            if (playlist.name.equals(name))
-                return playlist;
-        throw new IllegalStateException("Playlist " + name + " not found");
-    }
-
     @Test
     public void playlistChangSongPosition_modelUpdatesPlaylist() {
         dispatch(new PlaylistCreate("My Playlist 4", getSong("Stir It Up").hash.toString()));
