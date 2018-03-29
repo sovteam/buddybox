@@ -23,6 +23,10 @@ public class Dispatcher {
         listeners.add(listener);
     }
 
+    public static void reset() {
+        listeners = new ArrayList<>();
+    }
+
     public static void dispatch(Event event) {
         for (Listener listener : listeners)
             listener.onEvent(event);

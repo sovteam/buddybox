@@ -180,8 +180,7 @@ public class Model implements IModel {
         if (cls == PlaylistRemoveSong.class) removeSongFromPlaylist((PlaylistRemoveSong) event);
         if (cls == PlaylistSetName.class) setPlaylistName((PlaylistSetName) event);
         if (cls == PlaylistSelected.class) playlistSelected((PlaylistSelected) event);
-        if (cls == PlaylistChangeSongPosition.class)
-            playlistChangeSongPosition((PlaylistChangeSongPosition) event);
+        if (cls == PlaylistChangeSongPosition.class) playlistChangeSongPosition((PlaylistChangeSongPosition) event);
 
         // sampler
         if (cls == SamplerUpdated.class) samplerUpdate((SamplerUpdated) event);
@@ -325,6 +324,16 @@ public class Model implements IModel {
                         "SET POSITION = " + event.toPosition + " " +
                         "WHERE  PLAYLIST_ID = " + playlist.id + " " +
                         "AND    SONG_HASH = '" + song.hash.toString() + "'");
+
+        // check table
+        Cursor w = db.rawQuery("SELECT * FROM PLAYLIST_SONG", null, null);
+        while(w.moveToNext()) {
+            System.out.println(
+                    "PLAYLIST: " + w.getString(w.getColumnIndex("PLAYLIST_ID")) + ", " +
+                    "SONG: " + songsByHash.get(w.getString(w.getColumnIndex("SONG_HASH"))).name + ", " +
+                    "position: " + w.getString(w.getColumnIndex("POSITION")));
+        }
+        w.close();
 
         /* UPDATE OBJECTS */
         Song currentSong = null;

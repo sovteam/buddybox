@@ -46,11 +46,11 @@ public class PlaylistCRUDTest extends ModelTest {
         assertEquals(4, updateCount);
         assertTrue(lastState.playlists.isEmpty());
 
-        dispatch(new PlaylistCreate("My Playlist", getSong("Stir It Up").hash.toString()));
+        dispatch(new PlaylistCreate("My Playlist 1", getSong("Stir It Up").hash.toString()));
 
         assertEquals(5, updateCount);
         assertEquals(1, lastState.playlists.size());
-        assertEquals("My Playlist", lastState.playlists.get(0).name);
+        assertEquals("My Playlist 1", lastState.playlists.get(0).name);
         assertEquals(1, lastState.playlists.get(0).songs.size());
         assertEquals("Stir It Up", lastState.playlists.get(0).songs.get(0).name);
 
@@ -58,7 +58,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         assertEquals(1, updateCount);
         assertEquals(1, lastState.playlists.size());
-        assertEquals("My Playlist", lastState.playlists.get(0).name);
+        assertEquals("My Playlist 1", lastState.playlists.get(0).name);
         assertEquals(1, lastState.playlists.get(0).songs.size());
         assertEquals("Stir It Up", lastState.playlists.get(0).songs.get(0).name);
     }
@@ -85,11 +85,11 @@ public class PlaylistCRUDTest extends ModelTest {
 
     @Test
     public void playlistRemoveSongDispatch_modelUpdatesPlaylist() {
-        dispatch(new PlaylistCreate("My Playlist", getSong("Stir It Up").hash.toString()));
-        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist").id));
-        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist").id));
+        dispatch(new PlaylistCreate("My Playlist 3", getSong("Stir It Up").hash.toString()));
+        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 3").id));
+        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist 3").id));
 
-        Playlist mPlaylist = getPlaylist("My Playlist");
+        Playlist mPlaylist = getPlaylist("My Playlist 3");
         assertEquals(7, updateCount);
         assertFalse(mPlaylist.isEmpty());
         assertEquals(3, mPlaylist.size());
@@ -99,7 +99,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         dispatch(new PlaylistRemoveSong(mPlaylist, mPlaylist.song(1)));
 
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 3");
         assertEquals(8, updateCount);
         assertEquals(2, mPlaylist.size());
         assertFalse(mPlaylist.isEmpty());
@@ -108,7 +108,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         reinitialize();
 
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 3");
         assertEquals(1, updateCount);
         assertEquals(2, mPlaylist.size());
         assertFalse(mPlaylist.isEmpty());
@@ -117,7 +117,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         dispatch(new PlaylistRemoveSong(mPlaylist, getSong("Stir It Up")));
 
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 3");
         assertEquals(2, updateCount);
         assertEquals(1, mPlaylist.size());
         assertFalse(mPlaylist.isEmpty());
@@ -125,7 +125,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         dispatch(new PlaylistRemoveSong(mPlaylist, getSong("Is This Love")));
 
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 3");
         assertEquals(3, updateCount);
         assertTrue(mPlaylist.isEmpty());
     }
@@ -179,11 +179,11 @@ public class PlaylistCRUDTest extends ModelTest {
 
     @Test
     public void playlistChangSongPosition_modelUpdatesPlaylist() {
-        dispatch(new PlaylistCreate("My Playlist", getSong("Stir It Up").hash.toString()));
-        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist").id));
-        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist").id));
+        dispatch(new PlaylistCreate("My Playlist 4", getSong("Stir It Up").hash.toString()));
+        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 4").id));
+        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist 4").id));
 
-        Playlist mPlaylist = getPlaylist("My Playlist");
+        Playlist mPlaylist = getPlaylist("My Playlist 4");
         assertEquals(7, updateCount);
         assertEquals("Stir It Up", mPlaylist.song(0).name);
         assertEquals("Can You Feel It", mPlaylist.song(1).name);
@@ -191,7 +191,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         // first position to last
         dispatch(new PlaylistChangeSongPosition(mPlaylist, 0, 2));
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 4");
         assertEquals(8, updateCount);
         assertEquals("Can You Feel It", mPlaylist.song(0).name);
         assertEquals("Is This Love", mPlaylist.song(1).name);
@@ -199,7 +199,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         // check if model have persisted changes
         reinitialize();
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 4");
         assertEquals(1, updateCount);
         assertEquals("Can You Feel It", mPlaylist.song(0).name);
         assertEquals("Is This Love", mPlaylist.song(1).name);
@@ -207,7 +207,7 @@ public class PlaylistCRUDTest extends ModelTest {
 
         // move last position to first
         dispatch(new PlaylistChangeSongPosition(mPlaylist, 2, 0));
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 4");
         assertEquals(2, updateCount);
         assertEquals("Stir It Up", mPlaylist.song(0).name);
         assertEquals("Can You Feel It", mPlaylist.song(1).name);
@@ -215,35 +215,33 @@ public class PlaylistCRUDTest extends ModelTest {
 
         // first position to second
         dispatch(new PlaylistChangeSongPosition(mPlaylist, 0, 1));
-        mPlaylist = getPlaylist("My Playlist");
-        assertEquals(2, updateCount);
+        mPlaylist = getPlaylist("My Playlist 4");
+        assertEquals(3, updateCount);
         assertEquals("Can You Feel It", mPlaylist.song(0).name);
         assertEquals("Stir It Up", mPlaylist.song(1).name);
         assertEquals("Is This Love", mPlaylist.song(2).name);
 
         // second position to first
         dispatch(new PlaylistChangeSongPosition(mPlaylist, 1, 0));
-        mPlaylist = getPlaylist("My Playlist");
-        assertEquals(3, updateCount);
+        mPlaylist = getPlaylist("My Playlist 4");
+        assertEquals(4, updateCount);
         assertEquals("Stir It Up", mPlaylist.song(0).name);
         assertEquals("Can You Feel It", mPlaylist.song(1).name);
         assertEquals("Is This Love", mPlaylist.song(2).name);
 
         // second position to last
         dispatch(new PlaylistChangeSongPosition(mPlaylist, 1, 2));
-        mPlaylist = getPlaylist("My Playlist");
-        assertEquals(4, updateCount);
+        mPlaylist = getPlaylist("My Playlist 4");
+        assertEquals(5, updateCount);
         assertEquals("Stir It Up", mPlaylist.song(0).name);
         assertEquals("Is This Love", mPlaylist.song(1).name);
         assertEquals("Can You Feel It", mPlaylist.song(2).name);
 
         reinitialize();
-        mPlaylist = getPlaylist("My Playlist");
+        mPlaylist = getPlaylist("My Playlist 4");
         assertEquals(1, updateCount);
         assertEquals("Stir It Up", mPlaylist.song(0).name);
         assertEquals("Is This Love", mPlaylist.song(1).name);
         assertEquals("Can You Feel It", mPlaylist.song(2).name);
-
     }
-
 }
