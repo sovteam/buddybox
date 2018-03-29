@@ -295,4 +295,97 @@ public class PlayerCycleTest extends ModelTest {
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
     }
 
+    @Test
+    public void dispatchMultiplePlayerEvents() {
+        // play first song
+        dispatch(new Play(getPlaylist("My Playlist"), 0));
+
+        // skip next > play second song
+        dispatch(SKIP_NEXT);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
+
+        // skip previous > play first song
+        dispatch(SKIP_PREVIOUS);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Stir It Up"), lastState.songPlaying);
+
+        // pause song
+        dispatch(PLAY_PAUSE_CURRENT);
+        assertTrue(lastState.isPaused);
+        assertEquals(getSong("Stir It Up"), lastState.songPlaying);
+
+        // play song
+        dispatch(PLAY_PAUSE_CURRENT);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Stir It Up"), lastState.songPlaying);
+
+        // skip previous > jump to last song
+        dispatch(SKIP_PREVIOUS);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Is This Love"), lastState.songPlaying);
+
+        // finished playing > jump to first song
+        dispatch(FINISHED_PLAYING);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Stir It Up"), lastState.songPlaying);
+
+        // skip previous > jump to last song
+        dispatch(SKIP_PREVIOUS);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Is This Love"), lastState.songPlaying);
+
+        // disable repeat
+        dispatch(REPEAT);
+        dispatch(REPEAT);
+        assertFalse(lastState.repeatAll);
+        assertFalse(lastState.repeatSong);
+
+        // finished playing > pause player
+        dispatch(FINISHED_PLAYING);
+        assertTrue(lastState.isPaused);
+        assertEquals(getSong("Is This Love"), lastState.songPlaying);
+
+        // skip previous > play second song
+        dispatch(SKIP_PREVIOUS);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
+
+        // pause
+        dispatch(PLAY_PAUSE_CURRENT);
+        assertTrue(lastState.isPaused);
+        assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
+
+        // skip next > play last song
+        dispatch(SKIP_NEXT);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Is This Love"), lastState.songPlaying);
+
+        // repeat one song
+        dispatch(REPEAT);
+        dispatch(REPEAT);
+        assertFalse(lastState.repeatAll);
+        assertTrue(lastState.repeatSong);
+
+        // finished playing
+        dispatch(FINISHED_PLAYING);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Is This Love"), lastState.songPlaying);
+
+        // repeat all
+        dispatch(REPEAT);
+        dispatch(REPEAT);
+        assertTrue(lastState.repeatAll);
+        assertFalse(lastState.repeatSong);
+
+        // finished playing > play first song
+        dispatch(FINISHED_PLAYING);
+        assertFalse(lastState.isPaused);
+        assertEquals(getSong("Stir It Up"), lastState.songPlaying);
+
+        // pause
+        dispatch(PLAY_PAUSE_CURRENT);
+        assertTrue(lastState.isPaused);
+        assertEquals(getSong("Stir It Up"), lastState.songPlaying);
+    }
 }
