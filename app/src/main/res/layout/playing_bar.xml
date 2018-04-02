@@ -31,24 +31,26 @@
             android:src="@drawable/ic_expand_less" />
 
         <TextView
+            android:id="@+id/playingName"
             android:layout_width="match_parent"
             android:layout_height="28dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="@string/no_song_playing"
-            android:id="@+id/playingName"
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/imageView" />
+            android:layout_toEndOf="@+id/imageView"
+            android:singleLine="true"
+            android:text="@string/no_song_playing"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
+            android:id="@+id/playingSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/subtitle"
-            android:id="@+id/playingSubtitle"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/playingName"
-            android:layout_toEndOf="@+id/imageView" />
+            android:layout_toEndOf="@+id/imageView"
+            android:singleLine="true"
+            android:text="@string/subtitle"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
     </RelativeLayout>
 

@@ -47,14 +47,15 @@
             android:text="Item"
             android:textAppearance="?attr/textAppearanceListItem" />
 
-        <TextView android:id="@+id/songDuration"
+        <TextView
+            android:id="@+id/songSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/songName"
             android:layout_alignStart="@+id/songName"
-            android:text="subtitle"
+            android:layout_below="@+id/songName"
             android:layout_marginBottom="8dp"
-            android:singleLine="true" />
+            android:singleLine="true"
+            android:text="subtitle" />
 
     </RelativeLayout>
 

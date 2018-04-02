@@ -39,4 +39,7 @@
     <string name="songs_count">42 songs</string>
     <string name="chip_text">chip text</string>
     <string name="song_playlist_chip">Song playlist chip</string>
+    <string name="song_album_art">song album art</string>
+    <string name="drag_song">Drag song to another position</string>
+    <string name="song_artist">song artist</string>
 </resources>

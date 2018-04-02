@@ -122,7 +122,7 @@ public class RecentFragment extends Fragment {
                 return rowView;
 
             TextView text1 = rowView.findViewById(R.id.songName);
-            TextView text2 = rowView.findViewById(R.id.songDuration);
+            TextView text2 = rowView.findViewById(R.id.songSubtitle);
             text1.setText(song.name());
             text2.setText(song.subtitle());
 
@@ -166,7 +166,7 @@ public class RecentFragment extends Fragment {
                 playlistsForSong.add(playlist);
         }
 
-        // Get playlists infos to bundle
+        // Get playlists info from bundle
         long[] playlistIds = new long[playlistsForSong.size()];
         ArrayList<String> playlistNames = new ArrayList<>();
         for (int i = 0; i < playlistsForSong.size(); i++) {

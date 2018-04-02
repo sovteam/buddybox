@@ -1,47 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.woxthebox.draglistview.swipe.ListSwipeItem xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:id="@+id/songItem"
-    android:paddingLeft="16dp">
+    android:layout_marginStart="16dp"
+    app:leftViewId="@+id/item_left"
+    app:rightViewId="@+id/item_right"
+    app:swipeViewId="@+id/item_layout">
 
     <ImageView
-        android:id="@+id/songMore"
+        android:id="@+id/drag"
         android:layout_width="56dp"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:background="?selectableItemBackground"
+        android:focusable="true"
         android:clickable="true"
-        android:contentDescription="Add to Playlist"
+        android:contentDescription="@string/drag_song"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:src="@drawable/ic_more_vert" />
+        android:src="@drawable/ic_drag_handle" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/songMore">
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/drag">
 
-        <TextView android:id="@+id/songName"
+        <ImageView
+            android:id="@+id/albumArt"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignTop="@+id/songName"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="@string/song_album_art"
+            android:visibility="visible"
+            app:srcCompat="@mipmap/sneer2" />
+
+        <TextView
+            android:id="@+id/songName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textAppearance="?attr/textAppearanceListItem"
-            android:text="Item"
-            android:singleLine="true" />
+            android:layout_toEndOf="@+id/albumArt"
+            android:singleLine="true"
+            android:text="@string/song_name"
+            android:textAppearance="?attr/textAppearanceListItem" />
 
         <TextView
-            android:id="@+id/songSubtitle"
+            android:id="@+id/songArtist"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignStart="@+id/songName"
             android:layout_below="@+id/songName"
             android:layout_marginBottom="8dp"
             android:singleLine="true"
-            android:text="subtitle" />
+            android:text="@string/song_artist" />
     </RelativeLayout>
 
-</RelativeLayout>
+</com.woxthebox.draglistview.swipe.ListSwipeItem>

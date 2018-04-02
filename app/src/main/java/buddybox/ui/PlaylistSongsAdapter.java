@@ -2,6 +2,7 @@ package buddybox.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
@@ -80,13 +81,16 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
         private final ImageView drag;
         private final TextView songName;
         private final TextView songArtist;
+        private final ImageView albumArt;
         private Song song;
 
         ViewHolder(final View itemView) {
             super(itemView, mGrabHandleId, mDragOnLongPress);
             drag = itemView.findViewById(R.id.drag);
+            albumArt = itemView.findViewById(R.id.albumArt);
             songName = itemView.findViewById(R.id.songName);
             songArtist = itemView.findViewById(R.id.songArtist);
+
             ((ListSwipeItem) itemView).setSupportedSwipeDirection(ListSwipeItem.SwipeDirection.RIGHT);
         }
 
@@ -107,6 +111,12 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             songName.setTextColor(color);
             songArtist.setTextColor(color);
             drag.setImageResource(icon);
+
+            Bitmap art = song.getArt();
+            if (art != null)
+                albumArt.setImageBitmap(art);
+            else
+                albumArt.setImageResource(R.mipmap.sneer2);
         }
 
         @Override

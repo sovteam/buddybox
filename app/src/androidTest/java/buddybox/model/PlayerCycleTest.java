@@ -5,18 +5,11 @@ import android.util.Base64;
 import org.junit.Before;
 import org.junit.Test;
 
-import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.events.Play;
 import buddybox.core.events.PlaylistAddSong;
-import buddybox.core.events.PlaylistChangeSongPosition;
 import buddybox.core.events.PlaylistCreate;
-import buddybox.core.events.PlaylistDelete;
-import buddybox.core.events.PlaylistRemoveSong;
-import buddybox.core.events.PlaylistSelected;
-import buddybox.core.events.PlaylistSetName;
 import buddybox.core.events.SongFound;
-import buddybox.ui.ModelProxy;
 import sov.Hash;
 
 import static buddybox.core.Dispatcher.dispatch;

@@ -87,6 +87,7 @@
                 android:layout_below="@+id/songName"
                 android:layout_marginBottom="8dp"
                 android:layout_toStartOf="@+id/drag"
+                android:freezesText="false"
                 android:singleLine="true"
                 android:text="Artist"
                 android:textColor="@android:color/darker_gray" />
