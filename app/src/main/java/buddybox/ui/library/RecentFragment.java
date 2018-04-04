@@ -206,6 +206,7 @@ public class RecentFragment extends Fragment {
         // show/hide footers
         if (state.syncLibraryPending) {
             view.findViewById(R.id.footerLoading).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.library_empty).setVisibility(View.GONE);
         } else {
             view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
 

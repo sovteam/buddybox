@@ -7,7 +7,6 @@
     android:layout_alignParentTop="true"
     android:layout_centerHorizontal="true"
     android:orientation="horizontal"
-    tools:showIn="@layout/activity_main"
     android:background="#000000"
     android:baselineAligned="false">
 

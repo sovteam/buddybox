@@ -381,4 +381,17 @@ public class PlayerCycleTest extends ModelTest {
         assertTrue(lastState.isPaused);
         assertEquals(getSong("Stir It Up"), lastState.songPlaying);
     }
+
+    /*
+     * TODO shuffle tests
+     * setup: set playlist shuffle seed Collections.shuffle(list, randomSeed)
+     */
+
+
+    // shuffle play - test till loops back and forth
+
+    // double shuffle play - test it produces 2 different sequences
+
+    // shuffle on/off - test switch behaviour
+
 }

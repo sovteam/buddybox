@@ -11,6 +11,7 @@
         android:layout_height="match_parent"
         android:choiceMode="singleChoice"
         android:clickable="true"
+        android:focusable="true"
         android:footerDividersEnabled="false" />
 
 </RelativeLayout>

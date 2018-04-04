@@ -368,7 +368,8 @@ public class MediaInfoRetriever {
 
     private static void retrieveAlbumArt(AlbumArtRequest request) {
         String artist = Uri.encode(request.artistName);
-        final String urlString = "https://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist=" + artist + "&autocorrect=1&api_key=" + API_KEY + "&format=json";
+        String album = Uri.encode(request.albumName);
+        final String urlString = "https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=" + artist + "&album=" + album + "&autocorrect=1&api_key=" + API_KEY + "&format=json";
 
         JSONObject response = HttpUtils.getHttpResponse(urlString);
         if (response == null) {
@@ -389,37 +390,29 @@ public class MediaInfoRetriever {
         // fetch response
         String ret;
         try {
-            if (!json.has("topalbums"))
+            if (!json.has("album"))
                 return null;
-            JSONObject top = json.getJSONObject("topalbums");
+            JSONObject album = json.getJSONObject("album");
 
-            if (!top.has("album"))
+            if (!album.has("image"))
                 return null;
-            JSONArray albums = top.getJSONArray("album");
+            JSONArray images = album.getJSONArray("image");
 
-            if (albums.length() == 0)
+            if (images.length() == 0)
                 return null;
-            JSONObject album = albums.getJSONObject(0);
+            // get largest image. TODO proper select image by size
+            JSONObject image = images.getJSONObject(images.length() - 1);
 
-            if (album != null) {
-                JSONArray images = album.getJSONArray("image");
-                if (images.length() != 0) {
-                    // get largest image
-                    JSONObject largestImage = images.getJSONObject(images.length() - 1); // TODO select image by size properly
-                    ret = largestImage.getString("#text");
-                } else {
-                    Log.d(TAG, "JSON image empty");
-                    return null;
-                }
-            } else {
-                Log.d(TAG, "JSON album empty");
-                return  null;
-            }
+            if (!image.has("#text"))
+                return null;
+            ret = image.getString("#text").trim();
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
 
+        if (ret.isEmpty())
+            return null;
         return ret;
     }
 
