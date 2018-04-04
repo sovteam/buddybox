@@ -46,6 +46,7 @@ import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
+import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         // Loved list
         ListView lovedList = findViewById(R.id.lovedPlayables);
         lovedList.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new Play(lovedPlaylist, i));
+            dispatch(new PlayPlaylist(lovedPlaylist, i));
         }});
         lovedPlayables = new LovedPlayablesArrayAdapter();
         lovedList.setAdapter(lovedPlayables);

@@ -10,8 +10,9 @@ public class Playlist implements Playable {
     public String name;
     public List<Song> songs;
     private List<Integer> shuffledSongs;
+    public long lastPlayed;
 
-    public Playlist(long id, String name, List<Song> songs) {
+    public Playlist(long id, String name, long lastPlayed, List<Song> songs) {
         this.id = id;
         this.name = name;
         this.songs = songs;
@@ -36,6 +37,16 @@ public class Playlist implements Playable {
         for (Song song : songs)
             total += song.duration;
         return formatDuration(total);
+    }
+
+    @Override
+    public Long lastPlayed() {
+        return lastPlayed;
+    }
+
+    @Override
+    public void updateLastPlayed(long time) {
+        lastPlayed = time;
     }
 
     private String formatDuration(int milliseconds) {

@@ -8,7 +8,7 @@ import sov.Hash;
 
 public class Song implements Playable {
 
-    public final Long id;
+    public Long id;
     public final Hash hash;
     public String name;
     public String artist;
@@ -34,8 +34,10 @@ public class Song implements Playable {
     private Bitmap embeddedArt;
     private Bitmap art;
 
+    private long lastPlayed;
+
     public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
-                long fileLength, long lastModified, boolean isMissing, boolean isDeleted) {
+                long fileLength, long lastModified, boolean isMissing, boolean isDeleted, long lastPlayed) {
         this.id = id;
         this.hash = hash;
         this.name = name;
@@ -48,6 +50,7 @@ public class Song implements Playable {
         this.lastModified = lastModified;
         this.isMissing = isMissing;
         this.isDeleted = isDeleted;
+        this.lastPlayed = lastPlayed;
     }
 
     @Override public String name() { return name; }
@@ -55,6 +58,16 @@ public class Song implements Playable {
     @Override
     public String duration() {
         return formatTime(duration);
+    }
+
+    @Override
+    public Long lastPlayed() {
+        return lastPlayed;
+    }
+
+    @Override
+    public void updateLastPlayed(long time) {
+        lastPlayed = time;
     }
 
     public String formatTime(int time) {
@@ -144,4 +157,7 @@ public class Song implements Playable {
         return embeddedArt != null;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
 }

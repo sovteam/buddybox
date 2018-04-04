@@ -24,11 +24,11 @@ public class ArtistInfoFoundTest extends ModelTest {
         super.setup();
 
         Hash hash1 = new Hash(Base64.encode("StirItUpStream".getBytes(), 1));
-        Song song1 = new Song(null, hash1, "Stir It Up", "Bob Marley", "Legend Deluxe Edition", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false);
+        Song song1 = new Song(null, hash1, "Stir It Up", "Bob Marley", "Legend Deluxe Edition", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L);
         dispatch(new SongFound(song1));
 
         Hash hash2 = new Hash(Base64.encode("CanYouFeelItStream".getBytes(), 1));
-        Song song2 = new Song(null, hash2, "Can You Feel It", "The Jacksons", "The Very Best Of", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 3L,false, false);
+        Song song2 = new Song(null, hash2, "Can You Feel It", "The Jacksons", "The Very Best Of", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 3L,false, false, 1L);
         dispatch(new SongFound(song2));
     }
 

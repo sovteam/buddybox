@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import buddybox.core.Song;
 import buddybox.core.events.Play;
+import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistCreate;
 import buddybox.core.events.SongFound;
@@ -29,15 +30,15 @@ public class PlayerCycleTest extends ModelTest {
         super.setup();
 
         Hash hash = new Hash(Base64.encode("IsThisLoveStream".getBytes(), 1));
-        Song song = new Song(null, hash, "Is This Love", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false);
+        Song song = new Song(null, hash, "Is This Love", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L);
         dispatch(new SongFound(song));
 
         hash = new Hash(Base64.encode("StirItUpStream".getBytes(), 1));
-        song = new Song(null, hash, "Stir It Up", "Bob Marley", "Legend Deluxe Edition", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false);
+        song = new Song(null, hash, "Stir It Up", "Bob Marley", "Legend Deluxe Edition", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L);
         dispatch(new SongFound(song));
 
         hash = new Hash(Base64.encode("CanYouFeelItStream".getBytes(), 1));
-        song = new Song(null, hash, "Can You Feel It", "The Jacksons", "The Very Best Of", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 3L,false, false);
+        song = new Song(null, hash, "Can You Feel It", "The Jacksons", "The Very Best Of", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 3L,false, false, 1L);
         dispatch(new SongFound(song));
 
         dispatch(new PlaylistCreate("My Playlist", getSong("Stir It Up").hash.toString()));
@@ -53,17 +54,17 @@ public class PlayerCycleTest extends ModelTest {
         assertEquals(null, lastState.songPlaying);
         assertEquals(null, lastState.playlistPlaying);
 
-        dispatch(new Play(getPlaylist("My Playlist"), 0));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 0));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Stir It Up"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
 
-        dispatch(new Play(getPlaylist("Soul Party"), 0));
+        dispatch(new PlayPlaylist(getPlaylist("Soul Party"), 0));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
         assertEquals(getPlaylist("Soul Party"), lastState.playlistPlaying);
 
-        dispatch(new Play(getPlaylist("My Playlist"), 2));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 2));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Is This Love"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -74,7 +75,7 @@ public class PlayerCycleTest extends ModelTest {
         assertTrue(lastState.repeatAll); // default: repeat all on
 
         // Play last song
-        dispatch(new Play(getPlaylist("My Playlist"), 2));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 2));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Is This Love"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -112,7 +113,7 @@ public class PlayerCycleTest extends ModelTest {
         assertFalse(lastState.repeatAll);
 
         // play second song
-        dispatch(new Play(getPlaylist("My Playlist"), 1));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 1));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -133,7 +134,7 @@ public class PlayerCycleTest extends ModelTest {
     @Test
     public void dispatchPlayPauseCurrent_modelUpdatesPlayingState() {
         // play second song
-        dispatch(new Play(getPlaylist("My Playlist"), 1));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 1));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -157,7 +158,7 @@ public class PlayerCycleTest extends ModelTest {
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
 
         // play first song
-        dispatch(new Play(getPlaylist("My Playlist"), 0));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 0));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Stir It Up"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -194,7 +195,7 @@ public class PlayerCycleTest extends ModelTest {
         assertFalse(lastState.repeatAll);
         assertTrue(lastState.repeatSong);
 
-        dispatch(new Play(getPlaylist("My Playlist"), 2));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 2));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Is This Love"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -210,7 +211,7 @@ public class PlayerCycleTest extends ModelTest {
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
 
         // select another song
-        dispatch(new Play(getPlaylist("My Playlist"), 1));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 1));
         assertFalse(lastState.isPaused);
         assertEquals(getSong("Can You Feel It"), lastState.songPlaying);
         assertEquals(getPlaylist("My Playlist"), lastState.playlistPlaying);
@@ -229,7 +230,7 @@ public class PlayerCycleTest extends ModelTest {
     @Test
     public void dispatchSkipNextTillLoop_modelUpdatesPlayingState() {
         // play last song
-        dispatch(new Play(getPlaylist("My Playlist"), 2));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 2));
         assertEquals(getSong("Is This Love"), lastState.songPlaying);
 
         // skip next > play first song
@@ -260,7 +261,7 @@ public class PlayerCycleTest extends ModelTest {
     @Test
     public void dispatchSkipPreviousTillLoop_modelUpdatesPlayingState() {
         // play first song
-        dispatch(new Play(getPlaylist("My Playlist"), 0));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 0));
         assertEquals(getSong("Stir It Up"), lastState.songPlaying);
 
         // skip previous > play last song
@@ -291,7 +292,7 @@ public class PlayerCycleTest extends ModelTest {
     @Test
     public void dispatchMultiplePlayerEvents() {
         // play first song
-        dispatch(new Play(getPlaylist("My Playlist"), 0));
+        dispatch(new PlayPlaylist(getPlaylist("My Playlist"), 0));
 
         // skip next > play second song
         dispatch(SKIP_NEXT);

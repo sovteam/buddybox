@@ -46,9 +46,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "FILE_LENGTH INTEGER," +
                 "LAST_MODIFIED INTEGER," +
                 "IS_MISSING INTEGER," +
-                "IS_DELETED INTEGER)");
+                "IS_DELETED INTEGER," +
+                "LAST_PLAYED INTEGER)");
 
-        db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLISTS (ID INTEGER PRIMARY KEY, NAME TEXT UNIQUE)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLISTS (ID INTEGER PRIMARY KEY, NAME TEXT UNIQUE, LAST_PLAYED INTEGER)");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLIST_SONG (" +
                 "SONG_HASH TEXT," +

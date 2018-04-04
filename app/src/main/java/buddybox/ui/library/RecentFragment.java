@@ -65,13 +65,13 @@ public class RecentFragment extends Fragment {
         ListView list = view.findViewById(R.id.recentPlayables);
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
-        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+        /*list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
             dispatch(new SongSelected(recentPlaylist.song(pos).hash.toString()));
             startActivity(new Intent(getContext(), EditSongActivity.class));
             return true;
-        }});
+        }});*/
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new Play(recentPlaylist, i));
+            dispatch(new Play(lastState.recent.get(i)));
         }});
         playables = new PlayablesArrayAdapter();
         list.setAdapter(playables);
@@ -113,46 +113,64 @@ public class RecentFragment extends Fragment {
         @NonNull
         @Override
         public View getView(final int position, View convertView, @NonNull ViewGroup parent) {
+            Playable playable = getItem(position);
             View rowView = convertView == null
-                    ? activity.getLayoutInflater().inflate(R.layout.song_item, parent, false)
+                    ? activity.getLayoutInflater().inflate(R.layout.playable_item, parent, false)
                     : convertView;
 
-            Playable song = getItem(position);
-            if (song == null)
-                return rowView;
+            TextView text1 = rowView.findViewById(R.id.name);
+            TextView text2 = rowView.findViewById(R.id.subtitle);
+            text1.setText(playable.name());
+            text2.setText(playable.subtitle());
 
+            if (playable.getClass() == Song.class) {
+                /*rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        openSelectPlaylistDialog(recentPlaylist.songs.get(position));
+                    }
+                });*/
+
+                if (playable == songPlaying) {
+                    text1.setTextColor(Color.parseColor("#4fc3f7"));
+                    text2.setTextColor(Color.parseColor("#4fc3f7"));
+                } else {
+                    text1.setTextColor(Color.WHITE);
+                    text2.setTextColor(Color.LTGRAY);
+                }
+
+                Bitmap art = ((Song)playable).getArt();
+                if (art != null)
+                    ((ImageView) rowView.findViewById(R.id.picture)).setImageBitmap(art);
+                else
+                    ((ImageView) rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
+            } else {
+                if (playable == lastState.playlistPlaying) {
+                    text1.setTextColor(Color.parseColor("#4fc3f7"));
+                    text2.setTextColor(Color.parseColor("#4fc3f7"));
+                    ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_list_blue);
+                } else {
+                    text1.setTextColor(Color.WHITE);
+                    text2.setTextColor(Color.LTGRAY);
+                    ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_list);
+                }
+            }
+
+            return rowView;
+        }
+
+        private void updateSongItem(Song song, View rowView, final int position) {
             TextView text1 = rowView.findViewById(R.id.songName);
             TextView text2 = rowView.findViewById(R.id.songSubtitle);
             text1.setText(song.name());
             text2.setText(song.subtitle());
 
-            if (song == songPlaying) {
-                text1.setTextColor(Color.parseColor("#4fc3f7"));
-                text2.setTextColor(Color.parseColor("#4fc3f7"));
-            } else {
-                text1.setTextColor(Color.WHITE);
-                text2.setTextColor(Color.LTGRAY);
-            }
 
-            rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    openSelectPlaylistDialog(recentPlaylist.songs.get(position));
-                }
-            });
-
-            Bitmap art = ((Song)song).getArt();
-            if (art != null)
-                ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(art);
-            else
-                ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
-
-            return rowView;
         }
 
-        void updateState() {
+        void updateState(State state) {
             clear();
-            addAll(recentPlaylist.songs);
+            addAll(state.recent);
         }
     }
 
@@ -201,7 +219,7 @@ public class RecentFragment extends Fragment {
     }
 
     private void updatePlaylist(State state) {
-        playables.updateState();
+        playables.updateState(state);
 
         // show/hide footers
         if (state.syncLibraryPending) {
@@ -210,7 +228,7 @@ public class RecentFragment extends Fragment {
         } else {
             view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
 
-            if (recentPlaylist.songs.isEmpty()) {
+            if (state.recent.isEmpty()) {
                 view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
                 return;

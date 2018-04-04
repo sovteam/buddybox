@@ -25,6 +25,7 @@ import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.State;
 import buddybox.core.events.Play;
+import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.ui.ModelProxy;
 import buddybox.ui.PlaylistActivity;
@@ -60,7 +61,7 @@ public class PlaylistsFragment extends Fragment {
             startActivity(new Intent(getContext(), PlaylistActivity.class));
         }});
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new Play(playlists.get(i), 0));
+            dispatch(new PlayPlaylist(playlists.get(i), 0));
             return true;
         }});
         View footer = inflater.inflate(R.layout.list_footer, list, false);

@@ -1,16 +1,15 @@
 package buddybox.core.events;
 
 import buddybox.core.Dispatcher;
+import buddybox.core.Playable;
 import buddybox.core.Playlist;
 
 public class Play extends Dispatcher.Event {
-    public final Playlist playlist;
-    public final int songIndex;
+    public final Playable playable;
 
-    public Play(Playlist playlist, int songIndex) {
+    public Play(Playable playable) {
         super ("Play");
-        this.playlist = playlist;
-        this.songIndex = songIndex;
+        this.playable = playable;
     }
 
     public static final Dispatcher.Event REPEAT = new Dispatcher.Event("Repeat");

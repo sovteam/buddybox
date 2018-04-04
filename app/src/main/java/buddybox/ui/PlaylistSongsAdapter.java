@@ -22,6 +22,7 @@ import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
+import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SongSelected;
 
 import static buddybox.ui.ModelProxy.dispatch;
@@ -121,7 +122,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
 
         @Override
         public void onItemClicked(View view) {
-            dispatch(new Play(playlist, playlist.songs.indexOf(song)));
+            dispatch(new PlayPlaylist(playlist, playlist.songs.indexOf(song)));
         }
 
         @Override

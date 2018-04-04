@@ -33,6 +33,7 @@ import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.Play;
+import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistChangeSongPosition;
 import buddybox.core.events.PlaylistCreate;
@@ -90,6 +91,7 @@ public class Model implements IModel {
     public static final String HEADPHONES = "headphones";
     public static final String SPEAKER = "speaker";
     public static final String BLUETOOTH = "bluetooth";
+    private static final String RECENT = "Recent";
 
     SQLiteDatabase db;
     private List<StateListener> listeners = new ArrayList<>();
@@ -154,6 +156,7 @@ public class Model implements IModel {
 
         // player
         if (cls == Play.class) play((Play) event);
+        if (cls == PlayPlaylist.class) playPlaylist((PlayPlaylist) event);
         if (cls == SeekTo.class) seekTo((SeekTo) event);
         if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == SHUFFLE_PLAY_ARTIST) shufflePlayArtist();
@@ -221,6 +224,27 @@ public class Model implements IModel {
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
 
         updateListeners();
+    }
+
+    private void play(Play event) {
+        if (event.playable.getClass() == Song.class) {
+            Playlist all = allSongsPlaylist();
+            int songIndex = all.songs.indexOf(event.playable);
+            doPlay(all, songIndex);
+        } else {
+            doPlay((Playlist) event.playable, 0);
+        }
+    }
+
+    private Playlist allSongsPlaylist() {
+        List<Song> songs = new ArrayList<>(allSongs);
+        Collections.sort(songs, new Comparator<Song>() {
+            @Override
+            public int compare(Song s1, Song s2) {
+                return s2.lastPlayed().compareTo(s1.lastPlayed());
+            }
+        });
+        return new Playlist(0L, "All Songs", 1L, songs);
     }
 
     private void artistBioFound(ArtistBioFound event) {
@@ -410,7 +434,7 @@ public class Model implements IModel {
     private void shufflePlayArtist() {
         // TODO auto create/update a playlist for each artist
         // do not show artist playlist at custom playlists
-        selectedPlaylist = new Playlist(System.currentTimeMillis(), artistSelected.name, new ArrayList<>(artistSelected.songs));
+        selectedPlaylist = new Playlist(System.currentTimeMillis(), artistSelected.name, 1L, new ArrayList<>(artistSelected.songs));
         shufflePlay();
     }
 
@@ -594,7 +618,10 @@ public class Model implements IModel {
     }
 
     private void insertNewSong(Song song) {
-        db.insert("SONGS", null, songContents(song));
+        ContentValues newSong = songContents(song);
+        newSong.put("LAST_PLAYED", song.lastPlayed());
+        long id = db.insert("SONGS", null, newSong);
+        song.setId(id);
     }
 
     private void updateSong(Song song) {
@@ -618,7 +645,7 @@ public class Model implements IModel {
     }
 
     private void samplerUpdate(SamplerUpdated event) {
-        samplerPlaylist = new Playlist(666, "Sampler", event.samples);
+        samplerPlaylist = new Playlist(666, "Sampler", System.currentTimeMillis(), event.samples);
     }
 
     private ArrayList<Artist> artists() {
@@ -672,15 +699,17 @@ public class Model implements IModel {
 
         if (playlist == null) {
             // Creates playlist
+            long now = System.currentTimeMillis();
             ContentValues contents = new ContentValues();
             contents.put("NAME", event.playlistName);
+            contents.put("LAST_PLAYED", now);
             long playlistId = db.insert("PLAYLISTS", null, contents);
 
             if (playlistId == -1) {
                 Log.d("Model.createPlaylist", "Insert Playlist Error");
                 return;
             }
-            playlist = new Playlist(playlistId, event.playlistName, new ArrayList<Song>());
+            playlist = new Playlist(playlistId, event.playlistName, now, new ArrayList<Song>());
 
             // Add new playlist
             addPlaylist(playlist);
@@ -699,6 +728,19 @@ public class Model implements IModel {
             if (Objects.equals(p.name, name))
                 return p;
         return null;
+    }
+
+    private List<Playable> recent() {
+        List<Playable> ret = new ArrayList<>();
+        ret.addAll(allSongs());
+        ret.addAll(playlists());
+        Collections.sort(ret, new Comparator<Playable>() {
+            @Override
+            public int compare(Playable p1, Playable p2) {
+                return p1.lastPlayed().compareTo(p2.lastPlayed());
+            }
+        });
+        return ret;
     }
 
     private void deletePlaylist(PlaylistDelete event) {
@@ -813,8 +855,24 @@ public class Model implements IModel {
             doPlay(currentPlaylist, songAfter);
     }
 
-    private void play(Play event) {
+    private void playPlaylist(PlayPlaylist event) {
+        updateLastPlayed(event);
         doPlay(event.playlist, event.songIndex);
+    }
+
+    private void updateLastPlayed(PlayPlaylist event) {
+        long now = System.currentTimeMillis();
+        ContentValues nowVal = new ContentValues();
+        nowVal.put("last_played", now);
+        if (event.playlist.name.equals(RECENT)) {
+            Song song = event.playlist.song(event.songIndex);
+            song.updateLastPlayed(now);
+            Log.i(TAG, ">>> Song id to update las played: " + song.id);
+            db.update("SONGS", nowVal, "ID=?", new String[]{Long.toString(song.id)});
+        } else {
+            event.playlist.updateLastPlayed(now);
+            db.update("PLAYLISTS", nowVal, "ID=?", new String[]{Long.toString(event.playlist.id)});
+        }
     }
 
     private void doPlay(Playlist playlist, int songIndex) {
@@ -863,6 +921,7 @@ public class Model implements IModel {
         return new State(
                 1,
                 null,
+                recent(),
                 currentSong(),
                 currentPlaylist,
                 reportSeekTo(),
@@ -908,7 +967,7 @@ public class Model implements IModel {
     }
 
     private Playlist playlistAllSongs() {
-        return new Playlist(0, "Recent", allSongsAvailable());
+        return new Playlist(0, RECENT, 1L, allSongsAvailable());
     }
 
     private List<Song> allSongsAvailable() {
@@ -920,10 +979,7 @@ public class Model implements IModel {
         Collections.sort(ret, new Comparator<Playable>() {
             @Override
             public int compare(Playable p1, Playable p2) {
-                int subtitleCompare = p1.subtitle().compareTo(p2.subtitle());
-                if (subtitleCompare == 0)
-                    return p1.name().compareTo(p2.name());
-                return subtitleCompare;
+                return p2.lastPlayed().compareTo(p1.lastPlayed());
             }
         });
 
@@ -950,7 +1006,8 @@ public class Model implements IModel {
                         cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
-                        cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1);
+                        cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1,
+                        cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")));
                 addSong(song);
             }
             cursor.close();
@@ -967,7 +1024,11 @@ public class Model implements IModel {
             Cursor cursor = db.rawQuery("SELECT * FROM PLAYLISTS", null);
             while(cursor.moveToNext()) {
                 long playlistId = cursor.getLong(cursor.getColumnIndex("ID"));
-                Playlist playlist = new Playlist(playlistId, cursor.getString(cursor.getColumnIndex("NAME")), new ArrayList<Song>());
+                Playlist playlist = new Playlist(
+                        playlistId,
+                        cursor.getString(cursor.getColumnIndex("NAME")),
+                        cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")),
+                        new ArrayList<Song>());
                 addPlaylist(playlist);
             }
             cursor.close();
@@ -1019,7 +1080,7 @@ public class Model implements IModel {
             return songB.loved.compareTo(songA.loved);
         }});
 
-        return new Playlist(69, "Loved", lovedSongs);
+        return new Playlist(69, "Loved", 1L, lovedSongs);
     }
 
     // TODO send to Library
