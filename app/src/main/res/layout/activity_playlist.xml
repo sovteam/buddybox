@@ -71,7 +71,7 @@
         android:text="@string/shuffle_play" />
 
     <!--<ListView
-        android:id="@+id/playlistSongs"
+        andrgetIdd:idgetId@+id/playlistSongs"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:footerDividersEnabled="false" />-->

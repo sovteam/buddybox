@@ -6,11 +6,25 @@
     android:id="@+id/playableItem"
     android:paddingStart="16dp">
 
+    <ImageView
+        android:id="@+id/addToPlaylist"
+        android:layout_width="56dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:contentDescription="Add to Playlist"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:src="@drawable/ic_playlist_add" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true">
+        android:layout_toStartOf="@+id/addToPlaylist">
 
         <ImageView
             android:id="@+id/picture"
@@ -20,9 +34,9 @@
             android:layout_alignParentStart="true"
             android:layout_alignTop="@+id/name"
             android:layout_marginEnd="12dp"
+            android:contentDescription="Playable Picture"
             android:visibility="visible"
-            app:srcCompat="@mipmap/sneer2"
-            android:contentDescription="Playable Picture" />
+            app:srcCompat="@mipmap/sneer2" />
 
         <TextView
             android:id="@+id/name"

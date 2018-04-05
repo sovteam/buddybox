@@ -72,7 +72,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
         this.songPlaying = state.songPlaying;
         ArrayList<Pair<Long, Song>> list = new ArrayList<>();
         for (Song song : playlist.songs) {
-            list.add(new Pair<>(song.id, song));
+            list.add(new Pair<>(song.getId(), song));
         }
         System.out.println(">> Set songs list");
         setItemList(list);

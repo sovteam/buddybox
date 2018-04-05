@@ -6,6 +6,7 @@ public interface Playable {
     String subtitle();
     String duration();
     Long lastPlayed();
+    Long getId();
 
     void updateLastPlayed(long time);
 }

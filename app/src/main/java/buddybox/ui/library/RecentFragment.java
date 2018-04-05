@@ -35,6 +35,7 @@ import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
 import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
 
+import static buddybox.model.Model.ALL_SONGS;
 import static buddybox.ui.ModelProxy.dispatch;
 
 public class RecentFragment extends Fragment {
@@ -65,7 +66,7 @@ public class RecentFragment extends Fragment {
         ListView list = view.findViewById(R.id.recentPlayables);
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
-        /*list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long id) {
+        /*list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long getId) {
             dispatch(new SongSelected(recentPlaylist.song(pos).hash.toString()));
             startActivity(new Intent(getContext(), EditSongActivity.class));
             return true;
@@ -118,53 +119,53 @@ public class RecentFragment extends Fragment {
                     ? activity.getLayoutInflater().inflate(R.layout.playable_item, parent, false)
                     : convertView;
 
-            TextView text1 = rowView.findViewById(R.id.name);
-            TextView text2 = rowView.findViewById(R.id.subtitle);
-            text1.setText(playable.name());
-            text2.setText(playable.subtitle());
+            TextView name = rowView.findViewById(R.id.name);
+            TextView subtitle = rowView.findViewById(R.id.subtitle);
+            name.setText(playable.name());
+            subtitle.setText(playable.subtitle());
+
+            // playlist playing or song playing
+            if (playable == lastState.playlistPlaying || (songPlaying == playable && lastState.playlistPlaying.name().equals(ALL_SONGS))) {
+                name.setTextColor(Color.parseColor("#4fc3f7"));
+                subtitle.setTextColor(Color.parseColor("#4fc3f7"));
+            } else {
+                name.setTextColor(Color.WHITE);
+                subtitle.setTextColor(Color.LTGRAY);
+            }
 
             if (playable.getClass() == Song.class) {
-                /*rowView.findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        openSelectPlaylistDialog(recentPlaylist.songs.get(position));
-                    }
-                });*/
-
-                if (playable == songPlaying) {
-                    text1.setTextColor(Color.parseColor("#4fc3f7"));
-                    text2.setTextColor(Color.parseColor("#4fc3f7"));
-                } else {
-                    text1.setTextColor(Color.WHITE);
-                    text2.setTextColor(Color.LTGRAY);
-                }
-
-                Bitmap art = ((Song)playable).getArt();
-                if (art != null)
-                    ((ImageView) rowView.findViewById(R.id.picture)).setImageBitmap(art);
-                else
-                    ((ImageView) rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
+                updateSongItem((Song) playable, rowView);
             } else {
-                if (playable == lastState.playlistPlaying) {
-                    text1.setTextColor(Color.parseColor("#4fc3f7"));
-                    text2.setTextColor(Color.parseColor("#4fc3f7"));
-                    ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_list_blue);
-                } else {
-                    text1.setTextColor(Color.WHITE);
-                    text2.setTextColor(Color.LTGRAY);
-                    ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_list);
-                }
+                updatePlayableItem(playable, rowView);
             }
 
             return rowView;
         }
 
-        private void updateSongItem(Song song, View rowView, final int position) {
-            TextView text1 = rowView.findViewById(R.id.songName);
-            TextView text2 = rowView.findViewById(R.id.songSubtitle);
-            text1.setText(song.name());
-            text2.setText(song.subtitle());
+        private void updatePlayableItem(Playable playable, View rowView) {
+            rowView.findViewById(R.id.addToPlaylist).setVisibility(View.GONE);
+            if (playable == lastState.playlistPlaying) {
+                ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_queue_music_blue);
+            } else {
+                ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_queue_music);
+            }
+        }
 
+        private void updateSongItem(final Song song, View rowView) {
+            ImageView addToPlaylist = rowView.findViewById(R.id.addToPlaylist);
+            addToPlaylist.setVisibility(View.VISIBLE);
+            addToPlaylist.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openSelectPlaylistDialog(song);
+                }
+            });
+
+            Bitmap art = song.getArt();
+            if (art != null)
+                ((ImageView) rowView.findViewById(R.id.picture)).setImageBitmap(art);
+            else
+                ((ImageView) rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
 
         }
 
@@ -189,7 +190,7 @@ public class RecentFragment extends Fragment {
         ArrayList<String> playlistNames = new ArrayList<>();
         for (int i = 0; i < playlistsForSong.size(); i++) {
             Playlist playlist = playlistsForSong.get(i);
-            playlistIds[i] = playlist.id;
+            playlistIds[i] = playlist.getId();
             playlistNames.add(playlist.name);
         }
 

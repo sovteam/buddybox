@@ -8,7 +8,7 @@ import sov.Hash;
 
 public class Song implements Playable {
 
-    public Long id;
+    private Long id;
     public final Hash hash;
     public String name;
     public String artist;
@@ -63,6 +63,11 @@ public class Song implements Playable {
     @Override
     public Long lastPlayed() {
         return lastPlayed;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
     }
 
     @Override
@@ -151,10 +156,6 @@ public class Song implements Playable {
             return embeddedArt;
 
         return art;
-    }
-
-    public boolean hasEmbeddedArt() {
-        return embeddedArt != null;
     }
 
     public void setId(long id) {

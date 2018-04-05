@@ -135,7 +135,7 @@ public class PlaylistActivity extends AppCompatActivity {
     private void openPlaylistOptionsDialog() {
         PlaylistOptionsDialog dialog = new PlaylistOptionsDialog();
         Bundle args = new Bundle();
-        args.putLong("playlistId", playlist.id);
+        args.putLong("playlistId", playlist.getId());
         args.putString("playlistName", playlist.name);
         dialog.setArguments(args);
         dialog.show(getSupportFragmentManager(), "Playlist Options");

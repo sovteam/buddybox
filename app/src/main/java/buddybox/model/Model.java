@@ -91,7 +91,8 @@ public class Model implements IModel {
     public static final String HEADPHONES = "headphones";
     public static final String SPEAKER = "speaker";
     public static final String BLUETOOTH = "bluetooth";
-    private static final String RECENT = "Recent";
+    public static final String ALL_SONGS = "%%All%%Songs%%";
+    private static final String RECENT = "%%RecentList%%";
 
     SQLiteDatabase db;
     private List<StateListener> listeners = new ArrayList<>();
@@ -234,6 +235,7 @@ public class Model implements IModel {
         } else {
             doPlay((Playlist) event.playable, 0);
         }
+        updateLastPlayed(event.playable);
     }
 
     private Playlist allSongsPlaylist() {
@@ -244,7 +246,7 @@ public class Model implements IModel {
                 return s2.lastPlayed().compareTo(s1.lastPlayed());
             }
         });
-        return new Playlist(0L, "All Songs", 1L, songs);
+        return new Playlist(0L, ALL_SONGS, 1L, songs);
     }
 
     private void artistBioFound(ArtistBioFound event) {
@@ -328,7 +330,7 @@ public class Model implements IModel {
             db.execSQL(
                     "UPDATE PLAYLIST_SONG " +
                             "SET POSITION = POSITION +1 " +
-                            "WHERE  PLAYLIST_ID = " + playlist.id + " " +
+                            "WHERE  PLAYLIST_ID = " + playlist.getId() + " " +
                             "AND    POSITION <  " + event.fromPosition + " " +
                             "AND    POSITION >= " + event.toPosition);
         } else {
@@ -336,7 +338,7 @@ public class Model implements IModel {
             db.execSQL(
                     "UPDATE PLAYLIST_SONG " +
                             "SET POSITION = POSITION -1 " +
-                            "WHERE  PLAYLIST_ID = " + playlist.id + " " +
+                            "WHERE  PLAYLIST_ID = " + playlist.getId() + " " +
                             "AND    POSITION >  " + event.fromPosition + " " +
                             "AND    POSITION <= " + event.toPosition);
         }
@@ -346,7 +348,7 @@ public class Model implements IModel {
         db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = " + event.toPosition + " " +
-                        "WHERE  PLAYLIST_ID = " + playlist.id + " " +
+                        "WHERE  PLAYLIST_ID = " + playlist.getId() + " " +
                         "AND    SONG_HASH = '" + song.hash.toString() + "'");
 
         // check table
@@ -391,7 +393,7 @@ public class Model implements IModel {
                 "PLAYLISTS",
                 values,
                 "ID=?",
-                new String[]{Long.toString(selectedPlaylist.id)});
+                new String[]{Long.toString(selectedPlaylist.getId())});
         if (rows == 1)
             selectedPlaylist.setName(event.playlistName);
     }
@@ -428,6 +430,7 @@ public class Model implements IModel {
             return;
         }
 
+        updateLastPlayed(currentPlaylist);
         doPlay(currentPlaylist, nextSongIndex);
     }
 
@@ -444,13 +447,13 @@ public class Model implements IModel {
         int songPosition = playlist.songs.indexOf(event.song);
 
         // delete from associations table
-        db.delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.id), songHash});
+        db.delete("PLAYLIST_SONG", "PLAYLIST_ID=? AND SONG_HASH=?", new String[]{Long.toString(playlist.getId()), songHash});
 
         // update position-1 for relations.position > song index
         db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = POSITION -1 " +
-                        "WHERE PLAYLIST_ID = " + playlist.id + " " +
+                        "WHERE PLAYLIST_ID = " + playlist.getId() + " " +
                         "AND SONG_HASH = '" + songHash + "' " +
                         "AND POSITION > " + songPosition);
 
@@ -720,7 +723,7 @@ public class Model implements IModel {
         }
 
         // Associates songs with playlist
-        insertAssociationSongToPlaylist(event.songHash, playlist.id);
+        insertAssociationSongToPlaylist(event.songHash, playlist.getId());
     }
 
     private Playlist findPlaylistByName(String name) {
@@ -737,7 +740,7 @@ public class Model implements IModel {
         Collections.sort(ret, new Comparator<Playable>() {
             @Override
             public int compare(Playable p1, Playable p2) {
-                return p1.lastPlayed().compareTo(p2.lastPlayed());
+                return p2.lastPlayed().compareTo(p1.lastPlayed());
             }
         });
         return ret;
@@ -768,7 +771,7 @@ public class Model implements IModel {
             playlistsBySong.put(songHash, songPlaylists);
         }
         playlists.remove(playlist);
-        playlistsById.remove(playlist.id);
+        playlistsById.remove(playlist.getId());
         selectedPlaylist = null;
 
         if (currentPlaylist == playlist) {
@@ -856,23 +859,19 @@ public class Model implements IModel {
     }
 
     private void playPlaylist(PlayPlaylist event) {
-        updateLastPlayed(event);
+        updateLastPlayed(event.playlist);
         doPlay(event.playlist, event.songIndex);
     }
 
-    private void updateLastPlayed(PlayPlaylist event) {
+    private void updateLastPlayed(Playable playable) {
         long now = System.currentTimeMillis();
         ContentValues nowVal = new ContentValues();
-        nowVal.put("last_played", now);
-        if (event.playlist.name.equals(RECENT)) {
-            Song song = event.playlist.song(event.songIndex);
-            song.updateLastPlayed(now);
-            Log.i(TAG, ">>> Song id to update las played: " + song.id);
-            db.update("SONGS", nowVal, "ID=?", new String[]{Long.toString(song.id)});
-        } else {
-            event.playlist.updateLastPlayed(now);
-            db.update("PLAYLISTS", nowVal, "ID=?", new String[]{Long.toString(event.playlist.id)});
-        }
+        nowVal.put("LAST_PLAYED", now);
+        String table = playable.getClass() == Song.class
+                ? "SONGS"
+                : "PLAYLISTS";
+        db.update(table, nowVal, "ID=?", new String[]{Long.toString(playable.getId())});
+        playable.updateLastPlayed(now);
     }
 
     private void doPlay(Playlist playlist, int songIndex) {
@@ -1063,7 +1062,7 @@ public class Model implements IModel {
     synchronized
     private void addPlaylist(Playlist playlist) {
         playlists.add(playlist);
-        playlistsById.put(playlist.id, playlist);
+        playlistsById.put(playlist.getId(), playlist);
         System.out.println("added new playlist");
     }
 

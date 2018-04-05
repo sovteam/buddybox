@@ -6,15 +6,16 @@ import java.util.List;
 
 public class Playlist implements Playable {
 
-    public final long id;
+    private final long id;
     public String name;
     public List<Song> songs;
     private List<Integer> shuffledSongs;
-    public long lastPlayed;
+    private long lastPlayed;
 
     public Playlist(long id, String name, long lastPlayed, List<Song> songs) {
         this.id = id;
         this.name = name;
+        this.lastPlayed = lastPlayed;
         this.songs = songs;
     }
 
@@ -42,6 +43,11 @@ public class Playlist implements Playable {
     @Override
     public Long lastPlayed() {
         return lastPlayed;
+    }
+
+    @Override
+    public Long getId() {
+        return id;
     }
 
     @Override
