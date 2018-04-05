@@ -28,7 +28,7 @@ public class State {
     public final Playlist lovedPlaylist;
 
     // Library
-    public final Playlist allSongsPlaylist;
+    public final List<Song> allSongs;
     public final List<Playlist> playlists;
     public final List<Playable> searchResults;
     public final long availableMemorySize;
@@ -53,7 +53,7 @@ public class State {
     public final Artist artistSelected;
     public final List<Playable> recent;
 
-    public State(int songCount, String[] musicFolders, List<Playable> recentList, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, Playlist recent, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus, Artist artistSelected) {
+    public State(int songCount, String[] musicFolders, List<Playable> recentList, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, List<Song> allSongs, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus, Artist artistSelected) {
         this.seekTo = seekTo;
         this.isStopped = isStopped;
         this.isShuffle = isShuffle;
@@ -75,7 +75,7 @@ public class State {
         this.lovedPlaylist = lovedPlaylist;
 
         this.recent = recentList;
-        this.allSongsPlaylist = recent;
+        this.allSongs = allSongs;
         this.artists = artists;
         this.playlists = playlists;
         this.searchResults = searchResults;

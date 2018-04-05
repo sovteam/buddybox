@@ -55,7 +55,7 @@ public abstract class ModelTest {
     }
 
     Song getSong(String name) {
-        for (Song song : lastState.allSongsPlaylist.songs) {
+        for (Song song : lastState.allSongs) {
             if (song.name.equals(name))
                 return song;
         }

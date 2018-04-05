@@ -1,6 +1,5 @@
 package buddybox.ui.library;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,8 +29,6 @@ import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
-import buddybox.core.events.SongSelected;
-import buddybox.ui.EditSongActivity;
 import buddybox.ui.ModelProxy;
 import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
 
@@ -40,17 +37,14 @@ import static buddybox.ui.ModelProxy.dispatch;
 
 public class RecentFragment extends Fragment {
 
-    private Playlist recentPlaylist;
     private PlayablesArrayAdapter playables;
     private View view;
-    private List<Playlist> playlists;
-    private Song songPlaying;
     private IModel.StateListener listener;
     private FragmentActivity activity;
-    private State lastState;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private State lastState;
 
-    public RecentFragment(){}
+    public RecentFragment() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,20 +60,11 @@ public class RecentFragment extends Fragment {
         ListView list = view.findViewById(R.id.recentPlayables);
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
-        /*list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> arg0, View arg1, int pos, long getId) {
-            dispatch(new SongSelected(recentPlaylist.song(pos).hash.toString()));
-            startActivity(new Intent(getContext(), EditSongActivity.class));
-            return true;
-        }});*/
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             dispatch(new Play(lastState.recent.get(i)));
         }});
         playables = new PlayablesArrayAdapter();
         list.setAdapter(playables);
-
-        // If state was updated before fragment creation
-        if (recentPlaylist != null)
-            updatePlaylist();
 
         return view;
     }
@@ -119,13 +104,16 @@ public class RecentFragment extends Fragment {
                     ? activity.getLayoutInflater().inflate(R.layout.playable_item, parent, false)
                     : convertView;
 
+            if (playable == null)
+                return rowView;
+
             TextView name = rowView.findViewById(R.id.name);
             TextView subtitle = rowView.findViewById(R.id.subtitle);
             name.setText(playable.name());
             subtitle.setText(playable.subtitle());
 
             // playlist playing or song playing
-            if (playable == lastState.playlistPlaying || (songPlaying == playable && lastState.playlistPlaying.name().equals(ALL_SONGS))) {
+            if (playable == lastState.playlistPlaying || (lastState.songPlaying == playable && lastState.playlistPlaying.name().equals(ALL_SONGS))) {
                 name.setTextColor(Color.parseColor("#4fc3f7"));
                 subtitle.setTextColor(Color.parseColor("#4fc3f7"));
             } else {
@@ -144,11 +132,10 @@ public class RecentFragment extends Fragment {
 
         private void updatePlayableItem(Playable playable, View rowView) {
             rowView.findViewById(R.id.addToPlaylist).setVisibility(View.GONE);
-            if (playable == lastState.playlistPlaying) {
-                ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_queue_music_blue);
-            } else {
-                ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(R.drawable.ic_queue_music);
-            }
+            int icon = playable == lastState.playlistPlaying
+                    ? R.drawable.ic_queue_music_blue
+                    : R.drawable.ic_queue_music;
+            ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(icon);
         }
 
         private void updateSongItem(final Song song, View rowView) {
@@ -166,7 +153,6 @@ public class RecentFragment extends Fragment {
                 ((ImageView) rowView.findViewById(R.id.picture)).setImageBitmap(art);
             else
                 ((ImageView) rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
-
         }
 
         void updateState(State state) {
@@ -180,7 +166,7 @@ public class RecentFragment extends Fragment {
 
         // Select playlists song is not associated
         List<Playlist> playlistsForSong = new ArrayList<>();
-        for (Playlist playlist : playlists){
+        for (Playlist playlist : lastState.playlists){
             if (!playlist.hasSong(song))
                 playlistsForSong.add(playlist);
         }
@@ -206,30 +192,21 @@ public class RecentFragment extends Fragment {
     }
 
     public void updateState(State state) {
-        songPlaying = state.songPlaying;
-        recentPlaylist = state.allSongsPlaylist;
-        playlists = state.playlists;
-
-        updatePlaylist(state);
         lastState = state;
+        updateRecentList();
     }
 
-    private void updatePlaylist() {
-        if (lastState != null)
-            updatePlaylist(lastState);
-    }
-
-    private void updatePlaylist(State state) {
-        playables.updateState(state);
+    private void updateRecentList() {
+        playables.updateState(lastState);
 
         // show/hide footers
-        if (state.syncLibraryPending) {
+        if (lastState.syncLibraryPending) {
             view.findViewById(R.id.footerLoading).setVisibility(View.VISIBLE);
             view.findViewById(R.id.library_empty).setVisibility(View.GONE);
         } else {
             view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
 
-            if (state.recent.isEmpty()) {
+            if (lastState.recent.isEmpty()) {
                 view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
                 return;

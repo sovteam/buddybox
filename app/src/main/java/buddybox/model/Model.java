@@ -14,11 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import buddybox.core.Artist;
 import buddybox.core.Dispatcher;
@@ -92,7 +90,6 @@ public class Model implements IModel {
     public static final String SPEAKER = "speaker";
     public static final String BLUETOOTH = "bluetooth";
     public static final String ALL_SONGS = "%%All%%Songs%%";
-    private static final String RECENT = "%%RecentList%%";
 
     SQLiteDatabase db;
     private List<StateListener> listeners = new ArrayList<>();
@@ -104,7 +101,7 @@ public class Model implements IModel {
     private boolean isSampling = false;
     private Playlist samplerPlaylist;
 
-    private Set<Song> allSongs;
+    private List<Song> allSongs;
     private Map<String, Song> songsByHash;
     private ArrayList<Playlist> playlists;
     private LongSparseArray<Playlist> playlistsById = new LongSparseArray<>();
@@ -466,10 +463,8 @@ public class Model implements IModel {
         playlist.removeSong(event.song);
 
         // keep activity_playing the current song
-        if (currentPlaylist == playlist && currentSongIndex > songPosition) {
+        if (currentPlaylist == playlist && currentSongIndex > songPosition)
             currentSongIndex--;
-        }
-
     }
 
     private void playlistSelected(PlaylistSelected event) {
@@ -504,27 +499,7 @@ public class Model implements IModel {
 
         updateMediaStorageUsed(-song.fileLength);
         removeSongFromArtist(song);
-
-        // printDBSongs();
     }
-
-    /*private void printDBSongs() {
-        Cursor cursor = db.rawQuery("SELECT * FROM SONGS", null);
-        while(cursor.moveToNext()) {
-            System.out.println(
-                "HASH: " + cursor.getString(cursor.getColumnIndex("HASH")) + ", " +
-                "NAME: " + cursor.getString(cursor.getColumnIndex("NAME")) + ", " +
-                "GENRE: " + cursor.getString(cursor.getColumnIndex("GENRE")) + ", " +
-                "ARTIST: " + cursor.getString(cursor.getColumnIndex("ARTIST")) + ", " +
-                "DURATION: " + cursor.getInt(cursor.getColumnIndex("DURATION")) + ", " +
-                "FILE_PATH: " + cursor.getString(cursor.getColumnIndex("FILE_PATH")) + ", " +
-                "FILE_LENGTH: " + cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")) + ", " +
-                "LAST_MODIFIED: " + cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")) + ", " +
-                "IS_MISSING: " + (cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1) + ", " +
-                "IS_DELETED: " + (cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1));
-        }
-        cursor.close();
-    }*/
 
     private void repeat() {
         if (repeatSong) {
@@ -557,9 +532,8 @@ public class Model implements IModel {
             return;
 
         artist.removeSong(song);
-        if (artist.songs.isEmpty()) {
+        if (artist.songs.isEmpty())
             artists.remove(artist);
-        }
     }
 
     private void songFound(SongFound event) {
@@ -588,9 +562,8 @@ public class Model implements IModel {
     private void addSong(Song song) {
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
-        if (!song.isMissing) {
+        if (!song.isMissing)
             updateMediaStorageUsed(song.fileLength);
-        }
     }
 
     private Artist getArtist(String artist) {
@@ -796,10 +769,9 @@ public class Model implements IModel {
 
     private void lovedViewed() {
         // TODO move to Sampler?
-        for (Song song : lovedPlaylist().songs) {
+        for (Song song : lovedPlaylist().songs)
             if (!song.isLovedViewed())
                 song.setLovedViewed();
-        }
     }
 
     private void samplerHate(SamplerHate event) {
@@ -897,12 +869,6 @@ public class Model implements IModel {
 
     private void updateListeners() {
         final State state = getState();
-        /*Runnable update = new Runnable() { @Override public void run() {
-            for (StateListener listener : listeners) {
-                updateListener(listener, state);
-            }
-        }};
-        handler.post(update);*/
         for (StateListener listener : listeners) {
             updateListener(listener, state);
         }
@@ -939,7 +905,7 @@ public class Model implements IModel {
                 1,
                 getAvailableMemorySize(),
                 getMediaStorageUsed(),
-                playlistAllSongs(),
+                allSongsAvailable(),
                 artists(),
                 syncLibraryRequested,
                 deleteSong,
@@ -965,10 +931,6 @@ public class Model implements IModel {
                         : currentPlaylist.song(currentSongIndex);
     }
 
-    private Playlist playlistAllSongs() {
-        return new Playlist(0, RECENT, 1L, allSongsAvailable());
-    }
-
     private List<Song> allSongsAvailable() {
         List<Song> ret = new ArrayList<>();
         for (Song song : allSongs())
@@ -985,11 +947,10 @@ public class Model implements IModel {
         return ret;
     }
 
-
-    private Set<Song> allSongs() {
+    private List<Song> allSongs() {
         if (allSongs == null) {
             long start = System.currentTimeMillis();
-            allSongs = new HashSet<>();
+            allSongs = new ArrayList<>();
             songsByHash = new HashMap<>();
             Cursor cursor = db.rawQuery("SELECT * FROM SONGS", null);
             while (cursor.moveToNext()) {
@@ -1069,10 +1030,9 @@ public class Model implements IModel {
     private Playlist lovedPlaylist() {
         List<Song> lovedSongs = new ArrayList<>();
 
-        for (Song song : allSongs()) {
+        for (Song song : allSongs())
             if (song.isLoved())
                 lovedSongs.add(song);
-        }
 
         // Sort by most recent loved
         Collections.sort(lovedSongs, new Comparator<Song>() { @Override public int compare(Song songA, Song songB) {
@@ -1093,10 +1053,9 @@ public class Model implements IModel {
     private Long getMediaStorageUsed() {
         if (mediaStorageUsed == null) {
             mediaStorageUsed = 0L;
-            for (Song song : allSongs) {
+            for (Song song : allSongs)
                 if (!song.isMissing)
                     updateMediaStorageUsed(song.fileLength);
-            }
         }
         return mediaStorageUsed;
     }
@@ -1144,7 +1103,6 @@ public class Model implements IModel {
     }
 
     // Volume Settings
-
     private void setSpeakerVolume(SetSpeakerVolume event) {
         updateVolumeSettings(SPEAKER, event.volume);
     }

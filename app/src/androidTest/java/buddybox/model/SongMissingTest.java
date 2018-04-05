@@ -27,13 +27,13 @@ public class SongMissingTest extends ModelTest {
 
         // check if song and artist were removed
         assertEquals(3, updateCount);
-        assertTrue(lastState.allSongsPlaylist.songs.isEmpty());
+        assertTrue(lastState.allSongs.isEmpty());
         assertTrue(lastState.artists.isEmpty());
 
         reinitialize();
 
         assertEquals(1, updateCount);
-        assertTrue(lastState.allSongsPlaylist.songs.isEmpty());
+        assertTrue(lastState.allSongs.isEmpty());
         assertTrue(lastState.artists.isEmpty());
     }
 
@@ -57,13 +57,13 @@ public class SongMissingTest extends ModelTest {
         assertEquals(1, lastState.artists.size());
         assertEquals("Bob Marley", lastState.artists.get(0).name);
         assertEquals("Is this love", lastState.artists.get(0).songs.get(0).name);
-        assertEquals(1, lastState.allSongsPlaylist.songs.size());
-        assertEquals("Is this love", lastState.allSongsPlaylist.songs.get(0).name);
+        assertEquals(1, lastState.allSongs.size());
+        assertEquals("Is this love", lastState.allSongs.get(0).name);
 
         reinitialize();
 
         assertEquals(1, updateCount);
-        assertEquals(1, lastState.allSongsPlaylist.songs.size());
-        assertEquals("Is this love", lastState.allSongsPlaylist.songs.get(0).name);
+        assertEquals(1, lastState.allSongs.size());
+        assertEquals("Is this love", lastState.allSongs.get(0).name);
     }
 }

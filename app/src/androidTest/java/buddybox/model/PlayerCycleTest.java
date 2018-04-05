@@ -42,8 +42,8 @@ public class PlayerCycleTest extends ModelTest {
         dispatch(new SongFound(song));
 
         dispatch(new PlaylistCreate("My Playlist", getSong("Stir It Up").hash.toString()));
-        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist").id));
-        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist").id));
+        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist").getId()));
+        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist").getId()));
     }
 
     @Test

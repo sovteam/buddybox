@@ -5,7 +5,9 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import buddybox.core.IModel;
 import buddybox.core.Playable;
@@ -48,7 +50,7 @@ public class ModelSim implements IModel {
 
     private void updateListener() {
         count++;
-        Playlist recent = new Playlist(0, "Recent", 1L, Arrays.asList(
+        List<Song> songs = new ArrayList<>(Arrays.asList(
                 new Song(1L, new Hash(new byte[]{1}), "Mmmbop " + count, "Hanson", "", "Pop", 10, null, 1, 1, false, false, 1L),
                 new Song(2L, new Hash(new byte[]{2}), "Xispas 1", "Cractus", "", "Chivas", 11, null, 1, 1, false, false, 1L),
                 new Song(3L, new Hash(new byte[]{3}), "Xispas 2", "Cractus", "", "Chivas", 12, null, 1, 1, false, false, 1L),
@@ -66,6 +68,6 @@ public class ModelSim implements IModel {
 
         boolean isPaused = count % 2 == 0;
         for (StateListener listener : listeners)
-            listener.update(new State(1, null, new ArrayList<Playable>(), song, null, null, false, isPaused, false, false, false, true, null, false, null, null, null, null, 1, count * 1024, 0L, recent, null, false, null, null, null, null, new HashMap<String, Integer>(), true, null));
+            listener.update(new State(1, null, new ArrayList<Playable>(), song, null, null, false, isPaused, false, false, false, true, null, false, null, null, null, null, 1, count * 1024, 0L, songs, null, false, null, null, null, null, new HashMap<String, Integer>(), true, null));
     }
 }

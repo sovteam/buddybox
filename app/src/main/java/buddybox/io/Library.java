@@ -74,7 +74,7 @@ public class Library {
 
         Map<String, Song> songByPath = new HashMap<>();
         if (state != null)
-            for (Song song : state.allSongsPlaylist.songs)
+            for (Song song : state.allSongs)
                 songByPath.put(song.filePath, song);
 
         for (File mp3 : mp3Files) {

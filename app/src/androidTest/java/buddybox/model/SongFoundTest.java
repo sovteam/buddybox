@@ -20,7 +20,7 @@ public class SongFoundTest extends ModelTest {
     public void songFoundDispatched_modelAddsNewSong() {
         // check empty songs and artists
         assertEquals(1, updateCount);
-        assertTrue(lastState.allSongsPlaylist.songs.isEmpty());
+        assertTrue(lastState.allSongs.isEmpty());
         assertTrue(lastState.artists.isEmpty());
 
         // dispatch new song found
@@ -32,8 +32,8 @@ public class SongFoundTest extends ModelTest {
         assertEquals(2, updateCount);
 
         // check song found
-        assertEquals(1, lastState.allSongsPlaylist.songs.size());
-        Song song = lastState.allSongsPlaylist.songs.get(0);
+        assertEquals(1, lastState.allSongs.size());
+        Song song = lastState.allSongs.get(0);
         assertEquals(hash, song.hash);
         assertEquals("Jamming", song.name);
         assertEquals("Bob Marley", song.artist);
@@ -57,10 +57,10 @@ public class SongFoundTest extends ModelTest {
 
         // check if song was persisted
         assertEquals(1, updateCount);
-        assertEquals(1, lastState.allSongsPlaylist.songs.size());
+        assertEquals(1, lastState.allSongs.size());
 
         // check song
-        song = lastState.allSongsPlaylist.songs.get(0);
+        song = lastState.allSongs.get(0);
         assertEquals(hash, song.hash);
         assertEquals("Jamming", song.name);
         assertEquals("Bob Marley", song.artist);
@@ -99,8 +99,8 @@ public class SongFoundTest extends ModelTest {
 
         // check song update
         assertEquals(4, updateCount);
-        assertEquals(1, lastState.allSongsPlaylist.songs.size());
-        Song result = lastState.allSongsPlaylist.songs.get(0);
+        assertEquals(1, lastState.allSongs.size());
+        Song result = lastState.allSongs.get(0);
         assertEquals(hash, result.hash);
         assertEquals("Jamming it!", result.name);
         assertEquals("Bob", result.artist);
@@ -124,8 +124,8 @@ public class SongFoundTest extends ModelTest {
 
         // check if song updates were persisted
         assertEquals(1, updateCount);
-        assertEquals(1, lastState.allSongsPlaylist.songs.size());
-        result = lastState.allSongsPlaylist.songs.get(0);
+        assertEquals(1, lastState.allSongs.size());
+        result = lastState.allSongs.get(0);
         assertEquals(hash, result.hash);
         assertEquals("Jamming it!", result.name);
         assertEquals("Bob", result.artist);

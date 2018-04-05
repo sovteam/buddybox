@@ -43,7 +43,7 @@ public class AlbumArtFoundTest extends ModelTest {
     public void albumArtFound() {
         assertEquals(5, updateCount); // 1 subscribe + 4 SongFound
         for (int i = 0; i < 4; i++) {
-            assertEquals(null, lastState.allSongsPlaylist.songs.get(i).getArt());
+            assertEquals(null, lastState.allSongs.get(i).getArt());
         }
 
         String artString = "legend album art";

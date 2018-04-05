@@ -66,7 +66,7 @@ public class PlaylistCRUDTest extends ModelTest {
     @Test
     public void playlistAddSongDispatch_modelUpdatesPlaylist() {
         dispatch(new PlaylistCreate("My Playlist 2", getSong("Stir It Up").hash.toString()));
-        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 2").id));
+        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 2").getId()));
 
         Playlist mPlaylist = getPlaylist("My Playlist 2");
         assertEquals(6, updateCount);
@@ -86,8 +86,8 @@ public class PlaylistCRUDTest extends ModelTest {
     @Test
     public void playlistRemoveSongDispatch_modelUpdatesPlaylist() {
         dispatch(new PlaylistCreate("My Playlist 3", getSong("Stir It Up").hash.toString()));
-        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 3").id));
-        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist 3").id));
+        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 3").getId()));
+        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist 3").getId()));
 
         Playlist mPlaylist = getPlaylist("My Playlist 3");
         assertEquals(7, updateCount);
@@ -158,7 +158,7 @@ public class PlaylistCRUDTest extends ModelTest {
         assertEquals(6, updateCount);
         assertEquals(2, lastState.playlists.size());
 
-        dispatch(new PlaylistDelete(getPlaylist("P2").id));
+        dispatch(new PlaylistDelete(getPlaylist("P2").getId()));
         assertEquals(7, updateCount);
         assertEquals(1, lastState.playlists.size());
         assertEquals("P1", lastState.playlists.get(0).name);
@@ -173,8 +173,8 @@ public class PlaylistCRUDTest extends ModelTest {
     @Test
     public void playlistChangSongPosition_modelUpdatesPlaylist() {
         dispatch(new PlaylistCreate("My Playlist 4", getSong("Stir It Up").hash.toString()));
-        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 4").id));
-        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist 4").id));
+        dispatch(new PlaylistAddSong(getSong("Can You Feel It").hash.toString(), getPlaylist("My Playlist 4").getId()));
+        dispatch(new PlaylistAddSong(getSong("Is This Love").hash.toString(), getPlaylist("My Playlist 4").getId()));
 
         Playlist mPlaylist = getPlaylist("My Playlist 4");
         assertEquals(7, updateCount);
