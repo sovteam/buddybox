@@ -1,17 +1,14 @@
 package buddybox.ui;
 
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
-import android.view.animation.Transformation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -95,7 +92,12 @@ public class ArtistActivity extends AppCompatActivity {
         }
 
         // artist details
-        ((ImageView)findViewById(R.id.picture)).setImageBitmap(state.artistSelected.picture);
+        if (state.artistSelected.picture == null) {
+            ((ImageView)findViewById(R.id.artistPicture)).setImageResource(R.drawable.ic_person);
+        } else {
+            ((ImageView)findViewById(R.id.artistPicture)).setImageBitmap(state.artistSelected.picture);
+        }
+
         ((TextView)findViewById(R.id.artistName)).setText(state.artistSelected.name);
         ((TextView)findViewById(R.id.artistSongsCount)).setText(state.artistSelected.songsCountPrint());
 
@@ -104,7 +106,9 @@ public class ArtistActivity extends AppCompatActivity {
         } else {
             findViewById(R.id.artistBio).setVisibility(View.VISIBLE);
             String bio = state.artistSelected.getBio().replace("\n", "<br />");
-            ((TextView) findViewById(R.id.bioContent)).setText(Html.fromHtml(bio));
+            TextView bioView = findViewById(R.id.bioContent);
+            bioView.setText(Html.fromHtml(bio));
+            bioView.setMovementMethod(LinkMovementMethod.getInstance());
         }
 
         // songs by album

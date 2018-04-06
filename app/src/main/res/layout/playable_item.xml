@@ -14,50 +14,44 @@
         android:layout_alignParentTop="true"
         android:background="?selectableItemBackground"
         android:clickable="true"
-        android:contentDescription="Add to Playlist"
+        android:focusable="true"
+        android:contentDescription="@string/add_to_playlist"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         android:src="@drawable/ic_playlist_add" />
 
-    <RelativeLayout
+    <ImageView
+        android:id="@+id/playableArt"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignBottom="@+id/subtitle"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/name"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/playable_art"
+        android:visibility="visible"
+        app:srcCompat="@mipmap/sneer2" />
+
+    <TextView
+        android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/addToPlaylist">
+        android:layout_marginTop="8dp"
+        android:layout_toEndOf="@id/playableArt"
+        android:layout_toStartOf="@+id/addToPlaylist"
+        android:singleLine="true"
+        android:text="@string/playable_name"
+        android:textAppearance="?attr/textAppearanceListItem" />
 
-        <ImageView
-            android:id="@+id/picture"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignBottom="@+id/subtitle"
-            android:layout_alignParentStart="true"
-            android:layout_alignTop="@+id/name"
-            android:layout_marginEnd="12dp"
-            android:contentDescription="Playable Picture"
-            android:visibility="visible"
-            app:srcCompat="@mipmap/sneer2" />
-
-        <TextView
-            android:id="@+id/name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_toEndOf="@+id/picture"
-            android:singleLine="true"
-            android:text="Item"
-            android:textAppearance="?attr/textAppearanceListItem" />
-
-        <TextView
-            android:id="@+id/subtitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/name"
-            android:layout_below="@+id/name"
-            android:layout_marginBottom="8dp"
-            android:singleLine="true"
-            android:text="subtitle" />
-
-    </RelativeLayout>
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/name"
+        android:layout_below="@+id/name"
+        android:layout_marginBottom="8dp"
+        android:layout_toStartOf="@+id/addToPlaylist"
+        android:singleLine="true"
+        android:text="@string/playable_subtitle" />
 
 </RelativeLayout>

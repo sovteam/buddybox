@@ -27,7 +27,7 @@
         android:layout_toStartOf="@+id/songMore">
 
         <ImageView
-            android:id="@+id/picture"
+            android:id="@+id/artistPicture"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_alignBottom="@+id/songDuration"
@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_toEndOf="@+id/picture"
+            android:layout_toEndOf="@+id/artistPicture"
             android:singleLine="true"
             android:text="Item"
             android:textAppearance="?attr/textAppearanceListItem" />

@@ -290,23 +290,24 @@ public class MediaInfoRetriever {
     }
 
     private static String getArtistBio(JSONObject json) {
-        String ret = null;
-
-        if (!json.has("artist"))
-            return null;
-
+        String ret = "";
         try {
+            if (!json.has("artist"))
+                return null;
             JSONObject artist = json.getJSONObject("artist");
             if (!artist.has("bio"))
                 return null;
             JSONObject bio = artist.getJSONObject("bio");
+            Log.i(TAG, bio.toString());
             if (!bio.has("content"))
                 return null;
-            ret = bio.getString("content");
+            ret = bio.getString("content").trim();
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+        if (ret.isEmpty())
+            return null;
         return ret;
     }
 

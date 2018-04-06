@@ -13,7 +13,6 @@
     <string name="flame">Flame</string>
     <string name="song_playing">Song Playing</string>
     <string name="song">Song</string>
-    <string name="artist">Artist</string>
     <string name="genre">Genre</string>
     <string name="subtitle">Subtitle</string>
     <string name="maximize_playing_song">Maximize playing song</string>
@@ -31,7 +30,6 @@
     <string name="album_play">Play All Album Songs</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="add_to_playlist">Add to Playlist</string>
     <string name="song_name">Song Name</string>
     <string name="song_duration">3:01</string>
     <string name="artist_picture">Artist Picture</string>
@@ -42,4 +40,10 @@
     <string name="song_album_art">song album art</string>
     <string name="drag_song">Drag song to another position</string>
     <string name="song_artist">song artist</string>
+    <string name="artist">Artist</string>
+    <string name="artist_songs">42 songs</string>
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="playable_art">Playable art</string>
+    <string name="playable_name">Playable name</string>
+    <string name="playable_subtitle">Playable subtitle</string>
 </resources>

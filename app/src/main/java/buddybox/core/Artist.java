@@ -4,26 +4,22 @@ import android.graphics.Bitmap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class Artist {
+public class Artist extends Playlist {
 
-    public final String name;
-    public List<Song> songs;
     public Bitmap picture;
     private Map<String, List<Song>> songsByAlbum;
     private String bio;
 
-    public Artist(String name) {
-        this.name = name;
-        this.songs = new ArrayList<>();
+    public Artist(long id, String name, String bio, Long lastPlayed) {
+        super(id, name, lastPlayed, new ArrayList<Song>());
+        this.bio = bio;
     }
 
     public void addSong(Song song) {
-        songs.add(song);
+        super.addSong(song);
 
         if (songsByAlbum != null)
             addSongByAlbum(song);
@@ -37,12 +33,8 @@ public class Artist {
         songsByAlbum.put(song.album, albumSongs); // TODO sort songs by track number
     }
 
-    public int songsCount() {
-        return songs.size();
-    }
-
     public String songsCountPrint() {
-        int count = songsCount();
+        int count = size();
         String ret = Integer.toString(count) + " song";
         if (count != 1)
             ret += "s";
@@ -54,7 +46,7 @@ public class Artist {
     }
 
     public void removeSong(Song song) {
-        songs.remove(song);
+        super.removeSong(song);
 
         if (songsByAlbum != null)
             removeSongFromAlbum(song);
@@ -78,13 +70,8 @@ public class Artist {
         return songsByAlbum;
     }
 
-
     public List<Song> getAlbumSongs(String album) {
         return songsByAlbum().get(album);
-    }
-
-    public boolean hasSong(Song song) {
-        return songs.contains(song);
     }
 
     public void setBio(String bio) {

@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playable;
 import buddybox.core.Playlist;
@@ -132,10 +134,18 @@ public class RecentFragment extends Fragment {
 
         private void updatePlayableItem(Playable playable, View rowView) {
             rowView.findViewById(R.id.addToPlaylist).setVisibility(View.GONE);
-            int icon = playable == lastState.playlistPlaying
-                    ? R.drawable.ic_queue_music_blue
-                    : R.drawable.ic_queue_music;
-            ((ImageView)rowView.findViewById(R.id.picture)).setImageResource(icon);
+            if (playable.getClass() == Artist.class) {
+                int icon = playable == lastState.playlistPlaying
+                        ? R.drawable.ic_person_blue
+                        : R.drawable.ic_person;
+                ((ImageView)rowView.findViewById(R.id.playableArt)).setImageResource(icon);
+            }
+            if (playable.getClass() == Playlist.class) {
+                int icon = playable == lastState.playlistPlaying
+                        ? R.drawable.ic_queue_music_blue
+                        : R.drawable.ic_queue_music;
+                ((ImageView)rowView.findViewById(R.id.playableArt)).setImageResource(icon);
+            }
         }
 
         private void updateSongItem(final Song song, View rowView) {
@@ -150,9 +160,9 @@ public class RecentFragment extends Fragment {
 
             Bitmap art = song.getArt();
             if (art != null)
-                ((ImageView) rowView.findViewById(R.id.picture)).setImageBitmap(art);
+                ((ImageView) rowView.findViewById(R.id.playableArt)).setImageBitmap(art);
             else
-                ((ImageView) rowView.findViewById(R.id.picture)).setImageResource(R.mipmap.sneer2);
+                ((ImageView) rowView.findViewById(R.id.playableArt)).setImageResource(R.mipmap.sneer2);
         }
 
         void updateState(State state) {

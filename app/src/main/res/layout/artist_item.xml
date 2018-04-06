@@ -7,44 +7,36 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp">
 
-    <RelativeLayout
+    <ImageView
+        android:id="@+id/artistPicture"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignBottom="@+id/artistSongs"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@id/artistName"
+        android:layout_marginEnd="12dp"
+        android:visibility="visible"
+        app:srcCompat="@mipmap/sneer2"
+        android:contentDescription="@string/artist_picture"/>
+
+    <TextView
+        android:id="@+id/artistName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/songMore">
+        android:layout_marginTop="8dp"
+        android:layout_toEndOf="@+id/artistPicture"
+        android:singleLine="true"
+        android:text="@string/artist"
+        android:textAppearance="?attr/textAppearanceListItem" />
 
-        <ImageView
-            android:id="@+id/picture"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignBottom="@+id/songDuration"
-            android:layout_alignParentStart="true"
-            android:layout_alignTop="@+id/songName"
-            android:layout_marginRight="12dp"
-            android:visibility="visible"
-            app:srcCompat="@mipmap/sneer2" />
-
-        <TextView
-            android:id="@+id/songName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_toEndOf="@+id/picture"
-            android:singleLine="true"
-            android:text="Artist"
-            android:textAppearance="?attr/textAppearanceListItem" />
-
-        <TextView
-            android:id="@+id/songDuration"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/songName"
-            android:layout_below="@+id/songName"
-            android:layout_marginBottom="8dp"
-            android:singleLine="true"
-            android:text="42 songs" />
-
-    </RelativeLayout>
+    <TextView
+        android:id="@+id/artistSongs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/artistName"
+        android:layout_marginBottom="8dp"
+        android:layout_toEndOf="@+id/artistPicture"
+        android:singleLine="true"
+        android:text="@string/artist_songs" />
 
 </RelativeLayout>

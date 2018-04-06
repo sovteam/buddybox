@@ -10,9 +10,9 @@ public class Playlist implements Playable {
     public String name;
     public List<Song> songs;
     private List<Integer> shuffledSongs;
-    private long lastPlayed;
+    private Long lastPlayed;
 
-    public Playlist(long id, String name, long lastPlayed, List<Song> songs) {
+    public Playlist(long id, String name, Long lastPlayed, List<Song> songs) {
         this.id = id;
         this.name = name;
         this.lastPlayed = lastPlayed;

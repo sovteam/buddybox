@@ -128,9 +128,8 @@ public class Model implements IModel {
     private boolean hasAudioFocus = false;
     private boolean showDuration = true;
 
-    private ArrayList<Artist> artists;
+    private HashMap<String, Artist> artists;
     private Artist artistSelected;
-    private HashMap<String, String> bios;
 
     public Model(Context context) {
         if (context != null)
@@ -247,26 +246,12 @@ public class Model implements IModel {
     }
 
     private void artistBioFound(ArtistBioFound event) {
+        Log.i(TAG, "bio found: " + event.content);
         ContentValues values = new ContentValues();
-        values.put("ARTIST_NAME", event.artist.name);
-        values.put("CONTENT", event.content);
-
-        if (event.artist.getBio() == null)
-            db.insert(
-                    "ARTIST_BIO",
-                    null,
-                    values);
-        else
-            db.update(
-                "ARTIST_BIO",
-                values,
-                "ARTIST_NAME=?",
-                new String[]{event.artist.name});
-
-        bios.put(event.artist.name, event.content);
+        values.put("BIO", event.content);
+        db.update("ARTISTS", values,"ID=?", new String[]{Long.toString(event.artist.getId())});
         event.artist.setBio(event.content);
     }
-
 
     private void artistSelected(ArtistSelected event) {
         artistSelected = event.artist;
@@ -432,9 +417,8 @@ public class Model implements IModel {
     }
 
     private void shufflePlayArtist() {
-        // TODO auto create/update a playlist for each artist
-        // do not show artist playlist at custom playlists
-        selectedPlaylist = new Playlist(System.currentTimeMillis(), artistSelected.name, 1L, new ArrayList<>(artistSelected.songs));
+        selectedPlaylist = artistSelected;
+        updateLastPlayed(selectedPlaylist);
         shufflePlay();
     }
 
@@ -532,8 +516,6 @@ public class Model implements IModel {
             return;
 
         artist.removeSong(song);
-        if (artist.songs.isEmpty())
-            artists.remove(artist);
     }
 
     private void songFound(SongFound event) {
@@ -566,18 +548,17 @@ public class Model implements IModel {
             updateMediaStorageUsed(song.fileLength);
     }
 
-    private Artist getArtist(String artist) {
-        // find first
-        for (Artist a : artists)
-            if (a.name.equals(artist))
-                return a;
-
-        // create new
-        Artist newArtist = new Artist(artist);
-        newArtist.setBio(bios.get(artist));
-        artists.add(newArtist);
-
-        return newArtist;
+    private Artist getArtist(String artistName) {
+        Artist ret = artists().get(artistName);
+        if (ret == null) {
+            // create new artist
+            ContentValues values = new ContentValues();
+            values.put("NAME", artistName);
+            long newId = db.insert("ARTISTS", null, values);
+            ret = new Artist(newId, artistName, null, null);
+            artists.put(artistName, ret);
+        }
+        return ret;
     }
 
     private void updateMediaStorageUsed(long fileLength) {
@@ -624,37 +605,52 @@ public class Model implements IModel {
         samplerPlaylist = new Playlist(666, "Sampler", System.currentTimeMillis(), event.samples);
     }
 
-    private ArrayList<Artist> artists() {
+    private List<Artist> artistsPlayed() {
+        List<Artist> ret = new ArrayList<>();
+        for (Artist artist: allArtistsAvailable())
+            if (artist.lastPlayed() != null)
+                ret.add(artist);
+        return ret;
+    }
+
+    private List<Artist> allArtistsAvailable() {
+        List<Artist> ret = new ArrayList<>();
+        for (Artist artist : artists().values())
+            if (artist.size() > 0)
+                ret.add(artist);
+
+        Collections.sort(ret, new Comparator<Artist>() {
+            @Override
+            public int compare(Artist a1, Artist a2) {
+                return a1.name.toLowerCase().compareTo(a2.name.toLowerCase());
+            }
+        });
+
+        return ret;
+    }
+
+    private HashMap<String, Artist> artists() {
         if (artists == null) {
-            loadBios();
-            initializeArtists();
+            loadArtists();
         }
         return artists;
     }
 
-    private void loadBios() {
-        bios = new HashMap<>();
-        Cursor cursor = db.rawQuery("SELECT * FROM ARTIST_BIO", null);
-        while (cursor.moveToNext())
-            bios.put(cursor.getString(cursor.getColumnIndex("ARTIST_NAME")),
-                    cursor.getString(cursor.getColumnIndex("CONTENT")));
-        cursor.close();
-    }
-
-    private void initializeArtists() {
-        Map<String, Artist> artistsByName = new HashMap<>();
-        for (Song song : allSongs()) {
-            if (song.isMissing)
-                continue;
-            Artist artist = artistsByName.get(song.artist);
-            if (artist == null) {
-                artist = new Artist(song.artist);
-                artist.setBio(bios.get(song.artist));
-                artistsByName.put(song.artist, artist);
-            }
-            artist.addSong(song);
+    private void loadArtists() {
+        artists = new HashMap<>();
+        Cursor cursor = db.rawQuery("SELECT * FROM ARTISTS", null);
+        while (cursor.moveToNext()) {
+            String name = cursor.getString(cursor.getColumnIndex("NAME"));
+            Long lastPlayed = cursor.getLong(cursor.getColumnIndex("LAST_PLAYED"));
+            Artist artist = new Artist(
+                    cursor.getLong(cursor.getColumnIndex("ID")),
+                    cursor.getString(cursor.getColumnIndex("NAME")),
+                    cursor.getString(cursor.getColumnIndex("BIO")),
+                    lastPlayed == 0 ? null : lastPlayed
+            );
+            artists.put(name, artist);
         }
-        artists = new ArrayList<>(artistsByName.values());
+        cursor.close();
     }
 
     private void finishedPlaying() {
@@ -710,6 +706,7 @@ public class Model implements IModel {
         List<Playable> ret = new ArrayList<>();
         ret.addAll(allSongs());
         ret.addAll(playlists());
+        ret.addAll(artistsPlayed());
         Collections.sort(ret, new Comparator<Playable>() {
             @Override
             public int compare(Playable p1, Playable p2) {
@@ -839,9 +836,7 @@ public class Model implements IModel {
         long now = System.currentTimeMillis();
         ContentValues nowVal = new ContentValues();
         nowVal.put("LAST_PLAYED", now);
-        String table = playable.getClass() == Song.class
-                ? "SONGS"
-                : "PLAYLISTS";
+        String table = playable.getClass().getSimpleName().toUpperCase() + "S";
         db.update(table, nowVal, "ID=?", new String[]{Long.toString(playable.getId())});
         playable.updateLastPlayed(now);
     }
@@ -906,7 +901,7 @@ public class Model implements IModel {
                 getAvailableMemorySize(),
                 getMediaStorageUsed(),
                 allSongsAvailable(),
-                artists(),
+                allArtistsAvailable(),
                 syncLibraryRequested,
                 deleteSong,
                 selectedPlaylist,
@@ -969,6 +964,7 @@ public class Model implements IModel {
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1,
                         cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")));
                 addSong(song);
+                addSongToArtist(song);
             }
             cursor.close();
             Log.i(TAG, "initiate allSongs: " + (System.currentTimeMillis() - start) + " ms");

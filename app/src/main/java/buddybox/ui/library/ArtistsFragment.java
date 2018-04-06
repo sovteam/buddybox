@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,10 +37,8 @@ public class ArtistsFragment extends Fragment {
 
     private ArtistsArrayAdapter artistsAdapter;
     private View view;
-    private List<Artist> artists;
     private IModel.StateListener listener;
     private FragmentActivity activity;
-    private State lastState;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     public ArtistsFragment() {}
@@ -63,9 +62,6 @@ public class ArtistsFragment extends Fragment {
         list.addFooterView(footer);
         artistsAdapter = new ArtistsArrayAdapter();
         list.setAdapter(artistsAdapter);
-
-        if (artists != null)
-            updateArtists();
 
         return view;
     }
@@ -108,9 +104,13 @@ public class ArtistsFragment extends Fragment {
             if (artist == null)
                 return rowView;
 
-            setText(rowView, R.id.songName, artist.name);
-            setText(rowView, R.id.songDuration, Integer.toString(artist.songsCount()) + " songs");
-            ((ImageView)rowView.findViewById(R.id.picture)).setImageBitmap(artist.picture);
+            setText(rowView, R.id.artistName, artist.name);
+            setText(rowView, R.id.artistSongs, Integer.toString(artist.size()) + " songs");
+            if (artist.picture == null) {
+                ((ImageView)rowView.findViewById(R.id.artistPicture)).setImageResource(R.drawable.ic_person);
+            } else {
+                ((ImageView)rowView.findViewById(R.id.artistPicture)).setImageBitmap(artist.picture);
+            }
 
             rowView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -135,30 +135,12 @@ public class ArtistsFragment extends Fragment {
     }
 
     public void updateState(State state) {
-        artists = state.artists;
-        if (artists == null)
-            return;
-
-        Collections.sort(artists, new Comparator<Artist>() { @Override public int compare(Artist artistA, Artist artistB) {
-            return artistA.name.compareTo(artistB.name);
-        }});
-
-        updateArtists(state);
-        lastState = state;
-    }
-
-    private void updateArtists() {
-        if (lastState != null)
-            updateArtists(lastState);
-    }
-
-    private void updateArtists(State state) {
-        artistsAdapter.update(artists);
+        artistsAdapter.update(state.artists);
         if (state.syncLibraryPending) {
             view.findViewById(R.id.footerLoading).setVisibility(View.VISIBLE);
         } else {
             view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
-            if (artists.isEmpty()) {
+            if (state.artists.isEmpty()) {
                 view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.artists).setVisibility(View.INVISIBLE);
                 return;
