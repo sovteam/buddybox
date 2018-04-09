@@ -9,9 +9,7 @@
     <RelativeLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true">
+        android:layout_height="wrap_content">
 
         <ImageButton
             android:id="@+id/songMore"
@@ -20,7 +18,8 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:background="@android:color/transparent"
-            app:srcCompat="@drawable/ic_more_vert" />
+            app:srcCompat="@drawable/ic_more_vert"
+            android:contentDescription="@string/song_options" />
 
         <ImageView
             android:id="@+id/minimize"
@@ -29,7 +28,7 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:background="@android:color/transparent"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/minimize_playing_screen"
             android:padding="10dp"
             android:src="@drawable/ic_expand_more" />
 
@@ -37,10 +36,11 @@
             android:id="@+id/playingTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
+            android:layout_toEndOf="@+id/minimize"
+            android:layout_toStartOf="@+id/songMore"
             android:text="@string/song_playing"
-            android:textAlignment="gravity"
+            android:textAlignment="center"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textSize="20sp" />
     </RelativeLayout>
@@ -61,16 +61,13 @@
             android:layout_alignParentStart="true"
             android:layout_marginBottom="20dp">
 
-            <ImageView
-                android:id="@+id/art"
+            <android.support.v4.view.ViewPager
+                android:id="@+id/songsPager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_above="@+id/playingSongName"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:adjustViewBounds="false"
-                android:cropToPadding="false"
-                app:srcCompat="@mipmap/sneer2" />
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_above="@+id/playingSongName" />
 
             <TextView
                 android:id="@+id/playingSongName"
@@ -79,6 +76,7 @@
                 android:layout_above="@+id/playingSongArtist"
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="10dp"
+                android:singleLine="true"
                 android:text="@string/song"
                 android:textAlignment="center"
                 android:textAppearance="?android:attr/textAppearanceLarge"
@@ -90,6 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentStart="true"
+                android:singleLine="true"
                 android:text="@string/artist"
                 android:textAlignment="center"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -111,8 +110,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:layout_marginLeft="16dp"
-            android:text="0:05"
+            android:layout_marginStart="16dp"
+            android:text="@string/song_progress"
             android:textSize="12sp" />
 
         <TextView
@@ -121,8 +120,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginRight="16dp"
-            android:text="4:06"
+            android:layout_marginEnd="16dp"
+            android:layout_toEndOf="@+id/songProgress"
+            android:text="@string/song_duration_progress"
+            android:textAlignment="textEnd"
             android:textSize="12sp" />
 
     </RelativeLayout>
@@ -140,7 +141,7 @@
             android:layout_marginEnd="16dp"
             android:layout_toStartOf="@+id/skipPrevious"
             android:background="@android:color/transparent"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/repeat"
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_repeat_one" />
@@ -152,7 +153,7 @@
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/playingPlayPause"
             android:background="@android:color/transparent"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/skip_previous"
             android:padding="4dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_skip_previous" />
@@ -166,7 +167,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:background="@android:color/transparent"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/play_pause_button"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play_circle" />
 
@@ -177,7 +178,7 @@
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/playingPlayPause"
             android:background="@android:color/transparent"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/skip_next"
             android:padding="4dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_skip_next" />
@@ -191,7 +192,7 @@
             android:layout_marginTop="10dp"
             android:layout_toEndOf="@+id/skipNext"
             android:background="@android:color/transparent"
-            android:contentDescription="TODO"
+            android:contentDescription="@string/shuffle"
             android:padding="10dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_shuffle" />

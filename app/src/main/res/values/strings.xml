@@ -46,4 +46,11 @@
     <string name="playable_art">Playable art</string>
     <string name="playable_name">Playable name</string>
     <string name="playable_subtitle">Playable subtitle</string>
+    <string name="page_art">Page art</string>
+    <string name="song_options">Song options</string>
+    <string name="minimize_playing_screen">Minimize playing screen</string>
+    <string name="song_progress">0:05</string>
+    <string name="song_duration_progress">4:06</string>
+    <string name="repeat">Repeat</string>
+    <string name="shuffle">Shuffle</string>
 </resources>

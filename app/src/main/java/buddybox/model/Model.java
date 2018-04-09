@@ -848,7 +848,7 @@ public class Model implements IModel {
     }
 
     private void doPlay(Playlist playlist, int songIndex) {
-        Song song = playlist.song(songIndex);
+        Song song = playlist.song(songIndex, isShuffle);
         if (song != null && song.isMissing) {
             isPaused = true;
             currentSongIndex = null;
@@ -929,7 +929,7 @@ public class Model implements IModel {
                     ? samplerPlaylist.song(0)
                     : currentSongIndex == null
                         ? null
-                        : currentPlaylist.song(currentSongIndex);
+                        : currentPlaylist.song(currentSongIndex, isShuffle);
     }
 
     private List<Song> allSongsAvailable() {
