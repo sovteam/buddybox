@@ -16,29 +16,29 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import java.util.List;
-
+import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.ArtistSelected;
+import buddybox.core.events.ArtistSelectedByName;
 import buddybox.core.events.PlaylistSelected;
 import buddybox.core.events.SeekTo;
 import buddybox.io.Player;
-import buddybox.ui.util.FlowLayout;
 
+import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
-import static buddybox.core.events.Play.TOGGLE_DURATION_REMAINING;
-import static buddybox.ui.ModelProxy.dispatch;
-import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
+import static buddybox.core.events.Play.TOGGLE_DURATION_REMAINING;
+import static buddybox.ui.ModelProxy.dispatch;
 
 public class PlayingActivity extends AppCompatActivity {
 
     private Song playing;
+    private Playlist playlist;
     private SeekBar seekBar;
     private boolean seekBarTouching;
     private IModel.StateListener stateListener;
@@ -71,6 +71,21 @@ public class PlayingActivity extends AppCompatActivity {
             dispatch(SHUFFLE);
         }});
         findViewById(R.id.repeat).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {             dispatch(REPEAT);
+        }});
+
+        findViewById(R.id.art).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            if (playlist.getClass() == Artist.class) {
+                dispatch(new ArtistSelected((Artist) playlist));
+                startActivity(new Intent(getApplicationContext(), ArtistActivity.class));
+            } else if (playlist.getClass() == Playlist.class && playlist.getId() != 0L) {
+                dispatch(new PlaylistSelected(playlist));
+                startActivity(new Intent(getApplicationContext(), PlaylistActivity.class));
+            }
+        }});
+
+        findViewById(R.id.playingSongArtist).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(new ArtistSelectedByName(playing.artist));
+            startActivity(new Intent(getApplicationContext(), ArtistActivity.class));
         }});
 
         seekBar = findViewById(R.id.seekBar);
@@ -162,6 +177,14 @@ public class PlayingActivity extends AppCompatActivity {
         seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.SRC_IN);
 
         playing = state.songPlaying;
+        playlist = state.playlistPlaying;
+
+        String title = playlist.getClass() == Artist.class
+                ? "Artist Playing"
+                : playlist.getId() != 0
+                    ? "Playlist Playing"
+                    : "Song Playing";
+        ((TextView) findViewById(R.id.playingTitle)).setText(title);
 
         showDuration = state.showDuration;
         updateSongDuration();

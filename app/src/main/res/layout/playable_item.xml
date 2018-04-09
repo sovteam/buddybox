@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/playableItem"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:id="@+id/playableItem"
     android:paddingStart="16dp">
 
     <ImageView
@@ -13,8 +13,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:contentDescription="@string/add_to_playlist"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"

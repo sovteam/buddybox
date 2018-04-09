@@ -30,6 +30,7 @@ import buddybox.core.events.AlbumArtFound;
 import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.core.events.ArtistSelected;
+import buddybox.core.events.ArtistSelectedByName;
 import buddybox.core.events.Play;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.PlaylistAddSong;
@@ -219,6 +220,7 @@ public class Model implements IModel {
 
         // artist
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
+        if (cls == ArtistSelectedByName.class) artistSelectedByName((ArtistSelectedByName) event);
 
         updateListeners();
     }
@@ -255,6 +257,10 @@ public class Model implements IModel {
 
     private void artistSelected(ArtistSelected event) {
         artistSelected = event.artist;
+    }
+
+    private void artistSelectedByName(ArtistSelectedByName event) {
+        artistSelected = artists.get(event.name);
     }
 
     private void artistPictureFound(ArtistPictureFound event) {

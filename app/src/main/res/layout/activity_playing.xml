@@ -34,7 +34,7 @@
             android:src="@drawable/ic_expand_more" />
 
         <TextView
-            android:id="@+id/barTitle"
+            android:id="@+id/playingTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
