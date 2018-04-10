@@ -85,11 +85,6 @@ public class PlayingActivity extends AppCompatActivity {
         findViewById(R.id.repeat).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {             dispatch(REPEAT);
         }});
 
-        findViewById(R.id.playingSongArtist).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(new ArtistSelectedByName(playing.artist));
-            startActivity(new Intent(getApplicationContext(), ArtistActivity.class));
-        }});
-
         seekBar = findViewById(R.id.seekBar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int newPosition;
@@ -217,13 +212,7 @@ public class PlayingActivity extends AppCompatActivity {
 
         updateSongDuration();
         updateTitle();
-        updateSongInfo();
         updateCommandButtons(state);
-    }
-
-    private void updateSongInfo() {
-        ((TextView) findViewById(R.id.playingSongName)).setText(playing.name);
-        ((TextView) findViewById(R.id.playingSongArtist)).setText(playing.artist);
     }
 
     private void updateCommandButtons(State state) {
@@ -280,7 +269,8 @@ public class PlayingActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             Fragment ret = new SongPageFragment();
 
-            Bitmap bmp = playlist.song(position, isShuffle).getArt();
+            Song song = playlist.song(position, isShuffle);
+            Bitmap bmp = song.getArt();
             Log.i("Playing", "New Fragment for: " + playlist.song(position, isShuffle).name + ", position: " + position);
             if (bmp != null) {
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -289,9 +279,10 @@ public class PlayingActivity extends AppCompatActivity {
 
                 Bundle bundle = new Bundle();
                 bundle.putByteArray("art", byteArray);
+                bundle.putString("songName", song.name);
+                bundle.putString("songArtist", song.artist);
                 ret.setArguments(bundle);
             }
-
             return ret;
         }
 

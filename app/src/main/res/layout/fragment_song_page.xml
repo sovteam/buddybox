@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbarAlwaysDrawVerticalTrack="false">
+
+    <RelativeLayout
+        android:id="@+id/songContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:id="@+id/pageArt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/playingSongName"
+            android:background="@mipmap/sneer2" />
+
+        <TextView
+            android:id="@+id/playingSongArtist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:singleLine="true"
+            android:text="@string/artist"
+            android:textAlignment="center"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/playingSongName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/playingSongArtist"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="10dp"
+            android:singleLine="true"
+            android:text="@string/song"
+            android:textAlignment="center"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="24sp" />
+
+    </RelativeLayout>
+</ScrollView>
