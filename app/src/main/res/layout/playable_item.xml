@@ -4,7 +4,9 @@
     android:id="@+id/playableItem"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:paddingStart="16dp">
+    android:paddingStart="16dp"
+    android:paddingEnd="0dp"
+    android:foreground="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/addToPlaylist"
@@ -12,11 +14,11 @@
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:background="?selectableItemBackground"
         android:contentDescription="@string/add_to_playlist"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        android:src="@drawable/ic_playlist_add" />
+        android:src="@drawable/ic_playlist_add"
+        android:foreground="?attr/selectableItemBackground"/>
 
     <ImageView
         android:id="@+id/playableArt"

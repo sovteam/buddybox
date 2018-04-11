@@ -1,8 +1,6 @@
 package buddybox.ui;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +17,7 @@ import com.adalbertosoares.buddybox.R;
 import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
+import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.ArtistSelectedByName;
@@ -31,29 +30,24 @@ public class SongPageFragment extends Fragment {
     private IModel.StateListener listener;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private State lastState;
+    private int position;
+    private ViewGroup rootView;
+    private Song song;
+    private ImageView pageArt;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_song_page, container, false);
-
-        // TODO move to updateState?
-        if (getArguments() == null) {
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_song_page, container, false);
+        if (getArguments() == null)
             return rootView;
-        }
 
-        ImageView pageArt = rootView.findViewById(R.id.pageArt);
-        ((TextView) rootView.findViewById(R.id.playingSongName)).setText(getArguments().getString("songName"));
-        ((TextView) rootView.findViewById(R.id.playingSongArtist)).setText(getArguments().getString("songArtist"));
-        byte[] art = getArguments().getByteArray("art");
-        if (art != null) {
-            Bitmap bmp = BitmapFactory.decodeByteArray(art, 0, art.length);
-            pageArt.setImageBitmap(bmp);
-        }
+        position = getArguments().getInt("position");
         rootView.findViewById(R.id.playingSongArtist).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            dispatch(new ArtistSelectedByName(getArguments().getString("songArtist")));
+            dispatch(new ArtistSelectedByName(song.artist));
             startActivity(new Intent(getContext(), ArtistActivity.class));
         }});
 
+        pageArt = rootView.findViewById(R.id.pageArt);
         pageArt.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             if (lastState.playlistPlaying.getClass() == Artist.class) {
                 dispatch(new ArtistSelected((Artist) lastState.playlistPlaying));
@@ -90,6 +84,15 @@ public class SongPageFragment extends Fragment {
     }
 
     private void updateState(State state) {
+        song = state.playlistPlaying.song(position, state.isShuffle);
+
+        ((TextView) rootView.findViewById(R.id.playingSongName)).setText(song.name);
+        ((TextView) rootView.findViewById(R.id.playingSongArtist)).setText(song.artist);
+        if (song.getArt() != null)
+            pageArt.setImageBitmap(song.getArt());
+        else
+            pageArt.setImageResource(R.mipmap.sneer2);
+
         lastState = state;
     }
 }

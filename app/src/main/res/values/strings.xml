@@ -42,7 +42,6 @@
     <string name="song_artist">song artist</string>
     <string name="artist">Artist</string>
     <string name="artist_songs">42 songs</string>
-    <string name="add_to_playlist">Add to Playlist</string>
     <string name="playable_art">Playable art</string>
     <string name="playable_name">Playable name</string>
     <string name="playable_subtitle">Playable subtitle</string>
@@ -53,4 +52,6 @@
     <string name="song_duration_progress">4:06</string>
     <string name="repeat">Repeat</string>
     <string name="shuffle">Shuffle</string>
+    <string name="add_to_playlist">Add to Playlist</string>
+    <string name="song_subtitle">Song subtitle</string>
 </resources>

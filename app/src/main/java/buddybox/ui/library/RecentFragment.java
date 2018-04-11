@@ -63,6 +63,7 @@ public class RecentFragment extends Fragment {
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            Log.i("RECENT", "click");
             dispatch(new Play(lastState.recent.get(i)));
         }});
         playables = new PlayablesArrayAdapter();

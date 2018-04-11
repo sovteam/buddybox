@@ -49,27 +49,16 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center_horizontal"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp">
+        android:gravity="center_horizontal">
 
-        <RelativeLayout
-            android:id="@+id/songContainer"
+        <android.support.v4.view.ViewPager
+            android:id="@+id/songsPager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/seekBar"
-            android:layout_alignParentStart="true"
-            android:layout_marginBottom="20dp">
-
-            <android.support.v4.view.ViewPager
-                android:id="@+id/songsPager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="true"
-                android:focusable="true" />
-
-
-        </RelativeLayout>
+            android:layout_marginBottom="10dp"
+            android:clickable="true"
+            android:focusable="true" />
 
         <SeekBar
             android:id="@+id/seekBar"
@@ -77,7 +66,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginStart="20dp" />
 
         <TextView
             android:id="@+id/songProgress"
@@ -85,7 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="36dp"
             android:text="@string/song_progress"
             android:textSize="12sp" />
 
@@ -95,7 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="36dp"
             android:layout_toEndOf="@+id/songProgress"
             android:text="@string/song_duration_progress"
             android:textAlignment="textEnd"
@@ -106,7 +97,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="10dp">
 
         <ImageButton
             android:id="@+id/repeat"

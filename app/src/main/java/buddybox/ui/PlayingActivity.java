@@ -1,20 +1,16 @@
 package buddybox.ui;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -23,14 +19,11 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import java.io.ByteArrayOutputStream;
-
 import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.ArtistSelectedByName;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SeekTo;
 import buddybox.io.Player;
@@ -71,10 +64,14 @@ public class PlayingActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.stay,R.anim.slide_out_down);
         }});
 
-        findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { openSongOptionsDialog(); }});
-        findViewById(R.id.songDuration).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(TOGGLE_DURATION_REMAINING); }});
-
-        findViewById(R.id.playingPlayPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
+        findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {openSongOptionsDialog();
+            }
+        });
+        findViewById(R.id.songDuration).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { dispatch(TOGGLE_DURATION_REMAINING); }});
+        findViewById(R.id.playingPlayPause).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
         findViewById(R.id.skipNext).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SKIP_NEXT);
         }});
         findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(SKIP_PREVIOUS);
@@ -108,6 +105,7 @@ public class PlayingActivity extends AppCompatActivity {
         });
 
         mPager = findViewById(R.id.songsPager);
+        mPager.setOffscreenPageLimit(5);
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -205,10 +203,15 @@ public class PlayingActivity extends AppCompatActivity {
             mPagerAdapter.notifyDataSetChanged();
         }
 
+        // get current song index
         int songIndex = state.playlistPlaying.songs.indexOf(state.songPlaying);
         if (state.isShuffle)
             songIndex = state.playlistPlaying.shuffledSongs().indexOf(songIndex);
-        mPager.setCurrentItem(songIndex, false);
+
+        // update songs view pager only when necessary
+        if (mPager.getCurrentItem() != songIndex) {
+            mPager.setCurrentItem(songIndex, false);
+        }
 
         updateSongDuration();
         updateTitle();
@@ -261,28 +264,12 @@ public class PlayingActivity extends AppCompatActivity {
             super(fm);
         }
 
-        public int getItemPosition(@NonNull Object object) {
-            return POSITION_NONE;
-        }
-
         @Override
         public Fragment getItem(int position) {
             Fragment ret = new SongPageFragment();
-
-            Song song = playlist.song(position, isShuffle);
-            Bitmap bmp = song.getArt();
-            Log.i("Playing", "New Fragment for: " + playlist.song(position, isShuffle).name + ", position: " + position);
-            if (bmp != null) {
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] byteArray = stream.toByteArray();
-
-                Bundle bundle = new Bundle();
-                bundle.putByteArray("art", byteArray);
-                bundle.putString("songName", song.name);
-                bundle.putString("songArtist", song.artist);
-                ret.setArguments(bundle);
-            }
+            Bundle bundle = new Bundle();
+            bundle.putInt("position", position);
+            ret.setArguments(bundle);
             return ret;
         }
 
