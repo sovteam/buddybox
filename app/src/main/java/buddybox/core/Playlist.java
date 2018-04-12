@@ -159,4 +159,11 @@ public class Playlist implements Playable {
         songs.remove(song);
         songs.add(toPosition, song);
     }
+
+    public int indexOf(Song song, boolean isShuffle) {
+        int ret = songs.indexOf(song);
+        return isShuffle
+                ? shuffledSongs().indexOf(ret)
+                : ret;
+    }
 }

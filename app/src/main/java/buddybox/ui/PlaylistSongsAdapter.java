@@ -29,12 +29,11 @@ import static buddybox.ui.ModelProxy.dispatch;
 
 class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSongsAdapter.ViewHolder> {
 
-    private Playlist playlist;
-    private Song songPlaying;
     private final Context context;
     private final int mLayoutId;
     private final int mGrabHandleId;
     private final boolean mDragOnLongPress;
+    private State lastState;
 
     PlaylistSongsAdapter(Context context, int layoutId, int grabHandleId, boolean dragOnLongPress) {
         this.context = context;
@@ -68,14 +67,12 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
     }
 
     public void updateState(State state) {
-        this.playlist = state.selectedPlaylist;
-        this.songPlaying = state.songPlaying;
         ArrayList<Pair<Long, Song>> list = new ArrayList<>();
-        for (Song song : playlist.songs) {
+        for (Song song : state.selectedPlaylist.songs) {
             list.add(new Pair<>(song.getId(), song));
         }
-        System.out.println(">> Set songs list");
         setItemList(list);
+        lastState = state;
     }
 
     class ViewHolder extends DragItemAdapter.ViewHolder {
@@ -105,7 +102,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             if (song.isMissing) {
                 color = Color.parseColor("#e53935"); // RED
                 icon = R.drawable.ic_drag_handle_red;
-            } else if (song == songPlaying) {
+            } else if (song == lastState.songPlaying && lastState.selectedPlaylist == lastState.playlistPlaying) {
                 color = Color.parseColor("#03a9f4"); // BLUE
                 icon = R.drawable.ic_drag_handle_blue;
             }
@@ -122,7 +119,9 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
 
         @Override
         public void onItemClicked(View view) {
-            dispatch(new PlayPlaylist(playlist, playlist.songs.indexOf(song)));
+            dispatch(new PlayPlaylist(
+                    lastState.selectedPlaylist,
+                    lastState.selectedPlaylist.indexOf(song, lastState.isShuffle)));
         }
 
         @Override

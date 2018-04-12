@@ -21,10 +21,6 @@ public class Play extends Dispatcher.Event {
     public static final Dispatcher.Event PAUSE = new Dispatcher.Event("Pause");
     public static final Dispatcher.Event SKIP_NEXT = new Dispatcher.Event("SkipNext");
     public static final Dispatcher.Event SKIP_PREVIOUS = new Dispatcher.Event("SkipPrevious");
-    public static final Dispatcher.Event TOGGLE_DURATION_REMAINING = new Dispatcher.Event("ToggleDurationRemaining");
-
-
-
     public static final Dispatcher.Event FINISHED_PLAYING = new Dispatcher.Event("FinishedPlaying");
-
+    public static final Dispatcher.Event TOGGLE_DURATION_REMAINING = new Dispatcher.Event("ToggleDurationRemaining");
 }

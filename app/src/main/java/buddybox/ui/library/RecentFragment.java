@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,7 +62,6 @@ public class RecentFragment extends Fragment {
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            Log.i("RECENT", "click");
             dispatch(new Play(lastState.recent.get(i)));
         }});
         playables = new PlayablesArrayAdapter();
@@ -124,11 +122,10 @@ public class RecentFragment extends Fragment {
                 subtitle.setTextColor(Color.LTGRAY);
             }
 
-            if (playable.getClass() == Song.class) {
+            if (playable.getClass() == Song.class)
                 updateSongItem((Song) playable, rowView);
-            } else {
+            else
                 updatePlayableItem(playable, rowView);
-            }
 
             return rowView;
         }
@@ -203,21 +200,15 @@ public class RecentFragment extends Fragment {
     }
 
     public void updateState(State state) {
-        lastState = state;
-        updateRecentList();
-    }
-
-    private void updateRecentList() {
-        playables.updateState(lastState);
+        playables.updateState(state);
 
         // show/hide footers
-        if (lastState.syncLibraryPending) {
+        if (state.syncLibraryPending) {
             view.findViewById(R.id.footerLoading).setVisibility(View.VISIBLE);
             view.findViewById(R.id.library_empty).setVisibility(View.GONE);
         } else {
             view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
-
-            if (lastState.recent.isEmpty()) {
+            if (state.recent.isEmpty()) {
                 view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
                 view.findViewById(R.id.recentPlayables).setVisibility(View.INVISIBLE);
                 return;
@@ -225,5 +216,7 @@ public class RecentFragment extends Fragment {
         }
         view.findViewById(R.id.library_empty).setVisibility(View.INVISIBLE);
         view.findViewById(R.id.recentPlayables).setVisibility(View.VISIBLE);
+
+        lastState = state;
     }
 }

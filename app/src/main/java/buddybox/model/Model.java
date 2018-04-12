@@ -228,7 +228,7 @@ public class Model implements IModel {
     private void play(Play event) {
         if (event.playable.getClass() == Song.class) {
             Playlist all = allSongsPlaylist();
-            int songIndex = all.songs.indexOf(event.playable);
+            int songIndex = all.indexOf((Song) event.playable, isShuffle);
             doPlay(all, songIndex);
         } else {
             doPlay((Playlist) event.playable, 0);

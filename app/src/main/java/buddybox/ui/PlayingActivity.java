@@ -203,15 +203,8 @@ public class PlayingActivity extends AppCompatActivity {
             mPagerAdapter.notifyDataSetChanged();
         }
 
-        // get current song index
-        int songIndex = state.playlistPlaying.songs.indexOf(state.songPlaying);
-        if (state.isShuffle)
-            songIndex = state.playlistPlaying.shuffledSongs().indexOf(songIndex);
-
-        // update songs view pager only when necessary
-        if (mPager.getCurrentItem() != songIndex) {
-            mPager.setCurrentItem(songIndex, false);
-        }
+        int songIndex = state.playlistPlaying.indexOf(state.songPlaying, state.isShuffle);
+        mPager.setCurrentItem(songIndex, false);
 
         updateSongDuration();
         updateTitle();
