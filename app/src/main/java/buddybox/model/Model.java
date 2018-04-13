@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import buddybox.core.Album;
 import buddybox.core.Artist;
 import buddybox.core.Dispatcher;
 import buddybox.core.IModel;
@@ -125,12 +126,13 @@ public class Model implements IModel {
 
     private boolean wasPlayingBeforeLostAudioFocus = false;
     private boolean isBluetoothConnected;
-    private Map<String,Integer>  volumeSettings;
+    private Map<String,Integer> volumeSettings;
     private boolean hasAudioFocus = false;
     private boolean showDuration = true;
 
     private HashMap<String, Artist> artists;
     private Artist artistSelected;
+    private Map<String, Map<String, Album>> albumsByArtist;
 
     public Model(Context context) {
         if (context != null)
@@ -522,6 +524,15 @@ public class Model implements IModel {
             return;
 
         artist.removeSong(song);
+        removeSongFromAlbum(song);
+    }
+
+    private void removeSongFromAlbum(Song song) {
+        Album album = getAlbum(song.album, song.artist);
+        if (album == null)
+            return;
+
+        album.removeSong(song);
     }
 
     private void songFound(SongFound event) {
@@ -537,14 +548,6 @@ public class Model implements IModel {
                 removeSongFromArtist(song);
         }
         addSong(event.song);
-        addSongToArtist(event.song);
-    }
-
-    private void addSongToArtist(Song song) {
-        // add song to artist
-        Artist artist = getArtist(song.artist);
-        if (!artist.hasSong(song))
-            artist.addSong(song);
     }
 
     private void addSong(Song song) {
@@ -552,6 +555,65 @@ public class Model implements IModel {
         songsByHash.put(song.hash.toString(), song);
         if (!song.isMissing)
             updateMediaStorageUsed(song.fileLength);
+
+        addSongToArtist(song);
+        addSongToAlbum(song);
+    }
+
+    private void addSongToAlbum(Song song) {
+        Album album = getAlbum(song.album, song.artist);
+        if (!album.hasSong(song))
+            album.addSong(song);
+    }
+
+    private Album getAlbum(String album, String artist) {
+        Map<String, Album> albums = albumsByArtist().get(artist);
+        if (albums == null) {
+            albums = new HashMap<>();
+        }
+        Album ret = albums.get(album);
+        if (ret == null) {
+            // create new album
+            ContentValues values = new ContentValues();
+            values.put("NAME", album);
+            values.put("ARTIST", artist);
+            long newId = db.insert("ALBUMS", null, values);
+            ret = new Album(newId, album, null);
+            albums.put(album, ret);
+            albumsByArtist.put(artist, albums);
+        }
+        return ret;
+    }
+
+    private Map<String, Map<String, Album>> albumsByArtist() {
+        if (albumsByArtist == null)
+            loadAlbums();
+        return albumsByArtist;
+    }
+
+    private void loadAlbums() {
+        albumsByArtist = new HashMap<>();
+        Cursor cursor = db.rawQuery("SELECT * FROM ALBUMS", null);
+        while (cursor.moveToNext()) {
+            long id = cursor.getLong(cursor.getColumnIndex("ID"));
+            String name = cursor.getString(cursor.getColumnIndex("NAME"));
+            String artist = cursor.getString(cursor.getColumnIndex("ARTIST"));
+            Long lastPlayed = cursor.getLong(cursor.getColumnIndex("LAST_PLAYED"));
+            Album album = new Album(id, name, lastPlayed == 0 ? null : lastPlayed);
+
+            Map<String, Album> albums = albumsByArtist.get(artist);
+            if (albums == null)
+                albums = new HashMap<>();
+            albums.put(name, album);
+            albumsByArtist.put(artist, albums);
+        }
+        cursor.close();
+    }
+
+    private void addSongToArtist(Song song) {
+        Artist artist = getArtist(song.artist);
+        if (!artist.hasSong(song))
+            artist.addSong(song);
     }
 
     private Artist getArtist(String artistName) {
@@ -616,6 +678,17 @@ public class Model implements IModel {
         for (Artist artist: allArtistsAvailable())
             if (artist.lastPlayed() != null)
                 ret.add(artist);
+        return ret;
+    }
+
+    private List<Album> albumsPlayed() {
+        List<Album> ret = new ArrayList<>();
+        for (Map<String, Album> albums : albumsByArtist.values()) {
+            for (Album album : albums.values()) {
+                if (album.lastPlayed() != null && !album.isEmpty())
+                    ret.add(album);
+            }
+        }
         return ret;
     }
 
@@ -713,6 +786,7 @@ public class Model implements IModel {
         ret.addAll(allSongs());
         ret.addAll(playlists());
         ret.addAll(artistsPlayed());
+        ret.addAll(albumsPlayed());
         Collections.sort(ret, new Comparator<Playable>() {
             @Override
             public int compare(Playable p1, Playable p2) {
@@ -915,7 +989,16 @@ public class Model implements IModel {
                 getOutputConnected(),
                 getVolumeSettings(),
                 hasAudioFocus,
-                artistSelected);
+                artistSelected,
+                artistAlbums()
+        );
+    }
+
+    private Map<String, Album> artistAlbums() {
+        if (artistSelected == null)
+            return null;
+
+        return albumsByArtist.get(artistSelected.name);
     }
 
     private Integer reportSeekTo() {
@@ -970,7 +1053,6 @@ public class Model implements IModel {
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1,
                         cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")));
                 addSong(song);
-                addSongToArtist(song);
             }
             cursor.close();
             Log.i(TAG, "initiate allSongs: " + (System.currentTimeMillis() - start) + " ms");

@@ -1,10 +1,10 @@
 package buddybox.ui;
 
 import android.animation.ObjectAnimator;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -14,11 +14,13 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
+import buddybox.core.Album;
 import buddybox.core.IModel;
-import buddybox.core.Song;
 import buddybox.core.State;
 
 import static buddybox.core.Dispatcher.dispatch;
@@ -84,7 +86,7 @@ public class ArtistActivity extends AppCompatActivity {
     }
 
 
-    private void updateState(State state) {
+    private void updateState(final State state) {
         if (state.artistSelected == null) {
             finish();
             return;
@@ -111,13 +113,18 @@ public class ArtistActivity extends AppCompatActivity {
         }
 
         // songs by album
-        Map<String, List<Song>> map = state.artistSelected.songsByAlbum();
         LinearLayout albumsContainer = findViewById(R.id.albums_container);
-
-        for (String album : map.keySet()) {
-            LinearLayout albumView = albumsContainer.findViewWithTag(album);
+        List<Album> albums = new ArrayList<>(state.artistAlbums.values());
+        Collections.sort(albums, new Comparator<Album>() {
+            @Override
+            public int compare(Album a1, Album a2) {
+                return a1.name.compareTo(a2.name); // todo: or year?
+            }
+        });
+        for (Album album : albums) {
+            LinearLayout albumView = albumsContainer.findViewWithTag(album.name);
             if (albumView == null) {
-                albumView = inflateAlbum(album);
+                albumView = inflateAlbum(album.name);
                 albumsContainer.addView(albumView);
             }
         }

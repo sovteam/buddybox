@@ -5,13 +5,10 @@ import android.os.Handler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import buddybox.core.IModel;
 import buddybox.core.Playable;
-import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import sov.Hash;
@@ -68,6 +65,6 @@ public class ModelSim implements IModel {
 
         boolean isPaused = count % 2 == 0;
         for (StateListener listener : listeners)
-            listener.update(new State(1, null, new ArrayList<Playable>(), song, null, null, false, isPaused, false, false, false, true, null, false, null, null, null, null, 1, count * 1024, 0L, songs, null, false, null, null, null, null, new HashMap<String, Integer>(), true, null));
+            listener.update(new State(1, null, new ArrayList<Playable>(), song, null, null, false, isPaused, false, false, false, true, null, false, null, null, null, null, 1, count * 1024, 0L, songs, null, false, null, null, null, null, new HashMap<String, Integer>(), true, null, null));
     }
 }

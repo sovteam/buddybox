@@ -21,27 +21,32 @@
         android:text="@string/album_name"
         android:textSize="18sp" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/albumShufflePlay"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/albumArt"
         android:layout_below="@+id/albumName"
         android:layout_toEndOf="@+id/albumPlayAll"
-        android:background="@android:color/transparent"
+        android:clickable="true"
         android:contentDescription="@string/album_shuffle"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="6dp"
         app:srcCompat="@drawable/ic_shuffle" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/albumPlayAll"
-        style="@android:style/Widget.DeviceDefault.ImageButton"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/albumArt"
         android:layout_below="@+id/albumName"
         android:layout_toEndOf="@+id/albumArt"
-        android:background="@android:color/transparent"
+        android:clickable="true"
         android:contentDescription="@string/album_play"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:padding="6dp"
         app:srcCompat="@drawable/ic_play" />
 
     <LinearLayout
@@ -50,9 +55,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/albumPlayAll"
-        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
-        android:orientation="vertical"></LinearLayout>
+        android:orientation="vertical"/>
 
 
 </RelativeLayout>

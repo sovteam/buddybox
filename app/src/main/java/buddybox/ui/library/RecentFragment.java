@@ -23,6 +23,7 @@ import com.adalbertosoares.buddybox.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import buddybox.core.Album;
 import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playable;
@@ -142,6 +143,12 @@ public class RecentFragment extends Fragment {
                 int icon = playable == lastState.playlistPlaying
                         ? R.drawable.ic_queue_music_blue
                         : R.drawable.ic_queue_music;
+                ((ImageView)rowView.findViewById(R.id.playableArt)).setImageResource(icon);
+            }
+            if (playable.getClass() == Album.class) {
+                int icon = playable == lastState.playlistPlaying
+                        ? R.drawable.ic_library_music_blue
+                        : R.drawable.ic_library_music_grey;
                 ((ImageView)rowView.findViewById(R.id.playableArt)).setImageResource(icon);
             }
         }

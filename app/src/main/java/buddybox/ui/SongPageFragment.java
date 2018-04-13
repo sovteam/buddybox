@@ -84,6 +84,9 @@ public class SongPageFragment extends Fragment {
     }
 
     private void updateState(State state) {
+        if (position >= state.playlistPlaying.size())
+            return;
+
         song = state.playlistPlaying.song(position, state.isShuffle);
 
         ((TextView) rootView.findViewById(R.id.playingSongName)).setText(song.name);

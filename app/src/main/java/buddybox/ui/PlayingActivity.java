@@ -34,6 +34,7 @@ import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.core.events.Play.SKIP_NEXT;
 import static buddybox.core.events.Play.SKIP_PREVIOUS;
 import static buddybox.core.events.Play.TOGGLE_DURATION_REMAINING;
+import static buddybox.model.Model.ALL_SONGS;
 import static buddybox.ui.ModelProxy.dispatch;
 
 public class PlayingActivity extends AppCompatActivity {
@@ -206,8 +207,8 @@ public class PlayingActivity extends AppCompatActivity {
         int songIndex = state.playlistPlaying.indexOf(state.songPlaying, state.isShuffle);
         mPager.setCurrentItem(songIndex, false);
 
+        updateTitle(state);
         updateSongDuration();
-        updateTitle();
         updateCommandButtons(state);
     }
 
@@ -235,12 +236,15 @@ public class PlayingActivity extends AppCompatActivity {
         seekBar.getThumb().setColorFilter(Color.parseColor(state.isPaused ? "#FFFFFF" : "#03a9f4"), PorterDuff.Mode.SRC_IN);
     }
 
-    private void updateTitle() {
-        String title = playlist.getClass() == Artist.class
-                ? "Artist Playing"
-                : playlist.getId() != 0
-                ? "Playlist Playing"
-                : "Song Playing";
+    private void updateTitle(State state) {
+        String title;
+        if (playlist.getClass() == Playlist.class && playlist.name().equals(ALL_SONGS)) {
+            title = state.isShuffle
+                    ? "All Songs"
+                    : "All Recent";
+        } else {
+            title = playlist.getClass().getSimpleName() + " Playing";
+        }
         ((TextView) findViewById(R.id.playingTitle)).setText(title);
     }
 

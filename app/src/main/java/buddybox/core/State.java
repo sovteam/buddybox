@@ -51,9 +51,10 @@ public class State {
     public final Map<String, Integer> volumeSettings;
     public final boolean hasAudioFocus;
     public final Artist artistSelected;
+    public final Map<String, Album> artistAlbums;
     public final List<Playable> recent;
 
-    public State(int songCount, String[] musicFolders, List<Playable> recentList, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, List<Song> allSongs, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus, Artist artistSelected) {
+    public State(int songCount, String[] musicFolders, List<Playable> recentList, Song playing, Playlist playlistPlaying, Integer seekTo, Boolean isStopped, boolean isPaused, boolean isShuffle, boolean repeatAll, Boolean repeatSong, boolean showDuration, Map<String, List<Playlist>> playlistsBySong, boolean isSampling, Playlist samplerPlaylist, Playlist lovedPlaylist, List<Playlist> playlists, List<Playable> searchResults, int buddyCount, long availableMemorySize, Long mediaStorageUsed, List<Song> allSongs, List<Artist> artists, boolean syncLibraryRequested, Song deleteSong, Playlist selectedPlaylist, Song selectedSong, String outputActive, Map<String, Integer> volumeSettings, boolean hasAudioFocus, Artist artistSelected, Map<String, Album> artistAlbums) {
         this.seekTo = seekTo;
         this.isStopped = isStopped;
         this.isShuffle = isShuffle;
@@ -88,5 +89,6 @@ public class State {
         this.volumeSettings = volumeSettings;
         this.hasAudioFocus = hasAudioFocus;
         this.artistSelected = artistSelected;
+        this.artistAlbums = artistAlbums;
     }
 }

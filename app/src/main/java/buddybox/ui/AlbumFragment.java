@@ -14,21 +14,28 @@ import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
 
-import java.util.List;
-
+import buddybox.core.Album;
+import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.Play;
+import buddybox.core.events.PlayPlaylist;
+
+import static buddybox.core.Dispatcher.dispatch;
+import static buddybox.core.events.Play.SHUFFLE_PLAY_ARTIST;
 
 public class AlbumFragment extends Fragment {
 
-    private static final String ALBUM = "album";
-    private String album;
+    private static final String ALBUM = "albumName";
+    private String albumName;
 
     private View view;
     private IModel.StateListener listener;
     private LayoutInflater inflater;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private Album album;
+    private Artist artist;
 
     public AlbumFragment() { }
 
@@ -44,7 +51,7 @@ public class AlbumFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null)
-            album = getArguments().getString(ALBUM);
+            albumName = getArguments().getString(ALBUM);
     }
 
     @Override
@@ -57,7 +64,21 @@ public class AlbumFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.inflater = inflater;
         this.view = inflater.inflate(R.layout.fragment_album, container, false);
-        ((TextView) view.findViewById(R.id.albumName)).setText(album);
+        ((TextView) view.findViewById(R.id.albumName)).setText(albumName);
+
+        view.findViewById(R.id.albumShufflePlay).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // todo shuffle play albumName event
+                dispatch(SHUFFLE_PLAY_ARTIST);
+            }
+        });
+        view.findViewById(R.id.albumPlayAll).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dispatch(new Play(album));
+            }
+        });
 
         // add state listener
         listener = new IModel.StateListener() { @Override public void update(final State state) {
@@ -75,11 +96,12 @@ public class AlbumFragment extends Fragment {
     }
 
     private void updateState(State state) {
-        List<Song> songs = state.artistSelected.getAlbumSongs(album);
-        ((ImageView) view.findViewById(R.id.albumArt)).setImageBitmap(songs.get(0).getArt());
+        album = state.artistAlbums.get(albumName);
+        artist = state.artistSelected;
+        ((ImageView) view.findViewById(R.id.albumArt)).setImageBitmap(album.song(0).getArt());
 
         LinearLayout songsContainer = view.findViewById(R.id.songsContainer);
-        for (Song song : songs) {
+        for (Song song : album.songs) {
             View songView = songsContainer.findViewWithTag(song.hash.toString());
             if (songView == null) {
                 // Create new song container
@@ -97,12 +119,18 @@ public class AlbumFragment extends Fragment {
         }
     }
 
-    private View inflateSongContainer(Song song) {
+    private View inflateSongContainer(final Song song) {
         View songView = inflater.inflate(R.layout.album_song, null);
         songView.setTag(song.hash.toString());
         songView.findViewById(R.id.addToPlaylist).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
             System.out.println("* Add song to playlist"); // TODO implement add song to playlist
         }});
+        songView.findViewById(R.id.songInfoContainer).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dispatch(new PlayPlaylist(artist, artist.indexOf(song, false)));
+            }
+        });
         return songView;
     }
 

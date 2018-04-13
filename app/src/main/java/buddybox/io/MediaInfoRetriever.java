@@ -131,7 +131,7 @@ public class MediaInfoRetriever {
     }
 
     private static synchronized void updateStateAsync(State state) {
-        // collect albums of songs without embedded art
+        // collect artistAlbums of songs without embedded art
         Map<String,Set<String>> artistsAlbums = new HashMap<>();
         for (Song song : state.allSongs) {
             if (song.getArt() != null)

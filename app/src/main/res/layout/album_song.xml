@@ -17,11 +17,15 @@
         android:src="@drawable/ic_playlist_add" />
 
     <RelativeLayout
+        android:id="@+id/songInfoContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_toStartOf="@+id/addToPlaylist">
+        android:layout_toStartOf="@+id/addToPlaylist"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/songName"
