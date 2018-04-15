@@ -1,7 +1,10 @@
 package buddybox.ui;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +12,7 @@ import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.adalbertosoares.buddybox.R;
@@ -109,13 +113,19 @@ public class PlaylistActivity extends AppCompatActivity {
         }
         @Override
         public void onBindDragView(View clickedView, View dragView) {
+            ImageView albumArt = clickedView.findViewById(R.id.albumArt);
+            Bitmap bitmap = ((BitmapDrawable)albumArt.getDrawable()).getBitmap();
+            if (bitmap != null)
+                ((ImageView) dragView.findViewById(R.id.albumArt)).setImageBitmap(bitmap);
+            else
+                ((ImageView) dragView.findViewById(R.id.albumArt)).setImageResource(R.mipmap.sneer2);
+
             CharSequence name = ((TextView) clickedView.findViewById(R.id.songName)).getText();
             ((TextView) dragView.findViewById(R.id.songName)).setText(name);
             CharSequence artist = ((TextView) clickedView.findViewById(R.id.songArtist)).getText();
             ((TextView) dragView.findViewById(R.id.songArtist)).setText(artist);
             dragView.findViewById(R.id.item_layout).setBackgroundColor(Color.parseColor("#1976d2"));
         }
-
     }
 
     private void updateState(State state) {

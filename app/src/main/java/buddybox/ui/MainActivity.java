@@ -345,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         findViewById(R.id.sampler).setVisibility(View.VISIBLE);
 
-        Song song = state.samplerPlaylist.song(0);
+        Song song = state.samplerPlaylist.song(0, state.isShuffle);
         ((TextView) findViewById(R.id.samplingName)).setText(song.name);
         ((TextView) findViewById(R.id.samplingArtist)).setText(song.artist);
     }

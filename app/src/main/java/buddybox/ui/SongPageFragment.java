@@ -49,12 +49,12 @@ public class SongPageFragment extends Fragment {
 
         pageArt = rootView.findViewById(R.id.pageArt);
         pageArt.setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            if (lastState.playlistPlaying.getClass() == Artist.class) {
-                dispatch(new ArtistSelected((Artist) lastState.playlistPlaying));
-                startActivity(new Intent(getContext(), ArtistActivity.class));
-            } else if (lastState.playlistPlaying.getClass() == Playlist.class && lastState.playlistPlaying.getId() != 0L) {
+            if (lastState.playlistPlaying.getClass() == Playlist.class && lastState.playlistPlaying.getId() != 0L) {
                 dispatch(new PlaylistSelected(lastState.playlistPlaying));
                 startActivity(new Intent(getContext(), PlaylistActivity.class));
+            } else {
+                dispatch(new ArtistSelectedByName(lastState.songPlaying.artist));
+                startActivity(new Intent(getContext(), ArtistActivity.class));
             }
         }});
 

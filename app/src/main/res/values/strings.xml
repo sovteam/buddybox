@@ -54,4 +54,6 @@
     <string name="shuffle">Shuffle</string>
     <string name="add_to_playlist">Add to Playlist</string>
     <string name="song_subtitle">Song subtitle</string>
+    <string name="remove_song">Remove Song</string>
+    <string name="blue">Blue</string>
 </resources>

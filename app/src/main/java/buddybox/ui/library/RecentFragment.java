@@ -1,5 +1,6 @@
 package buddybox.ui.library;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -31,7 +32,9 @@ import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.Play;
+import buddybox.ui.MainActivity;
 import buddybox.ui.ModelProxy;
+import buddybox.ui.PlayingActivity;
 import buddybox.ui.library.dialogs.SelectPlaylistDialogFragment;
 
 import static buddybox.model.Model.ALL_SONGS;
@@ -63,6 +66,7 @@ public class RecentFragment extends Fragment {
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            startActivity(new Intent(getContext(), PlayingActivity.class));
             dispatch(new Play(lastState.recent.get(i)));
         }});
         playables = new PlayablesArrayAdapter();

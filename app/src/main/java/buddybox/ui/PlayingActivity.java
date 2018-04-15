@@ -198,11 +198,9 @@ public class PlayingActivity extends AppCompatActivity {
         playlist = state.playlistPlaying;
         showDuration = state.showDuration;
 
-        if (totalSongs != playlist.size() || isShuffle != state.isShuffle) {
-            totalSongs = playlist.size();
-            isShuffle = state.isShuffle;
-            mPagerAdapter.notifyDataSetChanged();
-        }
+        totalSongs = playlist.size();
+        isShuffle = state.isShuffle;
+        mPagerAdapter.notifyDataSetChanged();
 
         int songIndex = state.playlistPlaying.indexOf(state.songPlaying, state.isShuffle);
         mPager.setCurrentItem(songIndex, false);

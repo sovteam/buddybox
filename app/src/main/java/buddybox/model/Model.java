@@ -334,7 +334,7 @@ public class Model implements IModel {
         }
 
         // Update moved song position
-        Song song = playlist.song(event.fromPosition);
+        Song song = playlist.song(event.fromPosition, isShuffle);
         db.execSQL(
                 "UPDATE PLAYLIST_SONG " +
                         "SET POSITION = " + event.toPosition + " " +
@@ -354,12 +354,12 @@ public class Model implements IModel {
         /* UPDATE OBJECTS */
         Song currentSong = null;
         if (currentSongIndex != null && currentPlaylist == playlist)
-            currentSong = playlist.song(currentSongIndex);
+            currentSong = playlist.song(currentSongIndex, isShuffle);
 
         playlist.changeSongPosition(event.fromPosition, event.toPosition);
 
         if (currentSong != null && currentPlaylist == playlist)
-            currentSongIndex = playlist.songs.indexOf(currentSong);
+            currentSongIndex = playlist.indexOf(currentSong, isShuffle);
     }
 
     private void seekTo(SeekTo event) {
@@ -389,6 +389,8 @@ public class Model implements IModel {
     }
 
     private void shuffle() {
+        Song song = currentPlaylist.song(currentSongIndex, isShuffle);
+        currentSongIndex = currentPlaylist.indexOf(song, !isShuffle);
         isShuffle = !isShuffle;
     }
 
@@ -408,8 +410,8 @@ public class Model implements IModel {
         int firstSongIndex = currentPlaylist.firstShuffleIndex();
         int nextSongIndex = firstSongIndex;
         boolean loop = false;
-        while (currentPlaylist.song(nextSongIndex).isMissing && !loop) {
-            nextSongIndex = currentPlaylist.songAfter(nextSongIndex, 1, true);
+        while (currentPlaylist.song(nextSongIndex, isShuffle).isMissing && !loop) {
+            nextSongIndex = currentPlaylist.songAfter(nextSongIndex, 1);
             loop = nextSongIndex == firstSongIndex;
         }
 
@@ -894,9 +896,9 @@ public class Model implements IModel {
         }
 
         // Skip all songs missing
-        Integer songAfter = currentPlaylist.songAfter(currentSongIndex, step, isShuffle);
-        while (songAfter != null && currentPlaylist.song(songAfter).isMissing) {
-            songAfter = currentPlaylist.songAfter(songAfter, step, isShuffle);
+        Integer songAfter = currentPlaylist.songAfter(currentSongIndex, step);
+        while (songAfter != null && currentPlaylist.song(songAfter, isShuffle).isMissing) {
+            songAfter = currentPlaylist.songAfter(songAfter, step);
         }
 
         if (Objects.equals(songAfter, currentSongIndex)) {

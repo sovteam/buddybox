@@ -78,15 +78,9 @@ public class Playlist implements Playable {
         return songs.get(index);
     }
 
-    public Integer songAfter(int songIndex, int step, boolean isShuffle) {
+    public Integer songAfter(int songIndex, int step) {
         if (songs.size() == 0)
             return null;
-
-        if (isShuffle) {
-            int sIndex = shuffledSongs().indexOf(songIndex);
-            int sNext = (songs.size() + sIndex + step) % songs.size();
-            return shuffledSongs().get(sNext);
-        }
 
         return (songs.size() + songIndex + step) % songs.size();
     }

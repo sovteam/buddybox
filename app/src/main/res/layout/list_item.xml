@@ -13,7 +13,7 @@
 <com.woxthebox.draglistview.swipe.ListSwipeItem xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
+    android:layout_height="wrap_content"
     app:leftViewId="@+id/item_left"
     app:rightViewId="@+id/item_right"
     app:swipeViewId="@+id/item_layout">
@@ -27,7 +27,7 @@
         android:background="#d32f2f"
         android:gravity="start|center_vertical"
         android:padding="16dp"
-        android:text="Remove Song"
+        android:text="@string/remove_song"
         android:textColor="@android:color/white" />
 
     <TextView
@@ -39,7 +39,7 @@
         android:background="#0000ff"
         android:gravity="end|center_vertical"
         android:padding="16dp"
-        android:text="Blue"
+        android:text="@string/blue"
         android:textColor="@android:color/white"
         android:textSize="20sp" />
 
@@ -50,8 +50,7 @@
         android:background="#000000"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="16dp">
-
+        android:paddingStart="16dp">
 
         <ImageView
             android:id="@+id/drag"
@@ -60,13 +59,25 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:padding="16dp"
-            android:src="@drawable/ic_drag_handle" />
+            android:src="@drawable/ic_drag_handle"
+            android:contentDescription="@string/album_art" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_toStartOf="@+id/drag"
             android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/albumArt"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignTop="@+id/songName"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="@string/song_album_art"
+                android:visibility="visible"
+                app:srcCompat="@mipmap/sneer2" />
 
             <TextView
                 android:id="@+id/songName"
@@ -74,24 +85,23 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentTop="true"
                 android:layout_marginTop="8dp"
-                android:layout_toStartOf="@+id/drag"
+                android:layout_toEndOf="@+id/albumArt"
                 android:singleLine="true"
-                android:text="Song"
+                android:text="@string/song_name"
                 android:textAppearance="?attr/textAppearanceListItem" />
 
             <TextView
                 android:id="@+id/songArtist"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
                 android:layout_below="@+id/songName"
                 android:layout_marginBottom="8dp"
-                android:layout_toStartOf="@+id/drag"
+                android:layout_toEndOf="@+id/albumArt"
                 android:freezesText="false"
                 android:singleLine="true"
-                android:text="Artist"
+                android:text="@string/song_artist"
                 android:textColor="@android:color/darker_gray" />
-        </LinearLayout>
+        </RelativeLayout>
 
     </RelativeLayout>
 
