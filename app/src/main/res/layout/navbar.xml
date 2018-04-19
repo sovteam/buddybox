@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="60dp"
     android:id="@+id/topBar"
@@ -19,22 +18,22 @@
         android:paddingTop="8dp"
         android:clickable="true"
         android:background="?selectableItemBackground"
-        android:id="@+id/sharingNavBar">
+        android:id="@+id/libraryNavBar">
+
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/sharingNavbarBtn"
-            android:src="@drawable/ic_sharing"
-            android:contentDescription="@string/buddies"
-            android:clickable="false"
-            android:background="@android:color/transparent" />
-
+            android:id="@+id/libraryNavbarBtn"
+            android:src="@drawable/ic_library_music"
+            android:contentDescription="@string/music_library"
+            android:background="@android:color/transparent"
+            android:clickable="false" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/sharing"
-            android:id="@+id/sharingText"
+            android:text="@string/library"
+            android:id="@+id/libraryText"
             android:textAlignment="center" />
     </LinearLayout>
 
@@ -83,51 +82,6 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </RelativeLayout>
 
-    <RelativeLayout
-        android:orientation="vertical"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="match_parent"
-        android:gravity="clip_vertical"
-        android:clickable="true"
-        android:background="?selectableItemBackground"
-        android:id="@+id/lovedNavBar">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/lovedNavbarBtn"
-            android:src="@drawable/ic_loved"
-            android:contentDescription="@string/loved"
-            android:clickable="false"
-            android:background="@android:color/transparent"
-            android:adjustViewBounds="false"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentTop="true"
-            android:paddingTop="8dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:id="@+id/newLovedSongsCount"
-            android:textStyle="bold"
-            android:textColor="@android:color/holo_red_light"
-            android:text="44"
-            android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/lovedNavbarBtn" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/loved"
-            android:id="@+id/lovedText"
-            android:textAlignment="center"
-            android:layout_below="@+id/lovedNavbarBtn"
-            android:layout_centerHorizontal="true" />
-    </RelativeLayout>
-
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="0dp"
@@ -137,23 +91,68 @@
         android:paddingTop="8dp"
         android:clickable="true"
         android:background="?selectableItemBackground"
-        android:id="@+id/libraryNavBar">
-
+        android:id="@+id/sharingNavBar">
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/libraryNavbarBtn"
-            android:src="@drawable/ic_library_music"
-            android:contentDescription="@string/music_library"
-            android:background="@android:color/transparent"
-            android:clickable="false" />
+            android:id="@+id/sharingNavbarBtn"
+            android:src="@drawable/ic_sharing"
+            android:contentDescription="@string/buddies"
+            android:clickable="false"
+            android:background="@android:color/transparent" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/library"
-            android:id="@+id/libraryText"
+            android:text="@string/sharing"
+            android:id="@+id/sharingText"
             android:textAlignment="center" />
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/searchNavBar"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:gravity="clip_vertical"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/searchNavbarBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:adjustViewBounds="false"
+            android:background="@android:color/transparent"
+            android:clickable="false"
+            android:contentDescription="@string/search"
+            android:paddingTop="8dp"
+            android:src="@drawable/ic_search" />
+
+        <!--<TextView
+            android:id="@+id/newLovedSongsCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/searchNavbarBtn"
+            android:text="44"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@android:color/holo_red_light"
+            android:textStyle="bold" />-->
+
+        <TextView
+            android:id="@+id/searchText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/searchNavbarBtn"
+            android:layout_centerHorizontal="true"
+            android:text="@string/search"
+            android:textAlignment="center"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </RelativeLayout>
 
 </LinearLayout>

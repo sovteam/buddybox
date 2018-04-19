@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,13 +21,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -41,12 +36,8 @@ import java.util.Locale;
 
 import buddybox.ModelSim;
 import buddybox.core.IModel;
-import buddybox.core.Playable;
-import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.Play;
-import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
@@ -68,7 +59,6 @@ import buddybox.ui.library.RecentFragment;
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.core.events.Sampler.LOVED_VIEWED;
 import static buddybox.core.events.Sampler.SAMPLER_START;
 import static buddybox.core.events.Sampler.SAMPLER_STOP;
 import static buddybox.model.Model.BLUETOOTH;
@@ -80,8 +70,9 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private static boolean USE_SIMULATOR = false;
     private static final int WRITE_EXTERNAL_STORAGE = 1;
 
-    private LovedPlayablesArrayAdapter lovedPlayables;
-    private Playlist lovedPlaylist;
+    // TODO move to library loved page
+    // private LovedPlayablesArrayAdapter lovedPlayables;
+    // private Playlist lovedPlaylist;
 
     private Song sampling;
     private SeekBar headphoneSeekBar;
@@ -89,6 +80,10 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private SeekBar bluetoothSeekBar;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private SearchFragment searchFrame;
+    private int selectedFrame;
+    private State lastState; // todo remove it when navigateTo switch to a new Event
+    private boolean isInitiated = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,14 +98,16 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         tabLayout.setupWithViewPager(viewPager);
 
         // Loved list
+        /* TODO move to library loved frame
         ListView lovedList = findViewById(R.id.lovedPlayables);
         lovedList.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             dispatch(new PlayPlaylist(lovedPlaylist, i));
         }});
         lovedPlayables = new LovedPlayablesArrayAdapter();
-        lovedList.setAdapter(lovedPlayables);
+        lovedList.setAdapter(lovedPlayables);*/
 
-        findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler); }});
+        // TODO move to library loved frag
+        // findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler); }});
 
         // Playing
         findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
@@ -125,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         // NavBar
         findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLibrary, view); }});
         findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler, view); }});
-        findViewById(R.id.lovedNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLoved, view); }});
+        findViewById(R.id.searchNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSearch, view); }});
         findViewById(R.id.sharingNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSharing, view); }});
 
         // Sampler
@@ -164,6 +161,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }});
 
         dispatch(SYNC_LIBRARY);
+        isInitiated = true;
     }
 
 
@@ -181,7 +179,10 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             }
         }
         findViewById(R.id.permission).setVisibility(View.GONE);
-        initApp();
+        if (!isInitiated)
+            initApp();
+        else
+            Log.i("MainActivity", "checkWriteExternalStoragePermission: APP already initiated");
     }
 
     @Override
@@ -239,20 +240,30 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private void updateState(State state) {
         updateLibraryState(state);
         updateSamplerState(state);
-        updateLovedState(state);
+        // updateLovedState(state); TODO move to library fragment
         updateSharing(state);
+        updateSearch(state);
 
         // Update new samplers count
         int samplerCount = state.samplerPlaylist == null ? 0 : state.samplerPlaylist.size();
         ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(samplerCount));
 
         // Update new loved count
+        /* TODO move to library fragment
         int countNewLoved = 0;
         for (Song song : lovedPlaylist.songs) {
             if (!song.isLovedViewed())
                 countNewLoved++;
         }
         ((TextView)findViewById(R.id.newLovedSongsCount)).setText(countNewLoved == 0 ? "" : Integer.toString(countNewLoved));
+        */
+
+        lastState = state;
+    }
+
+    private void updateSearch(State state) {
+        if (selectedFrame == R.id.frameSearch && searchFrame != null)
+            searchFrame.updateState(state);
     }
 
     private void updateSharing(State state) {
@@ -308,6 +319,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             : (String.format(Locale.US, "%.1f", memory) + " MB");
     }
 
+    /* TODO move to library loved frag
     private void updateLovedState(State state) {
         lovedPlayables.updateRecent(state.lovedPlaylist);
         lovedPlaylist = state.lovedPlaylist;
@@ -319,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             findViewById(R.id.lovedEmpty).setVisibility(View.INVISIBLE);
             findViewById(R.id.lovedPlayables).setVisibility(View.VISIBLE);
         }
-    }
+    }*/
 
     private void updateSamplerState(State state) {
         if (state.isSampling)
@@ -350,39 +362,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         ((TextView) findViewById(R.id.samplingArtist)).setText(song.artist);
     }
 
-    private class PlayablesArrayAdapter extends ArrayAdapter<Playable> {
-
-        PlayablesArrayAdapter() {
-            super(MainActivity.this, -1, new ArrayList<Playable>());
-        }
-
-        @NonNull
-        @Override
-        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            View rowView = convertView == null
-                    ? getLayoutInflater().inflate(android.R.layout.simple_list_item_2, parent, false)
-                    : convertView;
-
-            Playable item = getItem(position);
-            if (item == null)
-                return rowView;
-
-            setText(rowView, android.R.id.text1, item.name());
-            setText(rowView, android.R.id.text2, item.subtitle());
-            return rowView;
-        }
-
-        private void setText(View rowView, int id, String value) {
-            TextView textView = rowView.findViewById(id);
-            textView.setText(value);
-        }
-
-        void updateRecent(Playlist recent) {
-            clear();
-            addAll(recent.songs);
-        }
-    }
-
+    /* TODO move to library loved page
     private class LovedPlayablesArrayAdapter extends PlayablesArrayAdapter {
         @NonNull
         @Override
@@ -407,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             }
             return rowView;
         }
-    }
+    } */
 
     private void navigateTo(int frame, View view) {
         view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
@@ -415,6 +395,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void navigateTo(int frame) {
+        selectedFrame = frame;
         boolean isSampling = findViewById(R.id.frameSampler).getVisibility() == View.VISIBLE;
 
         if (frame == R.id.frameLibrary) {
@@ -435,12 +416,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                 dispatch(SAMPLER_STOP);
         }
 
-        if (frame == R.id.frameLoved) {
-            lovedActivate();
+        if (frame == R.id.frameSearch) {
+            searchActivate();
         } else {
-            findViewById(R.id.frameLoved).setVisibility(View.INVISIBLE);
-            ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#FFFFFF"));
-            ((ImageView) findViewById(R.id.lovedNavbarBtn)).setImageResource(R.drawable.ic_loved);
+            if (searchFrame != null && searchFrame.getView() != null)
+                searchFrame.getView().setVisibility(View.GONE);
+            ((TextView) findViewById(R.id.searchText)).setTextColor(Color.parseColor("#FFFFFF"));
+            ((ImageView) findViewById(R.id.searchNavbarBtn)).setImageResource(R.drawable.ic_search);
         }
 
         if (frame == R.id.frameSharing) {
@@ -452,17 +434,29 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }
     }
 
-    private void lovedActivate() {
+    private void searchActivate() {
+        if (searchFrame == null) {
+            searchFrame = new SearchFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.framesContainer, searchFrame)
+                    .commit();
+        } else if (searchFrame.getView() != null) {
+            searchFrame.getView().setVisibility(View.VISIBLE);
+        }
+        searchFrame.updateState(lastState);
+
+        /* TODO move to library loved page
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 dispatch(LOVED_VIEWED);
             }
-        }, 2000);
-        findViewById(R.id.frameLoved).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.lovedText)).setTextColor(Color.parseColor("#4fc3f7"));
-        ((ImageView) findViewById(R.id.lovedNavbarBtn)).setImageResource(R.drawable.ic_loved_blue);
+        }, 2000);*/
+
+        ((TextView) findViewById(R.id.searchText)).setTextColor(Color.parseColor("#4fc3f7"));
+        ((ImageView) findViewById(R.id.searchNavbarBtn)).setImageResource(R.drawable.ic_search_blue);
     }
 
     private void sharingActivate() {

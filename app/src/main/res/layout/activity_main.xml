@@ -12,45 +12,48 @@
     <include layout="@layout/navbar"
         android:id="@+id/includeNavbar" />
 
-    <FrameLayout
+    <RelativeLayout
+        android:id="@+id/framesContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:id="@+id/frameLibrary"
         android:layout_below="@+id/includeNavbar">
 
-        <include layout="@layout/library_frame" />
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/frameSampler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/includeNavbar"
-        android:id="@+id/frameSampler">
+            <include layout="@layout/sampler_frame" />
+        </FrameLayout>
 
-        <include layout="@layout/sampler_frame" />
-    </FrameLayout>
+        <!--<FrameLayout
+            android:id="@+id/frameLoved"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/includeNavbar"
-        android:id="@+id/frameLoved">
+            <include layout="@layout/loved_frame" />
+        </FrameLayout>-->
 
-        <include layout="@layout/loved_frame" />
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/frameSharing"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/includeNavbar"
-        android:id="@+id/frameSharing">
+            <include layout="@layout/sharing_frame" />
+        </FrameLayout>
 
-        <include layout="@layout/sharing_frame" />
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/frameLibrary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true">
+
+            <include layout="@layout/library_frame" />
+        </FrameLayout>
+    </RelativeLayout>
 
     <include layout="@layout/playing_bar" />
 

@@ -22,6 +22,7 @@ import com.adalbertosoares.buddybox.R;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.ui.ModelProxy;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Play.PAUSE;
@@ -128,10 +129,15 @@ public class MediaPlayback extends Service {
     public void onCreate() {
         super.onCreate();
 
-        stateListener = new IModel.StateListener() { @Override public void update(State state) {
-            updateState(state);
-        }};
-        addStateListener(stateListener);
+        if (ModelProxy.isInitialized()) {
+            stateListener = new IModel.StateListener() {
+                @Override
+                public void update(State state) {
+                    updateState(state);
+                }
+            };
+            addStateListener(stateListener);
+        }
     }
 
     @Override

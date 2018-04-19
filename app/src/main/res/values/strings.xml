@@ -56,4 +56,6 @@
     <string name="song_subtitle">Song subtitle</string>
     <string name="remove_song">Remove Song</string>
     <string name="blue">Blue</string>
+    <string name="clear_search_field">clear search field</string>
+    <string name="search">Search</string>
 </resources>

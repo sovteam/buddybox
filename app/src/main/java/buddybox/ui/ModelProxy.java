@@ -8,7 +8,7 @@ public class ModelProxy {
     private static IModel INSTANCE;
 
     static void init(IModel instance) {
-        if (INSTANCE != null) throw new IllegalStateException();
+        if (isInitialized()) throw new IllegalStateException();
         INSTANCE = instance;
     }
 
@@ -23,5 +23,9 @@ public class ModelProxy {
 
     public static void removeStateListener(IModel.StateListener listener) {
         INSTANCE.removeStateListener(listener);
+    }
+
+    public static boolean isInitialized() {
+        return INSTANCE != null;
     }
 }

@@ -45,6 +45,7 @@ import buddybox.core.events.SamplerDelete;
 import buddybox.core.events.SamplerHate;
 import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SamplerUpdated;
+import buddybox.core.events.Search;
 import buddybox.core.events.SeekTo;
 import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
@@ -133,6 +134,7 @@ public class Model implements IModel {
     private HashMap<String, Artist> artists;
     private Artist artistSelected;
     private Map<String, Map<String, Album>> albumsByArtist;
+    private ArrayList<Playable> searchResults = new ArrayList<>();
 
     public Model(Context context) {
         if (context != null)
@@ -224,7 +226,40 @@ public class Model implements IModel {
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
         if (cls == ArtistSelectedByName.class) artistSelectedByName((ArtistSelectedByName) event);
 
+        // search
+        if (cls == Search.class) search((Search) event);
+
         updateListeners();
+    }
+
+    private void search(Search event) {
+        final String text = event.searchText.trim().toLowerCase();
+        searchResults = new ArrayList<>();
+
+        if (text.isEmpty())
+            return;
+
+        for (Song song: allSongs()) {
+            if (song.name().toLowerCase().contains(text))
+                searchResults.add(song);
+            if (song.album.toLowerCase().contains(text))
+                searchResults.add(albumsByArtist.get(song.artist).get(song.album));
+        }
+
+        for (Artist artist: allArtistsAvailable())
+            if (artist.name().toLowerCase().contains(text))
+                searchResults.add(artist);
+
+        for (Playlist playlist: playlists())
+            if (playlist.name().toLowerCase().contains(text))
+                searchResults.add(playlist);
+
+        Collections.sort(searchResults, new Comparator<Playable>() {
+            @Override
+            public int compare(Playable p1, Playable p2) {
+                return p1.name().toLowerCase().indexOf(text) - p2.name().toLowerCase().indexOf(text);
+            }
+        });
     }
 
     private void play(Play event) {
@@ -570,9 +605,9 @@ public class Model implements IModel {
 
     private Album getAlbum(String album, String artist) {
         Map<String, Album> albums = albumsByArtist().get(artist);
-        if (albums == null) {
+        if (albums == null)
             albums = new HashMap<>();
-        }
+
         Album ret = albums.get(album);
         if (ret == null) {
             // create new album
@@ -978,7 +1013,7 @@ public class Model implements IModel {
                 samplerPlaylist,
                 lovedPlaylist(),
                 playlists(),
-                null,
+                searchResults,
                 1,
                 getAvailableMemorySize(),
                 getMediaStorageUsed(),
