@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private SearchFragment searchFrame;
     private int selectedFrame;
     private State lastState; // todo remove it when navigateTo switch to a new Event
-    private boolean isInitiated = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }});
 
         dispatch(SYNC_LIBRARY);
-        isInitiated = true;
     }
 
 
@@ -179,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             }
         }
         findViewById(R.id.permission).setVisibility(View.GONE);
-        if (!isInitiated)
+        if (!ModelProxy.isInitialized())
             initApp();
         else
             Log.i("MainActivity", "checkWriteExternalStoragePermission: APP already initiated");

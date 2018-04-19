@@ -920,7 +920,8 @@ public class Model implements IModel {
 
     private void samplerStart() {
         isSampling = true;
-        doPlay(samplerPlaylist, 0);
+        if (samplerPlaylist.size() > 0)
+            doPlay(samplerPlaylist, 0);
     }
 
     private void skip(int step) {
