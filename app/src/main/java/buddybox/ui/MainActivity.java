@@ -260,8 +260,10 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void updateSearch(State state) {
-        if (selectedFrame == R.id.frameSearch && searchFrame != null)
+        if (selectedFrame == R.id.frameSearch && searchFrame != null) {
             searchFrame.updateState(state);
+            System.out.println("MainActivity calls frame.updateSearch");
+        }
     }
 
     private void updateSharing(State state) {

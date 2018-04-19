@@ -81,7 +81,8 @@ public class SearchFragment extends Fragment {
         }
 
         // add state listener
-        listener = new IModel.StateListener() { @Override public void update(final State state) {
+        // TODO add listener when MainActivity.navigateTo becomes an event
+        /*listener = new IModel.StateListener() { @Override public void update(final State state) {
             Runnable runUpdate = new Runnable() {
                 @Override
                 public void run() {
@@ -90,15 +91,9 @@ public class SearchFragment extends Fragment {
             };
             handler.post(runUpdate);
         }};
-        ModelProxy.addStateListener(listener);
+        ModelProxy.addStateListener(listener);*/
 
         return view;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        ModelProxy.removeStateListener(listener);
     }
 
     public void updateState(State state) {
@@ -116,6 +111,7 @@ public class SearchFragment extends Fragment {
         if (state.searchResults.isEmpty()) {
             searchText.requestFocus();
             imm.showSoftInput(searchText, 0);
+            System.out.println("SearchFrag updateState");
         }
     }
 }
