@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "buddybox_database_v1";
-    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "buddybox_database_v2";
+    private static final int DATABASE_VERSION = 2;
 
     static synchronized DatabaseHelper getInstance(Context context) {
         return context == null
