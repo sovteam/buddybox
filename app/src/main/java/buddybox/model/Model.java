@@ -720,7 +720,7 @@ public class Model implements IModel {
 
     private List<Album> albumsPlayed() {
         List<Album> ret = new ArrayList<>();
-        for (Map<String, Album> albums : albumsByArtist.values()) {
+        for (Map<String, Album> albums : albumsByArtist().values()) {
             for (Album album : albums.values()) {
                 if (album.lastPlayed() != null && !album.isEmpty())
                     ret.add(album);
