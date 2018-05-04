@@ -17,12 +17,11 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import com.adalbertosoares.buddybox.R;
-
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.ui.ModelProxy;
+import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Play.PAUSE;

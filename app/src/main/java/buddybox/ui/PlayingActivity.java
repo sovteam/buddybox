@@ -17,9 +17,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.adalbertosoares.buddybox.R;
-
-import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
@@ -27,6 +24,7 @@ import buddybox.core.State;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SeekTo;
 import buddybox.io.Player;
+import sov.buddybox.R;
 
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT;

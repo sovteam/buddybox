@@ -8,8 +8,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
-import com.adalbertosoares.buddybox.R;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +35,7 @@ import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.web.DownloadUtils;
 import buddybox.web.HttpUtils;
+import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.ui.ModelProxy.addStateListener;

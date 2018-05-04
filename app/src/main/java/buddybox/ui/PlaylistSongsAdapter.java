@@ -12,18 +12,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.adalbertosoares.buddybox.R;
 import com.woxthebox.draglistview.DragItemAdapter;
 import com.woxthebox.draglistview.swipe.ListSwipeItem;
 
 import java.util.ArrayList;
 
-import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.Play;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SongSelected;
+import sov.buddybox.R;
 
 import static buddybox.ui.ModelProxy.dispatch;
 

@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.adalbertosoares.buddybox.R;
+import sov.buddybox.R;
 
 public class FlowLayout extends ViewGroup {
 	private int mHorizontalSpacing;

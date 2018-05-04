@@ -12,16 +12,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.adalbertosoares.buddybox.R;
-
-import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.ArtistSelectedByName;
 import buddybox.core.events.PlaylistSelected;
+import sov.buddybox.R;
 
 import static buddybox.ui.ModelProxy.dispatch;
 

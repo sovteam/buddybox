@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
-import com.adalbertosoares.buddybox.R;
+import sov.buddybox.R;
 
 import buddybox.core.IModel;
 import buddybox.core.State;

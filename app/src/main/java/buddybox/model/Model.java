@@ -590,11 +590,11 @@ public class Model implements IModel {
     private void addSong(Song song) {
         allSongs.add(song);
         songsByHash.put(song.hash.toString(), song);
-        if (!song.isMissing)
+        if (!song.isMissing) {
             updateMediaStorageUsed(song.fileLength);
-
-        addSongToArtist(song);
-        addSongToAlbum(song);
+            addSongToArtist(song);
+            addSongToAlbum(song);
+        }
     }
 
     private void addSongToAlbum(Song song) {

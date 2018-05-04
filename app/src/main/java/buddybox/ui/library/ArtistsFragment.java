@@ -16,7 +16,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.adalbertosoares.buddybox.R;
+import sov.buddybox.R;
 
 import java.util.ArrayList;
 import java.util.List;

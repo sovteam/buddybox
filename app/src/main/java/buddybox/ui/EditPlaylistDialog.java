@@ -15,7 +15,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.adalbertosoares.buddybox.R;
+import sov.buddybox.R;
 
 import buddybox.core.events.PlaylistSetName;
 

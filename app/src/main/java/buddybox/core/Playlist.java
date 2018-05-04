@@ -3,8 +3,11 @@ package buddybox.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class Playlist implements Playable {
+
+    private static Random RANDOM_SEED = null;
 
     private final long id;
     public String name;
@@ -17,6 +20,11 @@ public class Playlist implements Playable {
         this.name = name;
         this.lastPlayed = lastPlayed;
         this.songs = songs;
+    }
+
+    public static void setRandomSeed(int randomSeed) {
+        // Use for tests only
+        Playlist.RANDOM_SEED = new Random(randomSeed);
     }
 
     @Override
@@ -142,7 +150,10 @@ public class Playlist implements Playable {
             shuffledSongs = new ArrayList<>();
             for (int i = 0; i < size(); i++)
                 shuffledSongs.add(i);
-            Collections.shuffle(shuffledSongs);
+            if (RANDOM_SEED == null)
+                Collections.shuffle(shuffledSongs);
+            else
+                Collections.shuffle(shuffledSongs, RANDOM_SEED);
         }
         return shuffledSongs;
     }

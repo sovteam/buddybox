@@ -3,7 +3,6 @@ package buddybox.ui;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,7 +14,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.adalbertosoares.buddybox.R;
 import com.woxthebox.draglistview.DragItem;
 import com.woxthebox.draglistview.DragListView;
 import com.woxthebox.draglistview.swipe.ListSwipeHelper.OnSwipeListenerAdapter;
@@ -27,6 +25,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.PlaylistChangeSongPosition;
 import buddybox.core.events.PlaylistRemoveSong;
+import sov.buddybox.R;
 
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.ui.ModelProxy.dispatch;

@@ -15,7 +15,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.adalbertosoares.buddybox.R;
+import sov.buddybox.R;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
-import com.adalbertosoares.buddybox.R;
+import sov.buddybox.R;
 
 import buddybox.core.IModel;
 import buddybox.core.State;
