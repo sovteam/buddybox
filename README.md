@@ -1,7 +1,9 @@
 # Buddy Box
 A music player to share public domain songs
 
-![Library](https://user-images.githubusercontent.com/10797037/39675664-be0fb030-5134-11e8-857f-abee7de8fde8.png) ![Playing](https://user-images.githubusercontent.com/10797037/39675665-be3fd5e4-5134-11e8-92ba-70cb154d93b4.png) ![Artist](https://user-images.githubusercontent.com/10797037/39675637-53a6d430-5134-11e8-89d6-5fd720ef3cff.jpeg) ![Search](https://user-images.githubusercontent.com/10797037/39675663-bddaef8a-5134-11e8-9e5b-9ecdb5e3f524.png) ![Locked Screen](https://user-images.githubusercontent.com/10797037/39675662-bd823606-5134-11e8-904d-492787f7a558.png)
+![Locked_screen](https://user-images.githubusercontent.com/10797037/39675866-8289d70e-5137-11e8-8467-f8c54ef0e07f.png) ![Playing](https://user-images.githubusercontent.com/10797037/39675862-81f860a8-5137-11e8-9f37-fd6b38d23dcd.png) ![Library](https://user-images.githubusercontent.com/10797037/39675863-8224a9d8-5137-11e8-87ca-c1c409dbcbc8.png) 
+![Artist](https://user-images.githubusercontent.com/10797037/39675861-81c1d34e-5137-11e8-9045-a64263cc9052.jpeg) ![Search](https://user-images.githubusercontent.com/10797037/39675864-825b9c2c-5137-11e8-9cab-336f503038c5.png)
+
 
 ## Player Features
 - Library search by song title, artist, album and playlist
