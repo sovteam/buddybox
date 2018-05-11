@@ -81,7 +81,7 @@ public class SongPageFragment extends Fragment {
     }
 
     private void updateState(State state) {
-        if (position >= state.playlistPlaying.size())
+        if (state.playlistPlaying == null || position >= state.playlistPlaying.size())
             return;
 
         song = state.playlistPlaying.song(position, state.isShuffle);

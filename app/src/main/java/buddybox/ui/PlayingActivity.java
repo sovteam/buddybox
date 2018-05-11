@@ -50,7 +50,6 @@ public class PlayingActivity extends AppCompatActivity {
     private ScreenSlidePagerAdapter mPagerAdapter;
     private int totalSongs;
     private boolean scrolling;
-    private boolean isShuffle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,7 +196,6 @@ public class PlayingActivity extends AppCompatActivity {
         showDuration = state.showDuration;
 
         totalSongs = playlist.size();
-        isShuffle = state.isShuffle;
         mPagerAdapter.notifyDataSetChanged();
 
         int songIndex = state.playlistPlaying.indexOf(state.songPlaying, state.isShuffle);
