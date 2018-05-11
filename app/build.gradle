@@ -26,19 +26,19 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:27.1.0'
+    compile 'com.android.support:appcompat-v7:27.1.1'
     compile 'com.github.woxthebox:draglistview:1.5.2'
-    compile 'com.android.support:design:27.1.0'
+    compile 'com.android.support:design:27.1.1'
     compile files('libs/jl1.0.1.jar')
 
     // App's dependencies, including test
-    compile 'com.android.support:support-annotations:27.1.0'
+    compile 'com.android.support:support-annotations:27.1.1'
     testCompile 'junit:junit:4.12'
 
     // AndroidJUnitRunner and JUnit Rules
-    androidTestCompile 'com.android.support.test:runner:1.0.1'
-    androidTestCompile 'com.android.support.test:rules:1.0.1'
+    androidTestCompile 'com.android.support.test:runner:1.0.2'
+    androidTestCompile 'com.android.support.test:rules:1.0.2'
 
     // Testing-only dependencies
-    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
