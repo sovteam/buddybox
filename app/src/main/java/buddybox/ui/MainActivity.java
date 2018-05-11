@@ -28,8 +28,6 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import sov.buddybox.R;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -55,6 +53,8 @@ import buddybox.model.Model;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
+import buddybox.web.ErrorLogger;
+import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
@@ -88,6 +88,15 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // catch all unhandled exceptions
+        // TODO move to Application class
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            @Override
+            public void uncaughtException(Thread thread, Throwable ex) {
+                ErrorLogger.notify(ex);
+            }
+        });
 
         // Library pager
         ViewPager viewPager = findViewById(R.id.viewpager);
