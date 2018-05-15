@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,7 @@ import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
 import buddybox.web.ErrorLogger;
+import sov.buddybox.BuildConfig;
 import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
@@ -91,12 +93,13 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         // catch all unhandled exceptions
         // TODO move to Application class
-        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread thread, Throwable ex) {
-                ErrorLogger.notify(ex);
-            }
-        });
+        if (!BuildConfig.DEBUG)
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread thread, Throwable ex) {
+                    ErrorLogger.notify(ex);
+                }
+            });
 
         // Library pager
         ViewPager viewPager = findViewById(R.id.viewpager);
@@ -118,7 +121,14 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         // findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler); }});
 
         // Playing
-        findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
+        findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            if (lastState.songPlaying.isMissing) {
+                Toast toast = Toast.makeText(getApplicationContext(), "Song is missing", Toast.LENGTH_SHORT);
+                toast.show();
+            } else {
+                ModelProxy.dispatch(PLAY_PAUSE_CURRENT);
+            }
+        }});
         findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -498,8 +508,17 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             playingBar.setVisibility(View.INVISIBLE);
         } else {
             playingBar.setVisibility(View.VISIBLE);
-            ((TextView)findViewById(R.id.playingName)).setText(songPlaying.name());
-            ((TextView)findViewById(R.id.playingSubtitle)).setText(songPlaying.subtitle());
+
+            int color = songPlaying.isMissing
+                    ? Color.parseColor("#e53935")
+                    : Color.WHITE;
+            TextView name = findViewById(R.id.playingName);
+            name.setText(songPlaying.name());
+            name.setTextColor(color);
+            TextView subtitle = findViewById(R.id.playingSubtitle);
+            subtitle.setText(songPlaying.subtitle());
+            subtitle.setTextColor(color);
+
             ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
         }
     }

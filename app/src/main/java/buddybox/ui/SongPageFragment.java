@@ -1,6 +1,7 @@
 package buddybox.ui;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,6 +32,8 @@ public class SongPageFragment extends Fragment {
     private ViewGroup rootView;
     private Song song;
     private ImageView pageArt;
+    private TextView name;
+    private TextView artist;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -54,6 +57,9 @@ public class SongPageFragment extends Fragment {
                 startActivity(new Intent(getContext(), ArtistActivity.class));
             }
         }});
+
+        name = rootView.findViewById(R.id.playingSongName);
+        artist = rootView.findViewById(R.id.playingSongArtist);
 
         return rootView;
     }
@@ -85,9 +91,15 @@ public class SongPageFragment extends Fragment {
             return;
 
         song = state.playlistPlaying.song(position, state.isShuffle);
+        name.setText(song.name);
+        artist.setText(song.artist);
 
-        ((TextView) rootView.findViewById(R.id.playingSongName)).setText(song.name);
-        ((TextView) rootView.findViewById(R.id.playingSongArtist)).setText(song.artist);
+        int color = song.isMissing
+                ? Color.parseColor("#e53935")
+                : Color.WHITE;
+        name.setTextColor(color);
+        artist.setTextColor(color);
+
         if (song.getArt() != null)
             pageArt.setImageBitmap(song.getArt());
         else

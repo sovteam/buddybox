@@ -90,10 +90,11 @@ public class Playlist implements Playable {
     }
 
     public Integer songAfter(int songIndex, int step) {
-        if (songs.size() == 0)
+        int total = size();
+        if (total == 0)
             return null;
 
-        return (songs.size() + songIndex + step) % songs.size();
+        return (total + songIndex + step) % total;
     }
 
     public boolean isEmpty() {
@@ -134,14 +135,14 @@ public class Playlist implements Playable {
     public boolean isLastSong(Integer songIndex, boolean isShuffle) {
         return isShuffle
                 ? shuffledSongs().indexOf(songIndex) +1 == shuffledSongs.size()
-                : songIndex +1 == songs.size();
+                : songIndex +1 == size();
     }
 
     public int firstShuffleIndex() {
         return shuffledSongs(true).get(0);
     }
 
-    public List<Integer> shuffledSongs() {
+    private List<Integer> shuffledSongs() {
         return shuffledSongs(false);
     }
 
@@ -150,6 +151,7 @@ public class Playlist implements Playable {
             shuffledSongs = new ArrayList<>();
             for (int i = 0; i < size(); i++)
                 shuffledSongs.add(i);
+
             if (RANDOM_SEED == null)
                 Collections.shuffle(shuffledSongs);
             else
@@ -174,4 +176,5 @@ public class Playlist implements Playable {
                 ? shuffledSongs().indexOf(ret)
                 : ret;
     }
+
 }

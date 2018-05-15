@@ -61,7 +61,6 @@ public class PlaylistActivity extends AppCompatActivity {
         mDragListView.setCanDragHorizontally(false);
         mDragListView.setCustomDragItem(new MyDragItem(PlaylistActivity.this, R.layout.list_item));
         mDragListView.setLayoutManager(new LinearLayoutManager(PlaylistActivity.this));
-
         mDragListView.setDragListListener(new DragListView.DragListListenerAdapter() {
             @Override
             public void onItemDragStarted(int position) {
@@ -149,5 +148,4 @@ public class PlaylistActivity extends AppCompatActivity {
         dialog.setArguments(args);
         dialog.show(getSupportFragmentManager(), "Playlist Options");
     }
-
 }

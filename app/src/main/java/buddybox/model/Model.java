@@ -713,19 +713,17 @@ public class Model implements IModel {
     private List<Artist> artistsPlayed() {
         List<Artist> ret = new ArrayList<>();
         for (Artist artist: allArtistsAvailable())
-            if (artist.lastPlayed() != null)
+            if (artist.lastPlayed() != null && !artist.isEmpty())
                 ret.add(artist);
         return ret;
     }
 
     private List<Album> albumsPlayed() {
         List<Album> ret = new ArrayList<>();
-        for (Map<String, Album> albums : albumsByArtist().values()) {
-            for (Album album : albums.values()) {
+        for (Map<String, Album> albums : albumsByArtist().values())
+            for (Album album : albums.values())
                 if (album.lastPlayed() != null && !album.isEmpty())
                     ret.add(album);
-            }
-        }
         return ret;
     }
 
@@ -820,7 +818,7 @@ public class Model implements IModel {
 
     private List<Playable> recent() {
         List<Playable> ret = new ArrayList<>();
-        ret.addAll(allSongs());
+        ret.addAll(allSongsAvailable());
         ret.addAll(playlists());
         ret.addAll(artistsPlayed());
         ret.addAll(albumsPlayed());
@@ -931,7 +929,8 @@ public class Model implements IModel {
             return;
         }
 
-        // Skip all songs missing
+        // Skip all songs not available
+        // todo stack overflow when all songs are missing (&& currentSongIndex != songAfter)
         Integer songAfter = currentPlaylist.songAfter(currentSongIndex, step);
         while (songAfter != null && currentPlaylist.song(songAfter, isShuffle).isMissing) {
             songAfter = currentPlaylist.songAfter(songAfter, step);
@@ -961,19 +960,20 @@ public class Model implements IModel {
 
     private void doPlay(Playlist playlist, int songIndex) {
         Song song = playlist.song(songIndex, isShuffle);
+        currentSongIndex = songIndex;
         if (song != null && song.isMissing) {
             isPaused = true;
-            currentSongIndex = null;
             return;
         }
         isStopped = false;
         isPaused = false;
-        currentSongIndex = songIndex;
         currentPlaylist = playlist;
     }
 
     private void playPauseCurrent() {
-        isPaused = !isPaused;
+        Song song = currentSong();
+        if (song != null && !song.isMissing)
+            isPaused = !isPaused;
     }
 
     private void pause() {
@@ -982,9 +982,8 @@ public class Model implements IModel {
 
     private void updateListeners() {
         final State state = getState();
-        for (StateListener listener : listeners) {
+        for (StateListener listener : listeners)
             updateListener(listener, state);
-        }
     }
 
     private void updateListener(StateListener listener) {

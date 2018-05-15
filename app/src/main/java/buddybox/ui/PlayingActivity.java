@@ -16,6 +16,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import buddybox.core.IModel;
 import buddybox.core.Playlist;
@@ -50,6 +51,7 @@ public class PlayingActivity extends AppCompatActivity {
     private ScreenSlidePagerAdapter mPagerAdapter;
     private int totalSongs;
     private boolean scrolling;
+    private State lastState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +71,12 @@ public class PlayingActivity extends AppCompatActivity {
         findViewById(R.id.songDuration).setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) { dispatch(TOGGLE_DURATION_REMAINING); }});
         findViewById(R.id.playingPlayPause).setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View view) { dispatch(PLAY_PAUSE_CURRENT); }});
+            @Override public void onClick(View view) {
+                if (playing.isMissing)
+                    showMissingSongToast();
+                else
+                    dispatch(PLAY_PAUSE_CURRENT);
+        }});
         findViewById(R.id.skipNext).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(SKIP_NEXT);
         }});
         findViewById(R.id.skipPrevious).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(SKIP_PREVIOUS);
@@ -103,7 +110,7 @@ public class PlayingActivity extends AppCompatActivity {
         });
 
         mPager = findViewById(R.id.songsPager);
-        mPager.setOffscreenPageLimit(5);
+        mPager.setOffscreenPageLimit(4);
         mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -123,11 +130,20 @@ public class PlayingActivity extends AppCompatActivity {
                     scrolling = true;
                 }
                 if (ViewPager.SCROLL_STATE_IDLE == state) {
-                    dispatch(new PlayPlaylist(playlist, mPager.getCurrentItem()));
                     scrolling = false;
+                    int current = mPager.getCurrentItem();
+                    dispatch(new PlayPlaylist(playlist, current));
+
+                    if (playlist.song(current, lastState.isShuffle).isMissing)
+                        showMissingSongToast();
                 }
             }
         });
+    }
+
+    private void showMissingSongToast() {
+        Toast toast = Toast.makeText(getApplicationContext(), "Song is missing", Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     private void openSongOptionsDialog() {
@@ -204,6 +220,8 @@ public class PlayingActivity extends AppCompatActivity {
         updateTitle(state);
         updateSongDuration();
         updateCommandButtons(state);
+
+        lastState = state;
     }
 
     private void updateCommandButtons(State state) {
@@ -214,8 +232,8 @@ public class PlayingActivity extends AppCompatActivity {
                 state.repeatSong
                         ? R.drawable.ic_repeat_one_blue
                         : state.repeatAll
-                        ? R.drawable.ic_repeat_blue
-                        : R.drawable.ic_repeat);
+                            ? R.drawable.ic_repeat_blue
+                            : R.drawable.ic_repeat);
 
         ((ImageButton)findViewById(R.id.playingPlayPause)).setImageResource(state.isPaused ? R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
     }
