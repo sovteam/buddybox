@@ -28,7 +28,7 @@ public class MediaStyleHelper {
                 .setLargeIcon(description.getIconBitmap())
                 .setContentIntent(controller.getSessionActivity())
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setDeleteIntent(getActionIntent(context, "CloseApp", KeyEvent.KEYCODE_MEDIA_PAUSE));
+                .setDeleteIntent(getActionIntent(context, "CloseApp", KeyEvent.KEYCODE_ESCAPE));
 
         Intent resultIntent = new Intent(context, PlayingActivity.class);
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

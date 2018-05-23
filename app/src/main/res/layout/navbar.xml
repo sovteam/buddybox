@@ -17,6 +17,7 @@
         android:gravity="center_horizontal"
         android:paddingTop="8dp"
         android:clickable="true"
+        android:focusable="true"
         android:background="?selectableItemBackground"
         android:id="@+id/libraryNavBar">
 
@@ -37,7 +38,7 @@
             android:textAlignment="center" />
     </LinearLayout>
 
-    <RelativeLayout
+    <!-- <RelativeLayout
         android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_weight="1"
@@ -80,7 +81,7 @@
             android:text="@string/sampler"
             android:textAlignment="center"
             android:textAppearance="?android:attr/textAppearanceSmall" />
-    </RelativeLayout>
+    </RelativeLayout>-->
 
     <LinearLayout
         android:orientation="vertical"
@@ -90,14 +91,15 @@
         android:gravity="center_horizontal"
         android:paddingTop="8dp"
         android:clickable="true"
+        android:focusable="true"
         android:background="?selectableItemBackground"
-        android:id="@+id/sharingNavBar">
+        android:id="@+id/settingsNavBar" >
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/sharingNavbarBtn"
-            android:src="@drawable/ic_sharing"
-            android:contentDescription="@string/buddies"
+            android:id="@+id/settingsNavbarBtn"
+            android:src="@drawable/ic_settings"
+            android:contentDescription="@string/settings"
             android:clickable="false"
             android:background="@android:color/transparent" />
 
@@ -105,8 +107,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="@string/sharing"
-            android:id="@+id/sharingText"
+            android:text="@string/settings"
+            android:id="@+id/settingsText"
             android:textAlignment="center" />
     </LinearLayout>
 
@@ -117,8 +119,9 @@
         android:layout_weight="1"
         android:background="?selectableItemBackground"
         android:clickable="true"
+        android:focusable="true"
         android:gravity="clip_vertical"
-        android:orientation="vertical">
+        android:orientation="vertical" >
 
         <ImageView
             android:id="@+id/searchNavbarBtn"
@@ -132,17 +135,6 @@
             android:contentDescription="@string/search"
             android:paddingTop="8dp"
             android:src="@drawable/ic_search" />
-
-        <!--<TextView
-            android:id="@+id/newLovedSongsCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/searchNavbarBtn"
-            android:text="44"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/holo_red_light"
-            android:textStyle="bold" />-->
 
         <TextView
             android:id="@+id/searchText"

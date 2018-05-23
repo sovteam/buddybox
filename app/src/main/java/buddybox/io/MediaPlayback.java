@@ -119,6 +119,7 @@ public class MediaPlayback extends Service {
         filter.addAction("PLAY_PAUSE");
         filter.addAction("SKIP_NEXT");
         filter.addAction("SKIP_PREVIOUS");
+        filter.addAction("CloseApp");
         registerReceiver(receiver, filter);
 
         return super.onStartCommand(intent, flags, startId);

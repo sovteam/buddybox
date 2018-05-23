@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -20,13 +21,12 @@
             android:paddingRight="20dp"
             android:weightSum="1">
 
-            <LinearLayout
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal"
-                android:id="@+id/linearLayout">
+                android:layout_height="wrap_content">
 
-                <LinearLayout
+                <!--<LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
@@ -60,80 +60,79 @@
                         android:gravity="center_vertical|center_horizontal"
                         android:text="Invite a Buddy"
                         android:textAlignment="gravity" />
-                </LinearLayout>
+                </LinearLayout>-->
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:padding="12dp">
 
-                    <TextView
-                        android:id="@+id/textView15"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_alignBaseline="@+id/button4"
-                        android:layout_alignBottom="@+id/button4"
-                        android:layout_alignParentStart="true"
-                        android:text="Songs"
-                        android:textAlignment="center" />
+                <TextView
+                    android:id="@+id/textView15"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Songs"
+                    android:textAlignment="center"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.515"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.062" />
 
-                    <TextView
-                        android:id="@+id/songDuration"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:text="312"
-                        android:textAlignment="center"
-                        android:textSize="30sp" />
+                <TextView
+                    android:id="@+id/songsCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="312"
+                    android:textAlignment="center"
+                    android:textSize="30sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.501"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView15" />
 
-                    <Button
-                        android:id="@+id/button4"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:gravity="center_vertical|center_horizontal"
-                        android:text="Add mp3 files"
-                        android:textAlignment="gravity" />
+                <Button
+                    android:id="@+id/syncLibrary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/SyncLibrary"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/songsCount" />
 
-                </LinearLayout>
-            </LinearLayout>
+                <ProgressBar
+                    android:id="@+id/syncLibrarySpinner"
+                    style="?android:attr/progressBarStyleLarge"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintEnd_toStartOf="@+id/syncLibrary"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:layout_editor_absoluteY="106dp" />
 
-            <Button
-                android:id="@+id/syncLibrary"
-                android:layout_width="140dp"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/textView16"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="20dp"
-                android:text="Sync Library" />
 
-            <TextView
+            </android.support.constraint.ConstraintLayout>
+            <!-- <TextView
                 android:id="@+id/textView16"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_below="@+id/linearLayout"
-                android:text="IMPORTANT: This player shares the MP3 files in your music folder: /android/.../music Make sure all MP3 files there can be shared. " />
-
-            <ProgressBar
-                android:id="@+id/syncLibrarySpinner"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_above="@+id/textView25"
-                android:layout_alignTop="@+id/syncLibrary"
-                android:layout_toStartOf="@+id/syncLibrary" />
+                android:text="@string/sharing_warning" />-->
 
             <TextView
                 android:id="@+id/textView25"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:layout_below="@+id/syncLibrary"
+                android:layout_below="@+id/linearLayout"
                 android:layout_marginTop="30dp"
-                android:text="Free storage:" />
+                android:text="@string/free_storage" />
 
             <TextView
                 android:id="@+id/textView26"
@@ -142,16 +141,16 @@
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/textView25"
                 android:layout_marginTop="12dp"
-                android:text="Media storage:" />
+                android:text="@string/media_storage" />
 
             <TextView
                 android:id="@+id/freeStorage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/textView25"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_toEndOf="@+id/textView25"
-                android:text="2.3 GB"
+                android:text="@string/sample_free_storage"
                 android:textStyle="bold" />
 
             <TextView
@@ -159,9 +158,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignTop="@+id/textView26"
-                android:layout_marginLeft="12dp"
+                android:layout_marginStart="12dp"
                 android:layout_toEndOf="@+id/textView26"
-                android:text="420 MB"
+                android:text="@string/sample_media_storage"
                 android:textStyle="bold" />
 
             <ProgressBar
@@ -179,7 +178,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/textView27"
-                android:layout_marginRight="12dp"
+                android:layout_marginEnd="12dp"
                 android:layout_marginTop="20dp"
                 app:srcCompat="@drawable/ic_headphones" />
 
@@ -197,7 +196,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/headphones"
-                android:layout_marginRight="12dp"
+                android:layout_marginEnd="12dp"
                 android:layout_marginTop="20dp"
                 app:srcCompat="@drawable/ic_speaker_phone" />
 
@@ -217,7 +216,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/progressBar"
                 android:layout_marginTop="20dp"
-                android:text="Max Volume" />
+                android:text="@string/max_volume" />
 
             <ImageView
                 android:id="@+id/bluetooth"
@@ -225,7 +224,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/speaker"
-                android:layout_marginRight="12dp"
+                android:layout_marginEnd="12dp"
                 android:layout_marginTop="20dp"
                 app:srcCompat="@drawable/ic_bluetooth_grey" />
 

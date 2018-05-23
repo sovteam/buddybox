@@ -37,9 +37,6 @@ import buddybox.ModelSim;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.SamplerDelete;
-import buddybox.core.events.SamplerHate;
-import buddybox.core.events.SamplerLove;
 import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
@@ -61,8 +58,6 @@ import sov.buddybox.R;
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
-import static buddybox.core.events.Sampler.SAMPLER_START;
-import static buddybox.core.events.Sampler.SAMPLER_STOP;
 import static buddybox.model.Model.BLUETOOTH;
 import static buddybox.model.Model.HEADPHONES;
 import static buddybox.model.Model.SPEAKER;
@@ -137,19 +132,24 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             }
         });
 
+        findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() {
+            @Override public void onClick(View view) {
+                checkWriteExternalStoragePermission();
+            }
+        });
+
         // NavBar
         findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLibrary, view); }});
-        findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler, view); }});
+        // findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler, view); }});
         findViewById(R.id.searchNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSearch, view); }});
-        findViewById(R.id.sharingNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSharing, view); }});
+        findViewById(R.id.settingsNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSettings, view); }});
 
         // Sampler
-        findViewById(R.id.hateIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerHate(sampling)); }});
+        /*findViewById(R.id.hateIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerHate(sampling)); }});
         findViewById(R.id.loveIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerLove(sampling)); }});
-        findViewById(R.id.deleteIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerDelete(sampling)); }});
-        findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { checkWriteExternalStoragePermission(); }});
+        findViewById(R.id.deleteIt).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { dispatch(new SamplerDelete(sampling)); }});*/
 
-        // Sharing
+        // Settings
         findViewById(R.id.syncLibrary).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {dispatch(SYNC_LIBRARY);
         }});
 
@@ -256,14 +256,14 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private void updateState(State state) {
         updateLibraryState(state);
-        updateSamplerState(state);
+        // updateSamplerState(state);
         // updateLovedState(state); TODO move to library fragment
-        updateSharing(state);
+        updateSettings(state);
         updateSearch(state);
 
         // Update new samplers count
-        int samplerCount = state.samplerPlaylist == null ? 0 : state.samplerPlaylist.size();
-        ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(samplerCount));
+        // int samplerCount = state.samplerPlaylist == null ? 0 : state.samplerPlaylist.size();
+        // ((TextView)findViewById(R.id.newSamplerSongsCount)).setText(samplerCount == 0 ? "" : Integer.toString(samplerCount));
 
         // Update new loved count
         /* TODO move to library fragment
@@ -285,8 +285,8 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         }
     }
 
-    private void updateSharing(State state) {
-        ((TextView)findViewById(R.id.songDuration)).setText(String.format(Locale.getDefault(), "%d", state.allSongs.size()));
+    private void updateSettings(State state) {
+        ((TextView)findViewById(R.id.songsCount)).setText(String.format(Locale.getDefault(), "%d", state.allSongs.size()));
 
         if (state.syncLibraryPending) {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.VISIBLE);
@@ -415,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     private void navigateTo(int frame) {
         selectedFrame = frame;
-        boolean isSampling = findViewById(R.id.frameSampler).getVisibility() == View.VISIBLE;
+        // boolean isSampling = findViewById(R.id.frameSampler).getVisibility() == View.VISIBLE;
 
         if (frame == R.id.frameLibrary) {
             libraryActivate();
@@ -425,7 +425,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             ((ImageView) findViewById(R.id.libraryNavbarBtn)).setImageResource(R.drawable.ic_library_music);
         }
 
-        if (frame == R.id.frameSampler) {
+        /*if (frame == R.id.frameSampler) {
             samplerActivate();
         } else {
             findViewById(R.id.frameSampler).setVisibility(View.INVISIBLE);
@@ -433,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             ((ImageView) findViewById(R.id.samplerNavbarBtn)).setImageResource(R.drawable.ic_whatshot);
             if (isSampling)
                 dispatch(SAMPLER_STOP);
-        }
+        }*/
 
         if (frame == R.id.frameSearch) {
             searchActivate();
@@ -444,12 +444,12 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             ((ImageView) findViewById(R.id.searchNavbarBtn)).setImageResource(R.drawable.ic_search);
         }
 
-        if (frame == R.id.frameSharing) {
+        if (frame == R.id.frameSettings) {
             sharingActivate();
         } else {
-            findViewById(R.id.frameSharing).setVisibility(View.INVISIBLE);
-            ((TextView) findViewById(R.id.sharingText)).setTextColor(Color.parseColor("#FFFFFF"));
-            ((ImageView) findViewById(R.id.sharingNavbarBtn)).setImageResource(R.drawable.ic_sharing);
+            findViewById(R.id.frameSettings).setVisibility(View.INVISIBLE);
+            ((TextView) findViewById(R.id.settingsText)).setTextColor(Color.parseColor("#FFFFFF"));
+            ((ImageView) findViewById(R.id.settingsNavbarBtn)).setImageResource(R.drawable.ic_settings);
         }
     }
 
@@ -479,12 +479,12 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void sharingActivate() {
-        findViewById(R.id.frameSharing).setVisibility(View.VISIBLE);
-        ((TextView) findViewById(R.id.sharingText)).setTextColor(Color.parseColor("#4fc3f7"));
-        ((ImageView) findViewById(R.id.sharingNavbarBtn)).setImageResource(R.drawable.ic_sharing_blue);
+        findViewById(R.id.frameSettings).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.settingsText)).setTextColor(Color.parseColor("#4fc3f7"));
+        ((ImageView) findViewById(R.id.settingsNavbarBtn)).setImageResource(R.drawable.ic_settings_blue);
     }
 
-    private void samplerActivate() {
+    /*private void samplerActivate() {
         findViewById(R.id.frameSampler).setVisibility(View.VISIBLE);
         ((TextView) findViewById(R.id.samplerText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.samplerNavbarBtn)).setImageResource(R.drawable.ic_whatshot_blue);
@@ -492,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         // TODO remove main notification"
 
         dispatch(SAMPLER_START);
-    }
+    }*/
 
     private void libraryActivate() {
         findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
