@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import buddybox.core.Song;
-import buddybox.core.events.Play;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.PlaylistAddSong;
 import buddybox.core.events.PlaylistCreate;
