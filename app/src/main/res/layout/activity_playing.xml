@@ -12,14 +12,24 @@
         android:layout_height="wrap_content">
 
         <ImageButton
+            android:id="@+id/shareSong"
+            android:layout_width="40dp"
+            android:layout_height="56dp"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/songMore"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/song_options"
+            app:srcCompat="@drawable/ic_share" />
+
+        <ImageButton
             android:id="@+id/songMore"
-            android:layout_width="56dp"
+            android:layout_width="40dp"
             android:layout_height="56dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
             android:background="@android:color/transparent"
-            app:srcCompat="@drawable/ic_more_vert"
-            android:contentDescription="@string/song_options" />
+            android:contentDescription="@string/song_options"
+            app:srcCompat="@drawable/ic_more_vert" />
 
         <ImageView
             android:id="@+id/minimize"
@@ -40,7 +50,7 @@
             android:layout_toEndOf="@+id/minimize"
             android:layout_toStartOf="@+id/songMore"
             android:text="@string/song_playing"
-            android:textAlignment="center"
+            android:textAlignment="textStart"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textSize="20sp" />
     </RelativeLayout>

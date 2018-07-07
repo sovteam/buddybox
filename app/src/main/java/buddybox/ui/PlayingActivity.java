@@ -1,5 +1,6 @@
 package buddybox.ui;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -64,6 +65,12 @@ public class PlayingActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.stay,R.anim.slide_out_down);
         }});
 
+        findViewById(R.id.shareSong).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareSong();
+            }
+        });
         findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {openSongOptionsDialog();
             }
@@ -139,6 +146,15 @@ public class PlayingActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void shareSong() {
+        // TODO move to SOV api
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
+        sendIntent.setType("text/plain");
+        startActivity(Intent.createChooser(sendIntent, /*getResources().getText(R.string.send_to)*/ "Hello"));
     }
 
     private void showMissingSongToast() {
