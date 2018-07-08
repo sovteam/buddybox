@@ -1,7 +1,6 @@
 package buddybox.model;
 
 import android.util.Base64;
-import android.util.Log;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,18 +9,12 @@ import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.PlaylistAddSong;
-import buddybox.core.events.PlaylistChangeSongPosition;
 import buddybox.core.events.PlaylistCreate;
-import buddybox.core.events.PlaylistDelete;
-import buddybox.core.events.PlaylistRemoveSong;
 import buddybox.core.events.PlaylistSelected;
-import buddybox.core.events.PlaylistSetName;
 import buddybox.core.events.SongFound;
-import buddybox.ui.ModelProxy;
 import sov.Hash;
 
 import static buddybox.core.Dispatcher.dispatch;
-import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.SHUFFLE;
 import static buddybox.core.events.Play.SHUFFLE_PLAY;
 import static buddybox.core.events.Play.SKIP_NEXT;

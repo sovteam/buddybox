@@ -110,11 +110,15 @@
                     style="?android:attr/progressBarStyleLarge"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/syncLibrary"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    tools:layout_editor_absoluteY="106dp" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.918" />
 
 
             </android.support.constraint.ConstraintLayout>

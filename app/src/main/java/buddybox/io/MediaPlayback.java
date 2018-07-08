@@ -20,6 +20,7 @@ import android.view.KeyEvent;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.ui.MainActivity;
 import buddybox.ui.ModelProxy;
 import sov.buddybox.R;
 
@@ -243,11 +244,11 @@ public class MediaPlayback extends Service {
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) {
-            manager.cancel(NOTIFICATION_ID);
+            manager.cancelAll();
         }
-        super.onTaskRemoved(rootIntent);
     }
 
     @Nullable

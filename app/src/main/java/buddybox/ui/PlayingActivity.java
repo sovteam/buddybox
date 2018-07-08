@@ -1,9 +1,12 @@
 package buddybox.ui;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
@@ -64,6 +67,12 @@ public class PlayingActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.stay,R.anim.slide_out_down);
         }});
 
+        findViewById(R.id.shareSong).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareSong();
+            }
+        });
         findViewById(R.id.songMore).setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {openSongOptionsDialog();
             }
@@ -139,6 +148,15 @@ public class PlayingActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void shareSong() {
+        // TODO move to SOV api
+        Uri uri = Uri.parse(playing.filePath);
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("audio/*");
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(share, "Share MP3 File: " + playing.name));
     }
 
     private void showMissingSongToast() {
