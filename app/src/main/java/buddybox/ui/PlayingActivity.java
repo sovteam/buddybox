@@ -6,7 +6,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
@@ -152,11 +151,14 @@ public class PlayingActivity extends AppCompatActivity {
 
     private void shareSong() {
         // TODO move to SOV api
+        if (playing.isMissing)
+            return;
+
         Uri uri = Uri.parse(playing.filePath);
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("audio/*");
         share.putExtra(Intent.EXTRA_STREAM, uri);
-        startActivity(Intent.createChooser(share, "Share MP3 File: " + playing.name));
+        startActivity(Intent.createChooser(share, "Share: " + playing.name));
     }
 
     private void showMissingSongToast() {
@@ -238,6 +240,11 @@ public class PlayingActivity extends AppCompatActivity {
         updateTitle(state);
         updateSongDuration();
         updateCommandButtons(state);
+
+        if (playing.isMissing)
+            ((ImageView) findViewById(R.id.shareSong)).setImageResource(R.drawable.ic_share_grey);
+        else
+            ((ImageView) findViewById(R.id.shareSong)).setImageResource(R.drawable.ic_share);
 
         lastState = state;
     }
