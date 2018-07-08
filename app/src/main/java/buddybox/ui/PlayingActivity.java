@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
@@ -150,11 +152,11 @@ public class PlayingActivity extends AppCompatActivity {
 
     private void shareSong() {
         // TODO move to SOV api
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
-        sendIntent.setType("text/plain");
-        startActivity(Intent.createChooser(sendIntent, /*getResources().getText(R.string.send_to)*/ "Hello"));
+        Uri uri = Uri.parse(playing.filePath);
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("audio/*");
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(share, "Share MP3 File: " + playing.name));
     }
 
     private void showMissingSongToast() {
