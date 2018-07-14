@@ -3,13 +3,12 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <include layout="@layout/library_empty" />
+
     <ListView
         android:id="@+id/artists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:footerDividersEnabled="false" />
-
-    <include layout="@layout/library_empty" />
-
 
 </LinearLayout>

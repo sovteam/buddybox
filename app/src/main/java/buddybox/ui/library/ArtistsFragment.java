@@ -139,11 +139,11 @@ public class ArtistsFragment extends Fragment {
             view.findViewById(R.id.footerLoading).setVisibility(View.GONE);
             if (state.artists.isEmpty()) {
                 view.findViewById(R.id.library_empty).setVisibility(View.VISIBLE);
-                view.findViewById(R.id.artists).setVisibility(View.INVISIBLE);
+                view.findViewById(R.id.artists).setVisibility(View.GONE);
                 return;
             }
         }
-        view.findViewById(R.id.library_empty).setVisibility(View.INVISIBLE);
+        view.findViewById(R.id.library_empty).setVisibility(View.GONE);
         view.findViewById(R.id.artists).setVisibility(View.VISIBLE);
     }
 }

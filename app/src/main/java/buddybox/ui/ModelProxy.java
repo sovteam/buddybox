@@ -18,7 +18,8 @@ public class ModelProxy {
     }
 
     public static void addStateListener(IModel.StateListener listener) {
-        INSTANCE.addStateListener(listener);
+        if (isInitialized())
+            INSTANCE.addStateListener(listener);
     }
 
     public static void removeStateListener(IModel.StateListener listener) {
