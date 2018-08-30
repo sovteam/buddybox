@@ -65,12 +65,9 @@ public class MediaInfoRetriever {
 
     public static void init(Context context) {
         MediaInfoRetriever.context = context;
-        addStateListener(new IModel.StateListener() {
-            @Override
-            public void update(final State state) {
-                updateState(state);
-            }
-        });
+        addStateListener(new IModel.StateListener() {@Override public void update(final State state) {
+            updateState(state);
+        }});
     }
 
     private static File getAlbumsFolder() {
