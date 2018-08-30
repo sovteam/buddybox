@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         } else {
             findViewById(R.id.syncLibrarySpinner).setVisibility(View.GONE);
             findViewById(R.id.syncLibrary).setEnabled(true);
-            ((Button)findViewById(R.id.syncLibrary)).setText(R.string.SyncLibrary);
+            ((Button)findViewById(R.id.syncLibrary)).setText(R.string.ScanDevice);
         }
 
         ((TextView)findViewById(R.id.freeStorage)).setText(formatStorage(state.availableMemorySize));
