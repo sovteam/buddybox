@@ -220,7 +220,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/progressBar"
                 android:layout_marginTop="20dp"
-                android:text="@string/max_volume" />
+                android:text="@string/volume" />
 
             <ImageView
                 android:id="@+id/bluetooth"

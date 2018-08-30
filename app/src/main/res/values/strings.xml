@@ -64,5 +64,5 @@
     <string name="media_storage">Media storage:</string>
     <string name="sample_free_storage">2.3 GB</string>
     <string name="sample_media_storage">420 MB</string>
-    <string name="max_volume">Max Volume</string>
+    <string name="volume">Volume</string>
 </resources>
