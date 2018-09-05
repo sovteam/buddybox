@@ -954,8 +954,13 @@ public class Model implements IModel {
         ContentValues nowVal = new ContentValues();
         nowVal.put("LAST_PLAYED", now);
         String table = playable.getClass().getSimpleName().toUpperCase() + "S";
-        db.update(table, nowVal, "ID=?", new String[]{Long.toString(playable.getId())});
-        playable.updateLastPlayed(now);
+
+        Long id = playable.getId();
+        if (id != null) {
+            // external song just added
+            db.update(table, nowVal, "ID=?", new String[]{Long.toString(id)});
+            playable.updateLastPlayed(now);
+        }
     }
 
     private void doPlay(Playlist playlist, int songIndex) {

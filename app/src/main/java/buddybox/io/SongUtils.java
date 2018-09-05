@@ -358,7 +358,7 @@ public class SongUtils {
         return digest;
     }
 
-    static Song readSong(File mp3) {
+    public static Song readSong(File mp3) {
         Map<String, String> metadata = SongUtils.readMp3Metadata(mp3);
         Hash hash = SongUtils.mp3Hash(mp3);
 

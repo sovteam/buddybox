@@ -156,7 +156,7 @@ public class PlayingActivity extends AppCompatActivity {
 
         Uri uri = Uri.parse(playing.filePath);
         Intent share = new Intent(Intent.ACTION_SEND);
-        share.setType("audio/*");
+        share.setType("file/*");
         share.putExtra(Intent.EXTRA_STREAM, uri);
         startActivity(Intent.createChooser(share, "Share: " + playing.name));
     }

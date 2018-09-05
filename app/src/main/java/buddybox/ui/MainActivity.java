@@ -1,9 +1,12 @@
 package buddybox.ui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,6 +32,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,9 +41,12 @@ import buddybox.ModelSim;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.Play;
 import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
+import buddybox.core.events.SongFound;
+import buddybox.core.events.SongSelected;
 import buddybox.io.BluetoothListener;
 import buddybox.io.HeadsetPlugListener;
 import buddybox.io.Library;
@@ -47,6 +54,7 @@ import buddybox.io.MediaInfoRetriever;
 import buddybox.io.MediaPlayback;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
+import buddybox.io.SongUtils;
 import buddybox.model.Model;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
@@ -83,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println(">>># onCreate!");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -158,7 +168,95 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         setVolumeControls();
 
         checkWriteExternalStoragePermission();
+
+        processIntent(getIntent());
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        processIntent(intent);
+    }
+
+    private void processIntent(Intent intent) {
+        String action = intent.getAction();
+        if (action != null && action.equals(Intent.ACTION_VIEW)) {
+            System.out.println("Data >>># " + intent.getData());
+            Uri uri = intent.getData();
+            System.out.println("URI >>># " + uri);
+            System.out.println("URI auth >>># " + uri.getAuthority());
+            if (uri != null) {
+
+                String path = getPath(this, uri);
+                if (path == null)
+                    return;
+                System.out.println("Path >>> " + path);
+                File mp3 = new File(path);
+                Song song = SongUtils.readSong(mp3);
+                dispatch(new SongFound(song));
+                dispatch(new SongSelected(song.hash.toString()));
+                dispatch(new Play(song));
+                startActivity(new Intent(this, PlayingActivity.class));
+            }
+        }
+    }
+
+
+    /**
+     * Get a file path from a Uri. This will get the the path for Storage Access
+     * Framework Documents, as well as the _data field for the MediaStore and
+     * other file-based ContentProviders.
+     *
+     * @param context The context.
+     * @param uri The Uri to query.
+     * @author paulburke
+     */
+    public static String getPath(final Context context, final Uri uri) {
+
+
+        // MediaStore (and general)
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the value of the data column for this Uri. This is useful for
+     * MediaStore Uris, and other file-based ContentProviders.
+     *
+     * @param context The context.
+     * @param uri The Uri to query.
+     * @param selection (Optional) Filter used in the query.
+     * @param selectionArgs (Optional) Selection arguments used in the query.
+     * @return The value of the _data column, which is typically a file path.
+     */
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {column};
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int column_index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(column_index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
 
     private void initApp() {
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
@@ -180,7 +278,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         dispatch(SYNC_LIBRARY);
     }
-
 
     private void checkWriteExternalStoragePermission() {
         if (Build.VERSION.SDK_INT >= 23) {

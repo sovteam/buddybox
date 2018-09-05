@@ -22,8 +22,14 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="audio/*" />
             </intent-filter>
         </activity>
         <activity
@@ -65,8 +71,7 @@
             android:name="buddybox.io.BluetoothListener"
             android:enabled="true"
             android:exported="false"
-            android:stopWithTask="true">
-        </service>
+            android:stopWithTask="true"></service>
         <service
             android:name="buddybox.io.MediaPlayback"
             android:exported="false"
@@ -86,7 +91,7 @@
         <service
             android:name="sov.SovAPIService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
     </application>
 
 </manifest>
