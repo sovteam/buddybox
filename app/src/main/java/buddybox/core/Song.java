@@ -35,9 +35,10 @@ public class Song implements Playable {
     private Bitmap art;
 
     private long lastPlayed;
+    public Integer hasEmbeddedArt;
 
     public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
-                long fileLength, long lastModified, boolean isMissing, boolean isDeleted, long lastPlayed) {
+                long fileLength, long lastModified, boolean isMissing, boolean isDeleted, long lastPlayed, int hasEmbeddedArt) {
         this.id = id;
         this.hash = hash;
         this.name = name;
@@ -51,6 +52,7 @@ public class Song implements Playable {
         this.isMissing = isMissing;
         this.isDeleted = isDeleted;
         this.lastPlayed = lastPlayed;
+        this.hasEmbeddedArt = hasEmbeddedArt;
     }
 
     @Override public String name() { return name; }
@@ -160,5 +162,13 @@ public class Song implements Playable {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public boolean hasEmbeddedArt() {
+        return this.hasEmbeddedArt == null || this.hasEmbeddedArt == 1;
+    }
+
+    public void setHasEmbeddedArt(boolean hasEmbeddedArt) {
+        this.hasEmbeddedArt = hasEmbeddedArt ? 1 : 0;
     }
 }

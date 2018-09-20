@@ -4,15 +4,14 @@ import android.graphics.Bitmap;
 
 import buddybox.core.Artist;
 import buddybox.core.Dispatcher;
+import buddybox.model.AlbumInfo;
 
 public class AlbumArtFound extends Dispatcher.Event {
-    public final String artist;
-    public final String album;
+    public final AlbumInfo album;
     public final Bitmap art;
 
-    public AlbumArtFound(String artist, String album, Bitmap art) {
-        super("AlbumArtFound artist: " + artist + ", album: " + album);
-        this.artist = artist;
+    public AlbumArtFound(AlbumInfo album, Bitmap art) {
+        super("AlbumArtFound artist: " + album.artist + ", album: " + album.name);
         this.album = album;
         this.art = art;
     }

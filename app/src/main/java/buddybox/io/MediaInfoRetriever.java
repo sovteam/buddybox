@@ -16,10 +16,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,9 +23,11 @@ import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtFound;
+import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistPictureFound;
+import buddybox.core.events.SongEmbeddedArtResult;
+import buddybox.model.AlbumInfo;
 import buddybox.web.DownloadUtils;
 import buddybox.web.HttpUtils;
 import sov.buddybox.R;
@@ -74,45 +72,35 @@ public class MediaInfoRetriever {
     synchronized
     private static void updateState(final State state) {
         if (isRunning || !Network.hasConnection(context)) return;
+
         isRunning = true;
         service.submit(new Runnable() { @Override public void run() {
             try {
                 updateStateInner(state);
             } finally {
-                isRunning = false;
+                synchronized (MediaInfoRetriever.class) { isRunning = false; }
+                // dispatch(new InfoRetrival());
             }
         }});
     }
 
     private static void updateStateInner(State state) {
-        // collect artistAlbums of songs without embedded art
-        Map<String,Set<String>> artistsAlbums = new HashMap<>();
-        for (Song song : state.allSongs) {
-            if (song.getArt() != null)
-                continue;
-
-            Bitmap art = getEmbeddedBitmap(song);
-            if (art != null) {
-                dispatch(new AlbumArtEmbeddedFound(song, art));
-            } else {
-                Set<String> albums = artistsAlbums.get(song.artist);
-                if (albums == null)
-                    albums = new HashSet<>();
-                albums.add(song.album);
-                artistsAlbums.put(song.artist, albums);
-            }
+        // check song embedded art
+        Song songToCheck = state.songToCheckEmbeddedArt;
+        if (songToCheck != null) {
+            byte[] art = getEmbeddedPicture(songToCheck);
+            dispatch(new SongEmbeddedArtResult(songToCheck, art != null));
         }
 
-        for (String artistName : artistsAlbums.keySet())
-            for (String albumName : artistsAlbums.get(artistName)) {
-                consumeAlbum(artistName, albumName);
-                Thread.yield();
-            }
+        // find album art
+        AlbumInfo album = state.albumToFindArt;
+        if (album != null)
+            consumeAlbum(album);
 
-        for (Artist artist : state.artists) {
+        // find artist info
+        Artist artist = state.artistToFindInfo;
+        if (artist != null)
             consumeArtist(artist);
-            Thread.yield();
-        }
     }
 
     private static Bitmap getAlbumArtBitmap(final String albumKey) {
@@ -173,8 +161,7 @@ public class MediaInfoRetriever {
         }
 
         String bio = getArtistBio(response);
-        throw new Error("Uncomment below");
-//        dispatch(new ArtistInfoFound(pic, bio));
+        dispatch(new ArtistInfoFound(artist, pic, bio));
     }
 
     private static String artistPictureFullFileName(Artist artist) {
@@ -264,9 +251,9 @@ public class MediaInfoRetriever {
         return ret;
     }
 
-    private static void consumeAlbum(String artistName, String albumName) {
-        String artist = Uri.encode(artistName);
-        String album = Uri.encode(albumName);
+    private static void consumeAlbum(AlbumInfo albumInfo) {
+        String artist = Uri.encode(albumInfo.artist);
+        String album = Uri.encode(albumInfo.name);
         String urlString = "https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=" + artist + "&album=" + album + "&autocorrect=1&api_key=" + API_KEY + "&format=json";
 
         Bitmap art = null;
@@ -275,12 +262,12 @@ public class MediaInfoRetriever {
         if (response != null) {
             String imageUrl = getAlbumImageUrl(response);
             if (imageUrl != null) {
-                String fullPath = getAssetFolder(ALBUMS_FOLDER_PATH) + File.separator + albumArtFullFileName(artistName, albumName);
+                String fullPath = getAssetFolder(ALBUMS_FOLDER_PATH) + File.separator + albumArtFullFileName(albumInfo.artist, albumInfo.name);
                 art = downloadImage(imageUrl, fullPath);
             }
         }
 
-        dispatch(new AlbumArtFound(artistName, albumName, art));
+        dispatch(new AlbumArtFound(albumInfo, art));
     }
 
     private static String getAlbumImageUrl(JSONObject json) {
