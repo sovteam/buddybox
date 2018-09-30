@@ -367,11 +367,36 @@ public class SongUtils {
         if (durationStr != null)
             duration = Integer.parseInt(durationStr);
 
-        return new Song(null, hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false, System.currentTimeMillis(), null);
+        boolean hasEmbeddedArt = getEmbeddedPicture(mp3) != null;
+
+        return new Song(null, hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt);
     }
 
     static boolean deleteSong(Song song) {
         File songFile = new File(song.filePath);
         return songFile.exists() && songFile.delete();
+    }
+
+    private static byte[] getEmbeddedPicture(File mp3) {
+        MediaMetadataRetriever retriever;
+        try {
+            retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(mp3.getPath());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        byte[] ret;
+        try {
+            ret = retriever.getEmbeddedPicture();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            retriever.release();
+        }
+
+        return ret;
     }
 }

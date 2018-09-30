@@ -23,10 +23,12 @@ import buddybox.core.Artist;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.AlbumArtError;
 import buddybox.core.events.AlbumArtFound;
+import buddybox.core.events.AlbumArtNotFound;
+import buddybox.core.events.ArtistInfoError;
 import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistPictureFound;
-import buddybox.core.events.SongEmbeddedArtResult;
 import buddybox.model.AlbumInfo;
 import buddybox.web.DownloadUtils;
 import buddybox.web.HttpUtils;
@@ -85,13 +87,6 @@ public class MediaInfoRetriever {
     }
 
     private static void updateStateInner(State state) {
-        // check song embedded art
-        Song songToCheck = state.songToCheckEmbeddedArt;
-        if (songToCheck != null) {
-            byte[] art = getEmbeddedPicture(songToCheck);
-            dispatch(new SongEmbeddedArtResult(songToCheck, art != null));
-        }
-
         // find album art
         AlbumInfo album = state.albumToFindArt;
         if (album != null)
@@ -145,22 +140,25 @@ public class MediaInfoRetriever {
         String artistName = Uri.encode(artist.name);
         final String urlString = "https://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + artistName + "&api_key=" + API_KEY + "&format=json";
 
-        JSONObject response = HttpUtils.getHttpResponse(urlString);
-        if (response == null) {
-            Log.d(TAG, "no http response retrieving artist info");
+        Bitmap pic = null;
+        String bio;
+        try {
+            JSONObject response = HttpUtils.getHttpResponse(urlString);
+            String artistPictureUrl = getArtistPictureUrl(response);
+            if (artistPictureUrl == null || artistPictureUrl.isEmpty()) {
+                Log.d(TAG, "no picture url");
+            } else {
+                String picPath = getAssetFolder(ARTISTS_FOLDER_PATH) + File.separator + artistPictureFullFileName(artist);
+                pic = downloadImage(artistPictureUrl, picPath);
+            }
+
+            bio = getArtistBio(response);
+        } catch (Exception e) {
+            System.out.println(">>> ERROR retrieveArtistPictureAndBio");
+            dispatch(new ArtistInfoError(artist));
             return;
         }
 
-        Bitmap pic = null;
-        String artistPictureUrl = getArtistPictureUrl(response);
-        if (artistPictureUrl == null || artistPictureUrl.isEmpty()) {
-            Log.d(TAG, "no picture url");
-        } else {
-            String picPath = getAssetFolder(ARTISTS_FOLDER_PATH) + File.separator + artistPictureFullFileName(artist);
-            pic = downloadImage(artistPictureUrl, picPath);
-        }
-
-        String bio = getArtistBio(response);
         dispatch(new ArtistInfoFound(artist, pic, bio));
     }
 
@@ -252,21 +250,29 @@ public class MediaInfoRetriever {
     }
 
     private static void consumeAlbum(AlbumInfo albumInfo) {
+        System.out.println(">>> consumeAlbum: " + albumInfo.name);
         String artist = Uri.encode(albumInfo.artist);
         String album = Uri.encode(albumInfo.name);
         String urlString = "https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=" + artist + "&album=" + album + "&autocorrect=1&api_key=" + API_KEY + "&format=json";
 
-        Bitmap art = null;
-
-        JSONObject response = HttpUtils.getHttpResponse(urlString);
-        if (response != null) {
+        Bitmap art;
+        try {
+            JSONObject response = HttpUtils.getHttpResponse(urlString);
             String imageUrl = getAlbumImageUrl(response);
-            if (imageUrl != null) {
-                String fullPath = getAssetFolder(ALBUMS_FOLDER_PATH) + File.separator + albumArtFullFileName(albumInfo.artist, albumInfo.name);
-                art = downloadImage(imageUrl, fullPath);
+            if (imageUrl == null) {
+                System.out.println(">>> consumeAlbum NOT FOUND: " + albumInfo.name);
+                dispatch(new AlbumArtNotFound(albumInfo));
+                return;
             }
+            String fullPath = getAssetFolder(ALBUMS_FOLDER_PATH) + File.separator + albumArtFullFileName(albumInfo.artist, albumInfo.name);
+            art = downloadImage(imageUrl, fullPath);
+        } catch (Exception e) {
+            System.out.println(">>> consumeAlbum ERROR: " + albumInfo.name);
+            dispatch(new AlbumArtError(albumInfo));
+            return;
         }
 
+        System.out.println(">>> consumeAlbum FOUND: " + albumInfo.name);
         dispatch(new AlbumArtFound(albumInfo, art));
     }
 
