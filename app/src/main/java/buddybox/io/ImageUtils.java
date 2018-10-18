@@ -9,6 +9,8 @@ import buddybox.core.Song;
 
 public class ImageUtils {
 
+    //TODO Cache last BitmapByPlayable (300 or so)
+
     public static Bitmap load(Playable playable) {
         if (playable instanceof Song) {
             Song song = (Song) playable;
