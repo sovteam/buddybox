@@ -161,4 +161,9 @@ public class Song implements Playable {
     public void setId(long id) {
         this.id = id;
     }
+
+    public boolean hasEmbeddedArt() {
+        //TODO
+        return false;
+    }
 }

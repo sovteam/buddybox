@@ -91,7 +91,7 @@ public class MediaInfoRetriever {
             if (song.getArt() != null)
                 continue;
 
-            Bitmap art = getEmbeddedBitmap(song);
+            Bitmap art = ImageUtils.getEmbeddedBitmap(song);
             if (art != null) {
                 dispatch(new AlbumArtEmbeddedFound(song, art));
             } else {
@@ -230,37 +230,6 @@ public class MediaInfoRetriever {
 
         if (ret.isEmpty())
             return null;
-        return ret;
-    }
-
-    private static Bitmap getEmbeddedBitmap(Song song) {
-        byte[] picture = getEmbeddedPicture(song);
-
-        return (picture == null)
-                ? null
-                : BitmapFactory.decodeByteArray(picture, 0, picture.length);
-    }
-
-    private static byte[] getEmbeddedPicture(Song song) {
-        MediaMetadataRetriever retriever;
-        try {
-            retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(song.filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        byte[] ret;
-        try {
-            ret = retriever.getEmbeddedPicture();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            retriever.release();
-        }
-
         return ret;
     }
 
