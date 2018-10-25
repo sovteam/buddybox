@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import buddybox.ui.util.AsyncImage;
 import sov.buddybox.R;
 
 import java.util.ArrayList;
@@ -158,11 +159,7 @@ public class PlayablesFragment extends Fragment {
                 }
             });
 
-            Bitmap art = song.getArt();
-            if (art != null)
-                ((ImageView) rowView.findViewById(R.id.playableArt)).setImageBitmap(art);
-            else
-                ((ImageView) rowView.findViewById(R.id.playableArt)).setImageResource(R.mipmap.sneer2);
+            AsyncImage.setImage((ImageView)rowView.findViewById(R.id.playableArt), song, R.mipmap.sneer2);
         }
 
         private Spannable highlightText(String text) {

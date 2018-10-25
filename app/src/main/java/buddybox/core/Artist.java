@@ -3,9 +3,6 @@ package buddybox.core;
 import android.graphics.Bitmap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class Artist extends Playlist {
 

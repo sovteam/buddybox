@@ -160,4 +160,7 @@ public class Song implements Playable {
         this.id = id;
     }
 
+    public boolean hasEmbeddedArt() {
+        return hasEmbeddedArt;
+    }
 }

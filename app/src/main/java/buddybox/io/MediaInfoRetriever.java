@@ -87,12 +87,10 @@ public class MediaInfoRetriever {
     }
 
     private static void updateStateInner(State state) {
-        // find album art
         AlbumInfo album = state.albumToFindArt;
         if (album != null)
             consumeAlbum(album);
 
-        // find artist info
         Artist artist = state.artistToFindInfo;
         if (artist != null)
             consumeArtist(artist);
@@ -215,37 +213,6 @@ public class MediaInfoRetriever {
 
         if (ret.isEmpty())
             return null;
-        return ret;
-    }
-
-    private static Bitmap getEmbeddedBitmap(Song song) {
-        byte[] picture = getEmbeddedPicture(song);
-
-        return (picture == null)
-                ? null
-                : BitmapFactory.decodeByteArray(picture, 0, picture.length);
-    }
-
-    private static byte[] getEmbeddedPicture(Song song) {
-        MediaMetadataRetriever retriever;
-        try {
-            retriever = new MediaMetadataRetriever();
-            retriever.setDataSource(song.filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        byte[] ret;
-        try {
-            ret = retriever.getEmbeddedPicture();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            retriever.release();
-        }
-
         return ret;
     }
 
