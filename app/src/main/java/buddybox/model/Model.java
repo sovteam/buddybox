@@ -13,10 +13,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import buddybox.core.Album;
 import buddybox.core.Artist;
@@ -26,9 +30,12 @@ import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.AlbumArtEmbeddedFound;
+import buddybox.core.events.AlbumArtError;
 import buddybox.core.events.AlbumArtFound;
+import buddybox.core.events.AlbumArtNotFound;
 import buddybox.core.events.ArtistBioFound;
+import buddybox.core.events.ArtistInfoError;
+import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.ArtistSelectedByName;
@@ -135,6 +142,8 @@ public class Model implements IModel {
     private Artist artistSelected;
     private Map<String, Map<String, Album>> albumsByArtist;
     private ArrayList<Playable> searchResults = new ArrayList<>();
+    private Deque<AlbumInfo> albumsToFindArt;
+    private Deque<Artist> artistsToFindInfo;
 
     public Model(Context context) {
         if (context != null)
@@ -218,9 +227,11 @@ public class Model implements IModel {
 
         // media info
         if (cls == AlbumArtFound.class) albumArtFound((AlbumArtFound) event);
-        if (cls == AlbumArtEmbeddedFound.class) albumArtEmbeddedFound((AlbumArtEmbeddedFound) event);
-        if (cls == ArtistPictureFound.class) artistPictureFound((ArtistPictureFound) event);
-        if (cls == ArtistBioFound.class) artistBioFound((ArtistBioFound) event);
+        if (cls == AlbumArtNotFound.class) albumArtNotFound((AlbumArtNotFound) event);
+        if (cls == AlbumArtError.class) albumArtError((AlbumArtError) event);
+
+        if (cls == ArtistInfoFound.class) artistInfoFound((ArtistInfoFound) event);
+        if (cls == ArtistInfoError.class) artistInfoError((ArtistInfoError) event);
 
         // artist
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
@@ -230,6 +241,22 @@ public class Model implements IModel {
         if (cls == Search.class) search((Search) event);
 
         updateListeners();
+    }
+
+    private void artistInfoFound(ArtistInfoFound event) {
+        Log.i(TAG, "info found: " + event.artist.name);
+        ContentValues values = new ContentValues();
+        values.put("BIO", event.bio);
+        values.put("LAST_INFO", System.currentTimeMillis());
+        db.update("ARTISTS", values,"ID=?", new String[]{Long.toString(event.artist.getId())});
+        event.artist.setBio(event.bio);
+        event.artist.setPicture(event.pic);
+
+        artistsToFindInfo.remove(event.artist);
+    }
+
+    private void artistInfoError(ArtistInfoError event) {
+        artistsToFindInfo.remove(event.artist);
     }
 
     private void search(Search event) {
@@ -307,13 +334,28 @@ public class Model implements IModel {
     private void albumArtFound(AlbumArtFound event) {
         for (Song song : allSongs)
             if (song.getArt() == null
-                    && song.artist.equals(event.artist)
-                    && song.album.equals(event.album))
+                    && song.artist.equals(event.album.artist)
+                    && song.album.equals(event.album.name))
                 song.setArt(event.art);
+
+        albumsToFindArt.remove(event.album);
     }
 
-    private void albumArtEmbeddedFound(AlbumArtEmbeddedFound event) {
-        event.song.setEmbeddedArt(event.art);
+    private void albumArtNotFound(AlbumArtNotFound event) {
+        for (Song song : allSongs)
+            if (song.getArt() == null
+                    && song.artist.equals(event.albumInfo.artist)
+                    && song.album.equals(event.albumInfo.name))
+                song.setArt(null); // TODO set lastAlbumRequest
+
+        System.out.println(">>> model albumsToFindArt size: " + albumsToFindArt.size());
+        albumsToFindArt.remove(event.albumInfo);
+        System.out.println(">>> model albumsToFindArt size after remove: " + albumsToFindArt.size());
+    }
+
+    private void albumArtError(AlbumArtError event) {
+        // only removes from queue
+        albumsToFindArt.remove(event.albumInfo);
     }
 
     private void toggleDurationRemaining() {
@@ -1032,8 +1074,50 @@ public class Model implements IModel {
                 getVolumeSettings(),
                 hasAudioFocus,
                 artistSelected,
-                artistAlbums()
+                artistAlbums(),
+                albumToFindArt(),
+                artistToFindInfo()
         );
+    }
+
+    private Artist artistToFindInfo() {
+        // TODO insert into artistsToFindInfo when new SongFound
+        if (albumToFindArt() != null)
+            return null;
+
+        if (artistsToFindInfo == null) {
+            artistsToFindInfo = new LinkedList<>();
+            for (Map.Entry<String, Artist> artistEntry : artists.entrySet())
+                artistsToFindInfo.offer(artistEntry.getValue());
+        }
+        return artistsToFindInfo.peek();
+    }
+
+    private AlbumInfo albumToFindArt() {
+        if (albumsToFindArt == null) {
+            // collect albums by artist
+            Map<String,Set<String>> artistsAlbums = new HashMap<>();
+            for (Song song : allSongs) {
+                if (song.hasEmbeddedArt)
+                    continue;
+
+                Set<String> albums = artistsAlbums.get(song.artist);
+                if (albums == null)
+                    albums = new HashSet<>();
+                albums.add(song.album);
+                artistsAlbums.put(song.artist, albums);
+            }
+
+            // offer albums to find art
+            albumsToFindArt = new LinkedList<>();
+            for (String artistName : artistsAlbums.keySet())
+                for (String albumName : artistsAlbums.get(artistName))
+                    albumsToFindArt.offer(new AlbumInfo(albumName, artistName));
+
+            System.out.println(">>> albumsToFindArt.size(): " + albumsToFindArt.size());
+        }
+        System.out.println(">>> albumsToFindArt.peek(): " + albumsToFindArt.peek().name);
+        return albumsToFindArt.peek();
     }
 
     private Map<String, Album> artistAlbums() {
@@ -1093,7 +1177,8 @@ public class Model implements IModel {
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1,
-                        cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")));
+                        cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")),
+                        cursor.getInt(cursor.getColumnIndex("HAS_EMBEDDED_ART")) == 1);
                 addSong(song);
             }
             cursor.close();

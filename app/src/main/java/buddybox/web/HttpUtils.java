@@ -21,28 +21,24 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class HttpUtils {
 
-    public static JSONObject getHttpResponse(String urlString) {
+    public static JSONObject getHttpResponse(String urlString) throws IOException {
         // build URL
         URL url = getUrl(urlString);
         if (url == null)
-            return null;
+            throw new Error("Url not found");
 
         // open connection
         int responseCode;
         HttpURLConnection urlConnection;
         InputStream result;
-        try {
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestProperty("User-Agent", "Buddy Box App");
-            responseCode = urlConnection.getResponseCode();
-            result = urlConnection.getInputStream();
-            // check response code
-            if (responseCode != 200) {
-                Log.d("MediaInfoRetriever", "RESPONSE CODE " + responseCode);
-                return null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestProperty("User-Agent", "Buddy Box App");
+        responseCode = urlConnection.getResponseCode();
+        result = urlConnection.getInputStream();
+        // check response code
+        if (responseCode != 200) {
+            Log.d("MediaInfoRetriever", "RESPONSE CODE " + responseCode);
             return null;
         }
 

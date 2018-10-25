@@ -29,15 +29,15 @@ public class PlayerCycleTest extends ModelTest {
         super.setup();
 
         Hash hash = new Hash(Base64.encode("IsThisLoveStream".getBytes(), 1));
-        Song song = new Song(null, hash, "Is This Love", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L);
+        Song song = new Song(null, hash, "Is This Love", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L, null);
         dispatch(new SongFound(song));
 
         hash = new Hash(Base64.encode("StirItUpStream".getBytes(), 1));
-        song = new Song(null, hash, "Stir It Up", "Bob Marley", "Legend Deluxe Edition", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L);
+        song = new Song(null, hash, "Stir It Up", "Bob Marley", "Legend Deluxe Edition", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8236L , 2L,false, false, 1L, null);
         dispatch(new SongFound(song));
 
         hash = new Hash(Base64.encode("CanYouFeelItStream".getBytes(), 1));
-        song = new Song(null, hash, "Can You Feel It", "The Jacksons", "The Very Best Of", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 3L,false, false, 1L);
+        song = new Song(null, hash, "Can You Feel It", "The Jacksons", "The Very Best Of", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 3L,false, false, 1L, null);
         dispatch(new SongFound(song));
 
         dispatch(new PlaylistCreate("My Playlist", getSong("Stir It Up").hash.toString()));
