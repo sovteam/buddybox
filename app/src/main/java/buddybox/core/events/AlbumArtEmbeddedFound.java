@@ -7,11 +7,11 @@ import buddybox.core.Song;
 
 public class AlbumArtEmbeddedFound extends Dispatcher.Event {
     public final Song song;
-    public final Bitmap art;
+    public final boolean hasEmbeddedArt;
 
-    public AlbumArtEmbeddedFound(Song song, Bitmap art) {
+    public AlbumArtEmbeddedFound(Song song, boolean hasEmbeddedArt) {
         super("AlbumArtEmbeddedFound " + song.name);
         this.song = song;
-        this.art = art;
+        this.hasEmbeddedArt = hasEmbeddedArt;
     }
 }

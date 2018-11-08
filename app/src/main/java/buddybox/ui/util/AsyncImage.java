@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import buddybox.core.Playable;
-import buddybox.io.ImageUtils;
+import buddybox.io.MediaInfoRetriever2;
 
 public class AsyncImage {
 
@@ -23,7 +23,7 @@ public class AsyncImage {
 
             @Override
             protected Bitmap doInBackground(Void... v) {
-                return ImageUtils.load(playable);
+                return MediaInfoRetriever2.load(playable);
             }
 
             @Override
