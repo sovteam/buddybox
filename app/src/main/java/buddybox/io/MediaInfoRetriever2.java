@@ -33,8 +33,8 @@ public class MediaInfoRetriever2 {
     private static String TAG = MediaInfoRetriever2.class.getSimpleName();
 
     private static String ASSETS_FOLDER_PATH = Environment.DIRECTORY_MUSIC + File.separator + "Assets";
-    private static File ALBUMS_FOLDER  = getAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Albums");
-    private static File ARTISTS_FOLDER = getAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Artists");
+    private static File ALBUMS_FOLDER  = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Albums");
+    private static File ARTISTS_FOLDER = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Artists");
 
     private static final String API_KEY = "c65adb3fdfa66e16cb4308ad76f2a052";
     private static Application context;
@@ -183,7 +183,7 @@ public class MediaInfoRetriever2 {
         }
     }
 
-    private static File getAssetFolder(String folderPath) {
+    private static File produceAssetFolder(String folderPath) {
         File folder = Environment.getExternalStoragePublicDirectory(folderPath);
         if (!folder.exists())
             if (!folder.mkdirs())

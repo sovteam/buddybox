@@ -19,7 +19,7 @@ public class SongMissingTest extends ModelTest {
     public void songMissingDispatched_modelRemovesSongAndArtist() {
         // dispatch Jamming song found
         Hash hash = new Hash(Base64.encode("JammingStream".getBytes(), 1));
-        Song song = new Song(null, hash, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null);
+        Song song = new Song(null, hash, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null, 0);
         dispatch(new SongFound(song));
 
         // dispatch Jamming song missing
@@ -41,12 +41,12 @@ public class SongMissingTest extends ModelTest {
     public void songMissingDispatched_modelRemovesOnlySong() {
         // dispatch "Jamming" song found
         Hash hash1 = new Hash(Base64.encode("JammingStream".getBytes(), 1));
-        Song song1 = new Song(null, hash1, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null);
+        Song song1 = new Song(null, hash1, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null, 0);
         dispatch(new SongFound(song1));
 
         // dispatch "Is this Love" song found
         Hash hash2 = new Hash(Base64.encode("IsThisLoveStream".getBytes(), 1));
-        Song song2 = new Song(null, hash2, "Is this love", "Bob Marley", "Legend", "Reggae", 214000, "/bob/legend/is this love.mp3" , 6789L , 2L,false, false, 1L, null);
+        Song song2 = new Song(null, hash2, "Is this love", "Bob Marley", "Legend", "Reggae", 214000, "/bob/legend/is this love.mp3" , 6789L , 2L,false, false, 1L, null, 0);
         dispatch(new SongFound(song2));
 
         // dispatch Jamming song missing
