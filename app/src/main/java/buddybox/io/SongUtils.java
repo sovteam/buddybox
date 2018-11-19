@@ -369,7 +369,7 @@ public class SongUtils {
 
         boolean hasEmbeddedArt = getEmbeddedPicture(mp3) != null;
 
-        return new Song(null, hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt);
+        return new Song(null, hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt, 0);
     }
 
     static boolean deleteSong(Song song) {

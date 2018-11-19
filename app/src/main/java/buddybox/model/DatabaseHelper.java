@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "buddybox_database_v2";
-    private static final int DATABASE_VERSION = 2;
+    private static final String DATABASE_NAME = "buddybox_database_v3";
+    private static final int DATABASE_VERSION = 3;
 
     static synchronized DatabaseHelper getInstance(Context context) {
         return context == null
@@ -48,7 +48,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "IS_MISSING INTEGER," +
                 "IS_DELETED INTEGER," +
                 "LAST_PLAYED INTEGER," +
-                "HAS_EMBEDDED_ART INTEGER)");
+                "HAS_EMBEDDED_ART INTEGER," +
+                "LAST_ALBUM_ART_REQUESTED INTEGER)");
 
         db.execSQL("CREATE TABLE IF NOT EXISTS PLAYLISTS (ID INTEGER PRIMARY KEY, NAME TEXT UNIQUE, LAST_PLAYED INTEGER)");
         db.execSQL("CREATE TABLE IF NOT EXISTS ARTISTS (ID INTEGER PRIMARY KEY, NAME TEXT UNIQUE, LAST_PLAYED INTEGER, BIO TEXT)");

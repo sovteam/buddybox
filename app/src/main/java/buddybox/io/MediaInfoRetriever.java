@@ -3,7 +3,6 @@ package buddybox.io;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
@@ -21,11 +20,7 @@ import java.util.concurrent.Executors;
 
 import buddybox.core.Artist;
 import buddybox.core.IModel;
-import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.AlbumArtError;
-import buddybox.core.events.AlbumArtFound;
-import buddybox.core.events.AlbumArtNotFound;
 import buddybox.core.events.ArtistInfoError;
 import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistPictureFound;
@@ -56,44 +51,12 @@ public class MediaInfoRetriever {
 
     public MediaInfoRetriever() {}
 
-    public static void init(Context context) {
-        MediaInfoRetriever.context = context;
-        addStateListener(new IModel.StateListener() {@Override public void update(final State state) {
-            updateState(state);
-        }});
-    }
-
-    private static File getAlbumsFolder() {
+       private static File getAlbumsFolder() {
         return getAssetFolder(ALBUMS_FOLDER_PATH);
     }
 
     private static File getArtistsFolder() {
         return getAssetFolder(ARTISTS_FOLDER_PATH);
-    }
-
-    synchronized
-    private static void updateState(final State state) {
-        if (isRunning || !Network.hasConnection(context)) return;
-
-        isRunning = true;
-        service.submit(new Runnable() { @Override public void run() {
-            try {
-                updateStateInner(state);
-            } finally {
-                synchronized (MediaInfoRetriever.class) { isRunning = false; }
-                // dispatch(new InfoRetrival());
-            }
-        }});
-    }
-
-    private static void updateStateInner(State state) {
-        AlbumInfo album = state.albumToFindArt;
-        if (album != null)
-            consumeAlbum(album);
-
-        Artist artist = state.artistToFindInfo;
-        if (artist != null)
-            consumeArtist(artist);
     }
 
     private static Bitmap getAlbumArtBitmap(final String albumKey) {
@@ -228,19 +191,19 @@ public class MediaInfoRetriever {
             String imageUrl = getAlbumImageUrl(response);
             if (imageUrl == null) {
                 System.out.println(">>> consumeAlbum NOT FOUND: " + albumInfo.name);
-                dispatch(new AlbumArtNotFound(albumInfo));
+  //              dispatch(new AlbumArtNotFound(albumInfo));
                 return;
             }
             String fullPath = getAssetFolder(ALBUMS_FOLDER_PATH) + File.separator + albumArtFullFileName(albumInfo.artist, albumInfo.name);
             art = downloadImage(imageUrl, fullPath);
         } catch (Exception e) {
             System.out.println(">>> consumeAlbum ERROR: " + albumInfo.name);
-            dispatch(new AlbumArtError(albumInfo));
+ //           dispatch(new AlbumArtError(albumInfo));
             return;
         }
 
         System.out.println(">>> consumeAlbum FOUND: " + albumInfo.name);
-        dispatch(new AlbumArtFound(albumInfo, art));
+ //       dispatch(new AlbumArtFound(albumInfo, art));
     }
 
     private static String getAlbumImageUrl(JSONObject json) {

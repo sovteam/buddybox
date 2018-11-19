@@ -50,7 +50,7 @@ import buddybox.core.events.SongSelected;
 import buddybox.io.BluetoothListener;
 import buddybox.io.HeadsetPlugListener;
 import buddybox.io.Library;
-import buddybox.io.MediaInfoRetriever;
+import buddybox.io.MediaInfoRetriever2;
 import buddybox.io.MediaPlayback;
 import buddybox.io.Player;
 import buddybox.io.Sampler;
@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private void initApp() {
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
 
-        MediaInfoRetriever.init(this);
+        MediaInfoRetriever2.init(this.getApplication());
         Player.init(this);
         Library.init();
         Sampler.init(this);
