@@ -76,7 +76,9 @@ public class MediaInfoRetriever2 {
     }
 
     private static Bitmap loadAlbumArtFromFolder(Song song) {
-        return BitmapFactory.decodeFile(albumArtFileName(song.artist, song.album));
+        File file = new File(ALBUMS_FOLDER, albumArtFileName(song.artist, song.album));
+        if (!file.exists()) return null;
+        return BitmapFactory.decodeFile(file.getPath());
     }
 
     private static Bitmap loadAlbumArtFromLastFM(Song song) {
