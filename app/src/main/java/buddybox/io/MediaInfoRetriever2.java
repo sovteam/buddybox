@@ -192,7 +192,7 @@ public class MediaInfoRetriever2 {
     }
 
     private static String encode(String fileName) {
-        return fileName.replaceAll("[^a-zA-Z0-9-_\\.]", "_").toLowerCase();
+        return fileName.replaceAll("[^a-zA-Z0-9-_.]", "_").toLowerCase();
     }
 
 }
