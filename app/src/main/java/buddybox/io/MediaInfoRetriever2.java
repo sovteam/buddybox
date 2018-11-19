@@ -82,7 +82,7 @@ public class MediaInfoRetriever2 {
     }
 
     private static Bitmap loadAlbumArtFromLastFM(Song song) {
-        System.out.println(">>> loadFromLastFM: " + song.album);
+        System.out.println(">>> loadFromLastFM: " + song.artist + "::" + song.album);
         if (System.currentTimeMillis() - song.lastAlbumArtRequested < ONE_MONTH)
             return null;
         if (!Network.hasConnection(context))
