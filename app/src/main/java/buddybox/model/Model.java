@@ -26,6 +26,7 @@ import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtRequested;
 import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistInfoFound;
@@ -216,8 +217,8 @@ public class Model implements IModel {
         if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
 
         // media info
+        if (cls == AlbumArtEmbeddedFound.class) albumArtEmbeddedFound((AlbumArtEmbeddedFound) event);
         if (cls == AlbumArtRequested.class) albumArtRequested((AlbumArtRequested) event);
-
         if (cls == ArtistInfoFound.class) artistInfoFound((ArtistInfoFound) event);
 
         // artist
@@ -306,6 +307,13 @@ public class Model implements IModel {
 
     private void artistSelectedByName(ArtistSelectedByName event) {
         artistSelected = artists.get(event.name);
+    }
+
+    private void albumArtEmbeddedFound(AlbumArtEmbeddedFound event) {
+        event.song.setHasEmbeddedArt(event.hasEmbeddedArt);
+        ContentValues vals = new ContentValues();
+        vals.put("HAS_EMBEDDED_ART", event.hasEmbeddedArt ? 1 : 0);
+        db.update("SONGS", vals, "ID=?", new String[]{Long.toString(event.song.getId())});
     }
 
     private void albumArtRequested(AlbumArtRequested event) {
@@ -1100,7 +1108,7 @@ public class Model implements IModel {
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1,
                         cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")),
-                        cursor.getInt(cursor.getColumnIndex("HAS_EMBEDDED_ART")) == 1,
+                        maybeBoolean(cursor.getInt(cursor.getColumnIndex("HAS_EMBEDDED_ART"))),
                         cursor.getLong(cursor.getColumnIndex("LAST_ALBUM_ART_REQUESTED")));
                 addSong(song);
             }
@@ -1275,4 +1283,11 @@ public class Model implements IModel {
         // FORT TEST ONLY!!!
         db = database;
     }
+
+    private Boolean maybeBoolean(int value) {
+        if (value == 0) return false;
+        if (value == 1) return true;
+        return null;
+    }
+
 }
