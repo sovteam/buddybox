@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'jacoco'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion 29
+    buildToolsVersion '29.0.2'
 
     defaultConfig {
-        applicationId "com.adalbertosoares.buddybox"
+        applicationId "sov.buddybox"
         minSdkVersion 23
-        targetSdkVersion 27
+        targetSdkVersion 29
         versionCode 3
         versionName "v1.0.1-beta"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
