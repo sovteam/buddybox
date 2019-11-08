@@ -6,7 +6,7 @@ android {
     buildToolsVersion '29.0.2'
 
     defaultConfig {
-        applicationId "sov.buddybox"
+        applicationId 'buddybox.cloud'
         minSdkVersion 23
         targetSdkVersion 29
         versionCode 3
