@@ -224,6 +224,7 @@ public class Model implements IModel {
         // artist
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
         if (cls == ArtistSelectedByName.class) artistSelectedByName((ArtistSelectedByName) event);
+        if (cls == ArtistBioFound.class) artistBioFound((ArtistBioFound) event);
 
         // search
         if (cls == Search.class) search((Search) event);

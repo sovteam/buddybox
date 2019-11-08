@@ -25,7 +25,7 @@ public class SongFoundTest extends ModelTest {
 
         // dispatch new song found
         Hash hash = new Hash(Base64.encode("JammingStream".getBytes(), 1));
-        Song newSong = new Song(null, hash, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null);
+        Song newSong = new Song(null, hash, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null, 1L);
         dispatch(new SongFound(newSong));
 
         // second update
@@ -87,14 +87,14 @@ public class SongFoundTest extends ModelTest {
         Hash hash = new Hash(Base64.encode("JammingStream".getBytes(), 1));
 
         // dispatch Jamming song found
-        Song song = new Song(null, hash, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null);
+        Song song = new Song(null, hash, "Jamming", "Bob Marley", "Legend", "Reggae", 213000, "/bob/legend/jamming.mp3" , 8235L , 1L,false, false, 1L, null, 1L);
         dispatch(new SongFound(song));
 
         // dispatch Jamming song missing
         dispatch(new SongMissing(song));
 
         // dispatch Jamming song found again
-        Song newSong = new Song(null, hash, "Jamming it!", "Bob", "I am Legend", "Classic", 42, "/bobby/jamming-it.mp3" , 133L , 2L,false, false, 1L, null);
+        Song newSong = new Song(null, hash, "Jamming it!", "Bob", "I am Legend", "Classic", 42, "/bobby/jamming-it.mp3" , 133L , 2L,false, false, 1L, null, 1L);
         dispatch(new SongFound(newSong));
 
         // check song update
