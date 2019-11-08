@@ -1,6 +1,6 @@
 package buddybox.web;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import org.json.JSONException;
