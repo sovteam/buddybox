@@ -7,12 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
+import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaMetadataCompat;
-
-import androidx.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
@@ -21,6 +20,7 @@ import android.view.KeyEvent;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
+import buddybox.ui.MainActivity;
 import buddybox.ui.ModelProxy;
 import sov.buddybox.R;
 
@@ -190,7 +190,7 @@ public class MediaPlayback extends Service {
                 R.drawable.ic_skip_next, getString(R.string.skip_next),
                 MediaStyleHelper.getActionIntent(this, "SKIP_NEXT", KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD)
         ));
-        builder.setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+        builder.setStyle(new android.support.v4.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0, 1, 2)
                 .setMediaSession(mediaSession.getSessionToken())
         );

@@ -1,7 +1,7 @@
 package buddybox.ui;
 
 import android.content.Context;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 
 public class MySwipeRefreshLayout extends SwipeRefreshLayout {
