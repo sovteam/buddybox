@@ -423,6 +423,7 @@ public class Model implements IModel {
         song.setArtist(event.artist);
         song.setAlbum(event.album);
         song.setGenre(event.genre);
+        song.setLastAlbumArtRequested(0);
         updateSong(song);
     }
 
