@@ -1,5 +1,7 @@
 package buddybox.ui;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +17,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import buddybox.ui.helpers.DeleteConfirmation;
 import sov.buddybox.R;
 
 import java.util.ArrayList;
@@ -75,9 +78,11 @@ public class EditSongActivity extends AppCompatActivity {
     }
 
     private void delete() {
-        dispatch(new SongDeleteRequest(song.hash.toString()));
-        Toast.makeText(EditSongActivity.this, "Song deleted", Toast.LENGTH_SHORT).show();
-        finish();
+        new DeleteConfirmation(this).onSuccess(new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) {
+            dispatch(new SongDeleteRequest(song.hash.toString()));
+            Toast.makeText(EditSongActivity.this, "Song deleted", Toast.LENGTH_SHORT).show();
+            finish();
+        }});
     }
 
     private void updateState(State state) {

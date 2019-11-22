@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import buddybox.core.events.SongDeleteRequest;
 import buddybox.core.events.SongSelected;
+import buddybox.ui.helpers.DeleteConfirmation;
 
 import static buddybox.ui.ModelProxy.dispatch;
 
@@ -56,8 +57,10 @@ public class SongOptionsDialog extends DialogFragment {
         startActivity(new Intent(getContext(), EditSongActivity.class));
     }
 
-    private void deleteSong(String songHash) {
-        dispatch(new SongDeleteRequest(songHash));
-        Toast.makeText(getContext(), "Song deleted", Toast.LENGTH_SHORT).show();
+    private void deleteSong(final String songHash) {
+        new DeleteConfirmation(activity).onSuccess(new DialogInterface.OnClickListener() { @Override public void onClick(DialogInterface dialog, int which) {
+            dispatch(new SongDeleteRequest(songHash));
+            Toast.makeText(getContext(), "Song deleted", Toast.LENGTH_SHORT).show();
+        }});
     }
 }
