@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import buddybox.ui.util.AsyncImage2;
 import sov.buddybox.R;
 
 import buddybox.core.Album;
@@ -101,10 +102,7 @@ public class AlbumFragment extends Fragment {
 
         Song firstAlbumSong = album.song(0);
         ImageView artView = view.findViewById(R.id.albumArt);
-        if (firstAlbumSong != null)
-            artView.setImageBitmap(firstAlbumSong.getArt());
-        else
-            artView.setImageResource(R.mipmap.sneer2);
+        AsyncImage2.setImage(artView, firstAlbumSong, R.mipmap.sneer2);
 
         LinearLayout songsContainer = view.findViewById(R.id.songsContainer);
         for (Song song : album.songs) {

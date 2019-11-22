@@ -21,6 +21,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SongSelected;
+import buddybox.ui.util.AsyncImage2;
 import sov.buddybox.R;
 
 import static buddybox.ui.ModelProxy.dispatch;
@@ -108,11 +109,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             songArtist.setTextColor(color);
             drag.setImageResource(icon);
 
-            Bitmap art = song.getArt();
-            if (art != null)
-                albumArt.setImageBitmap(art);
-            else
-                albumArt.setImageResource(R.mipmap.sneer2);
+            AsyncImage2.setImage(albumArt, song, R.mipmap.sneer2);
         }
 
         @Override

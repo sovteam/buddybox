@@ -19,6 +19,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.ArtistSelectedByName;
 import buddybox.core.events.PlaylistSelected;
+import buddybox.ui.util.AsyncImage2;
 import sov.buddybox.R;
 
 import static buddybox.ui.ModelProxy.dispatch;
@@ -100,10 +101,7 @@ public class SongPageFragment extends Fragment {
         name.setTextColor(color);
         artist.setTextColor(color);
 
-        if (song.getArt() != null)
-            pageArt.setImageBitmap(song.getArt());
-        else
-            pageArt.setImageResource(R.mipmap.sneer2);
+        AsyncImage2.setImage(pageArt, song, R.mipmap.sneer2);
 
         lastState = state;
     }
