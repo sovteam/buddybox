@@ -22,8 +22,9 @@ public class AsyncImage2 {
     private static Handler handler = new Handler(Looper.getMainLooper());
     private static int alternateResourceId;
 
-    public static void init() {
         System.out.println("AsyncImage2.init()");
+    public static void init(int alternateResourceId_) {
+        alternateResourceId = alternateResourceId_;
 
         Thread loaderThread = new Thread() { @Override public void run() {
            while (true) {

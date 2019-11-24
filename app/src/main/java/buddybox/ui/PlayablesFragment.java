@@ -158,7 +158,7 @@ public class PlayablesFragment extends Fragment {
                 }
             });
 
-            AsyncImage2.setImage((ImageView)rowView.findViewById(R.id.playableArt), song, R.mipmap.sneer2);
+            AsyncImage2.setImage((ImageView)rowView.findViewById(R.id.playableArt), song);
         }
 
         private Spannable highlightText(String text) {

@@ -102,7 +102,7 @@ public class AlbumFragment extends Fragment {
 
         Song firstAlbumSong = album.song(0);
         ImageView artView = view.findViewById(R.id.albumArt);
-        AsyncImage2.setImage(artView, firstAlbumSong, R.mipmap.sneer2);
+        AsyncImage2.setImage(artView, firstAlbumSong);
 
         LinearLayout songsContainer = view.findViewById(R.id.songsContainer);
         for (Song song : album.songs) {

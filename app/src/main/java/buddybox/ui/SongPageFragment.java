@@ -101,7 +101,7 @@ public class SongPageFragment extends Fragment {
         name.setTextColor(color);
         artist.setTextColor(color);
 
-        AsyncImage2.setImage(pageArt, song, R.mipmap.sneer2);
+        AsyncImage2.setImage(pageArt, song);
 
         lastState = state;
     }

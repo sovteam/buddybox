@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             });
 
         // Initialize AsyncImage loader
-        AsyncImage2.init();
+        AsyncImage2.init(R.mipmap.sneer2);
 
         // Library pager
         ViewPager viewPager = findViewById(R.id.viewpager);

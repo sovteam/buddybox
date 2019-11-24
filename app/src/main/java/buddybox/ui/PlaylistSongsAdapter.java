@@ -109,7 +109,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             songArtist.setTextColor(color);
             drag.setImageResource(icon);
 
-            AsyncImage2.setImage(albumArt, song, R.mipmap.sneer2);
+            AsyncImage2.setImage(albumArt, song);
         }
 
         @Override
