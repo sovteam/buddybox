@@ -14,71 +14,69 @@ import buddybox.core.Playable;
 import buddybox.io.MediaInfoRetriever2;
 
 public class AsyncImage2 {
-    private static BlockingDeque<ImageView> viewQueue = new LinkedBlockingDeque<>();
+
+    private static BlockingDeque<ImageView> viewStack = new LinkedBlockingDeque<>();
     private static Map<ImageView, Playable> imagesToLoad = new ArrayMap<>();
     private static Map<ImageView, Bitmap> imagesLoaded = new ArrayMap<>();
-    private static Object monitor = new Object();
+
     private static Handler handler = new Handler(Looper.getMainLooper());
     private static int alternateResourceId;
 
-        System.out.println("AsyncImage2.init()");
     public static void init(int alternateResourceId_) {
         alternateResourceId = alternateResourceId_;
 
-        Thread loaderThread = new Thread() { @Override public void run() {
+        new Thread() { @Override public void run() {
            while (true) {
-               try {
-                   System.out.println("AsyncImage2 waiting for a ImageView");
-                   ImageView currentView = viewQueue.takeFirst();
-                   System.out.println("AsyncImage2 got a currentView");
-                   Playable myView = null;
-                   synchronized (monitor) {
-                       myView = imagesToLoad.get(currentView);
-                   }
-                   if (myView == null) continue;
-                   Bitmap myImageToLoad = MediaInfoRetriever2.load(myView); // slow call
-                   System.out.println("AsyncImage2 loaded an image");
-                   synchronized (monitor) {
-                       System.out.println("AsyncImage2 will check to use the new image");
-                       if (myView == imagesToLoad.get(currentView)) { // may have changed
-                           System.out.println("AsyncImage2 will try to use the new image");
-                           imagesToLoad.remove(myView);
-                           imagesLoaded.put(currentView, myImageToLoad);
-                           if (imagesLoaded.size() == 1)
-                               handler.post(new Runnable() { @Override public void run() {
-                                   useLoadedImages();
-                               }});
-                       }
-                   }
-               } catch (InterruptedException e) {
-                   e.printStackTrace();
-               }
+               ImageView myView = pop(viewStack);
+               Playable myImageToLoad = imageToLoad(myView);
+               if (myImageToLoad == null) continue;
+
+               Bitmap myLoadedImage = MediaInfoRetriever2.load(myImageToLoad); // slow call
+
+               imageLoaded(myView, myImageToLoad, myLoadedImage);
            }
-        }};
-
-        loaderThread.start();
+        }}.start();
     }
 
-    public static void setImage(final ImageView view, final Playable playable, final int alternateResourceId) {
-        AsyncImage2.alternateResourceId = alternateResourceId;
-        synchronized (monitor) {
-            System.out.println("AsyncImage2 setImage");
-            imagesLoaded.remove(view);
-            imagesToLoad.put(view, playable);
-            viewQueue.addFirst(view);
-        }
+    synchronized
+    public static void setImage(final ImageView view, final Playable playable) {
+        imagesLoaded.remove(view);
+        imagesToLoad.put(view, playable);
+        viewStack.addFirst(view);
     }
 
+    synchronized
+    private static void imageLoaded(ImageView myView, Playable myImageToLoad, Bitmap myLoadedImage) {
+        if (myImageToLoad != imagesToLoad.get(myView)) // may have changed
+            return;
+        imagesToLoad.remove(myView);
+        imagesLoaded.put(myView, myLoadedImage);
+        if (imagesLoaded.size() == 1)
+            handler.post(new Runnable() { @Override public void run() {
+                useLoadedImages();
+            }});
+    }
+
+    synchronized // Synchronized. Don't inline.
+    private static Playable imageToLoad(ImageView myView) {
+        return imagesToLoad.get(myView);
+    }
+
+    synchronized
     private static void useLoadedImages() {
-        synchronized (monitor) {
-            System.out.println("AsyncImage2 will use the new loaded image");
-            for (Map.Entry<ImageView, Bitmap> entry : imagesLoaded.entrySet()) {
-                if (entry.getValue() == null)
-                    entry.getKey().setImageResource(alternateResourceId);
-                else
-                    entry.getKey().setImageBitmap(entry.getValue());
-            }
-            imagesLoaded.clear();
+        for (Map.Entry<ImageView, Bitmap> entry : imagesLoaded.entrySet())
+            if (entry.getValue() == null)
+                entry.getKey().setImageResource(alternateResourceId);
+            else
+                entry.getKey().setImageBitmap(entry.getValue());
+        imagesLoaded.clear();
+    }
+
+    static private <T> T pop(BlockingDeque<T> stack) {
+        try {
+            return stack.takeFirst();
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e);
         }
     }
 }
