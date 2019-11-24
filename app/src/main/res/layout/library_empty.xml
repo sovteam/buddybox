@@ -31,7 +31,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Upload MP3 files from your computer or download them from your cloud."
+        android:text="Transfer MP3 files to this device's Music folder."
         android:textAlignment="center"
         android:textAppearance="?android:attr/textAppearanceMedium"
         app:layout_constraintEnd_toEndOf="parent"

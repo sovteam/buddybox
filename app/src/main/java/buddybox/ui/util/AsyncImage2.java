@@ -29,7 +29,8 @@ public class AsyncImage2 {
            while (true) {
                ImageView myView = pop(viewStack);
                Playable myImageToLoad = imageToLoad(myView);
-               if (myImageToLoad == null) continue;
+               if (myImageToLoad == null)
+                   continue;
 
                Bitmap myLoadedImage = MediaInfoRetriever2.load(myImageToLoad); // slow call
 
