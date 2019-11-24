@@ -1,7 +1,6 @@
 package buddybox.ui.util;
 
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.ArrayMap;
