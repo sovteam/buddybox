@@ -2,7 +2,6 @@ package buddybox.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -21,7 +20,7 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.PlayPlaylist;
 import buddybox.core.events.SongSelected;
-import buddybox.ui.util.AsyncImage2;
+import buddybox.ui.util.AsyncImage;
 import sov.buddybox.R;
 
 import static buddybox.ui.ModelProxy.dispatch;
@@ -109,7 +108,7 @@ class PlaylistSongsAdapter extends DragItemAdapter<Pair<Long, Song>, PlaylistSon
             songArtist.setTextColor(color);
             drag.setImageResource(icon);
 
-            AsyncImage2.setImage(albumArt, song);
+            AsyncImage.setImage(albumArt, song);
         }
 
         @Override

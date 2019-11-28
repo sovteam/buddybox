@@ -59,7 +59,7 @@ import buddybox.model.Model;
 import buddybox.ui.library.ArtistsFragment;
 import buddybox.ui.library.PlaylistsFragment;
 import buddybox.ui.library.RecentFragment;
-import buddybox.ui.util.AsyncImage2;
+import buddybox.ui.util.AsyncImage;
 import buddybox.web.ErrorLogger;
 import sov.buddybox.BuildConfig;
 import sov.buddybox.R;
@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             });
 
         // Initialize AsyncImage loader
-        AsyncImage2.init(R.mipmap.sneer2);
+        AsyncImage.init(R.mipmap.sneer2);
 
         // Library pager
         ViewPager viewPager = findViewById(R.id.viewpager);

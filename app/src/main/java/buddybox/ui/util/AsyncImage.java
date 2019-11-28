@@ -13,7 +13,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import buddybox.core.Playable;
 import buddybox.io.MediaInfoRetriever2;
 
-public class AsyncImage2 {
+public class AsyncImage {
 
     private static BlockingDeque<ImageView> viewStack = new LinkedBlockingDeque<>();
     private static Map<ImageView, Playable> imagesToLoad = new ArrayMap<>();
