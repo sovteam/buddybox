@@ -32,9 +32,9 @@ public class AsyncImage {
                if (myImageToLoad == null)
                    continue;
 
-               Bitmap myLoadedImage = MediaInfoRetriever2.load(myImageToLoad); // slow call
+               Bitmap myImageLoaded = MediaInfoRetriever2.load(myImageToLoad); // slow call
 
-               imageLoaded(myView, myImageToLoad, myLoadedImage);
+               imageLoaded(myView, myImageToLoad, myImageLoaded);
            }
         }}.start();
     }
@@ -47,11 +47,11 @@ public class AsyncImage {
     }
 
     synchronized
-    private static void imageLoaded(ImageView myView, Playable myImageToLoad, Bitmap myLoadedImage) {
+    private static void imageLoaded(ImageView myView, Playable myImageToLoad, Bitmap myImageLoaded) {
         if (myImageToLoad != imagesToLoad.get(myView)) // may have changed
             return;
         imagesToLoad.remove(myView);
-        imagesLoaded.put(myView, myLoadedImage);
+        imagesLoaded.put(myView, myImageLoaded);
         if (imagesLoaded.size() == 1)
             handler.post(new Runnable() { @Override public void run() {
                 useLoadedImages();
