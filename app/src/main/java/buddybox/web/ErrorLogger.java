@@ -28,13 +28,17 @@ public class ErrorLogger {
         body.put("stackTrace", sw.toString());
 
         new Daemon("ErrorLogger.notify") { @Override public void run() {
-            HttpUtils.postRequestJSON(POST_LOG_URL, body);
-            Log.d("ErrorLogger", "done sending error");
+            try {
+                HttpUtils.postJSONRequest(POST_LOG_URL, body);
+                Log.d("ErrorLogger", "done sending error");
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
         }};
 
     }
 
-    public static String getDeviceName() {
+    private static String getDeviceName() {
         String manufacturer = Build.MANUFACTURER;
         String model = Build.MODEL;
         if (model.startsWith(manufacturer)) {

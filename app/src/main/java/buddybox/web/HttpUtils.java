@@ -25,7 +25,7 @@ public class HttpUtils {
         // build URL
         URL url = getUrl(urlString);
         if (url == null)
-            throw new Error("Url not found");
+            throw new IllegalStateException("Url not found");
 
         // open connection
         int responseCode;
@@ -37,10 +37,8 @@ public class HttpUtils {
         responseCode = urlConnection.getResponseCode();
         result = urlConnection.getInputStream();
         // check response code
-        if (responseCode != 200) {
-            Log.d("MediaInfoRetriever", "RESPONSE CODE " + responseCode);
-            return null;
-        }
+        if (responseCode != 200)
+            throw new IOException("Response code not 200: " + responseCode);
 
         JSONObject ret = buildJSON(result);
         urlConnection.disconnect();
@@ -84,7 +82,7 @@ public class HttpUtils {
         return ret;
     }
 
-    public static void postRequestJSON(String urlString, Map<String, String> body) {
+    public static void postJSONRequest(String urlString, Map<String, String> body) {
         URL url = getUrl(urlString);
         if (url == null)
             return;
@@ -109,7 +107,7 @@ public class HttpUtils {
                 ret.append(line).append("\n");
             }
             br.close();
-            Log.i("HttpUtils", ">>>> postRequestJSON returns: " + ret);
+            Log.i("HttpUtils", ">>>> postJSONRequest returns: " + ret);
         } catch (IOException e) {
             e.printStackTrace();
         }
