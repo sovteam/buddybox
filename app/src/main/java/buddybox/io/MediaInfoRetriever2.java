@@ -16,8 +16,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import buddybox.core.Album;
 import buddybox.core.Artist;
 import buddybox.core.Playable;
+import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtRequested;
@@ -30,11 +32,11 @@ public class MediaInfoRetriever2 {
 
     private static final long ONE_MINUTE = 1000 * 60;
     private static final long ONE_MONTH  = ONE_MINUTE * 60 * 24 * 30;
-    private static String TAG = MediaInfoRetriever2.class.getSimpleName();
+    private static final String TAG = MediaInfoRetriever2.class.getSimpleName();
 
-    private static String ASSETS_FOLDER_PATH = Environment.DIRECTORY_MUSIC + File.separator + "Assets";
-    private static File ALBUMS_FOLDER  = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Albums");
-    private static File ARTISTS_FOLDER = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Artists");
+    private static final String ASSETS_FOLDER_PATH = Environment.DIRECTORY_MUSIC + File.separator + "Assets";
+    private static final File ALBUMS_FOLDER  = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Albums");
+    private static final File ARTISTS_FOLDER = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Artists");
 
     private static final String API_KEY = "c65adb3fdfa66e16cb4308ad76f2a052";
     private static Application context;
@@ -46,48 +48,53 @@ public class MediaInfoRetriever2 {
     }
 
     public static Bitmap load(Playable playable) {
-        if (playable instanceof Song) {
-            Song song = (Song)playable;
-            if (song.hasEmbeddedArt() == Boolean.FALSE)
-                return loadExternalArt(song);
-            else {
-                Bitmap bitmap = getEmbeddedBitmap(song);
-                boolean wasFound = bitmap != null;
-                if (song.hasEmbeddedArt() == null)
-                    dispatch(new AlbumArtEmbeddedFound(song, wasFound));
-                return wasFound
-                    ? bitmap
-                    : loadExternalArt(song);
-            }
-        } else
-            return loadExternalArt((Artist)playable); //TODO Artist
-    }
-
-    private static Bitmap loadExternalArt(Artist artist) {
-        //TODO
+        if (playable instanceof Song)     return load((Song)     playable);
+        if (playable instanceof Album)    return load((Album)    playable);
+        if (playable instanceof Artist)   return load((Artist)   playable);
+        if (playable instanceof Playlist) return load((Playlist) playable);
+        Log.e(TAG, "Unknown Playable class: " + playable.getClass());
         return null;
     }
 
+    private static Bitmap load(Song song) {
+        Bitmap result = loadEmbeddedArt(song);
+        return (result != null) ? result : loadExternalArt(song);
+    }
+
+    private static Bitmap load(Artist   artist)   { Log.d(TAG, "TODO: Load art for artist: "   + artist);   return null; }
+    private static Bitmap load(Album    album)    { Log.d(TAG, "TODO: Load art for album: "    + album);    return null; }
+    private static Bitmap load(Playlist playlist) { Log.d(TAG, "TODO: Load art for playlist: " + playlist); return null; }
+
+    private static Bitmap loadEmbeddedArt(Song song) {
+        if (song.hasEmbeddedArt() == Boolean.FALSE)
+            return null;
+        Bitmap result = getEmbeddedBitmap(song);
+        if (song.hasEmbeddedArt() == null) {
+            boolean wasFound = result != null;
+            dispatch(new AlbumArtEmbeddedFound(song, wasFound));
+        }
+        return result;
+    }
+
     private static Bitmap loadExternalArt(Song song) {
-        Bitmap fromLastFM = loadAlbumArtFromLastFM(song);
-        return (fromLastFM != null)
-            ? fromLastFM
-            : loadAlbumArtFromFolder(song);
+        Bitmap result = loadAlbumArtFromFolder(song);
+        return (result != null) ? result : loadAlbumArtFromLastFM(song); //TODO: Bring file caching logic here.
     }
 
     private static Bitmap loadAlbumArtFromFolder(Song song) {
         File file = new File(ALBUMS_FOLDER, albumArtFileName(song.artist, song.album));
-        if (!file.exists()) return null;
-        return BitmapFactory.decodeFile(file.getPath());
+        return file.exists()
+                ? BitmapFactory.decodeFile(file.getPath())
+                : null;
     }
 
     private static Bitmap loadAlbumArtFromLastFM(Song song) {
         System.out.println(">>> loadFromLastFM: " + song.artist + "::" + song.album);
         if (System.currentTimeMillis() - song.lastAlbumArtRequested < ONE_MONTH)
             return null;
-        if (!Network.hasConnection(context))
-            return null;
         if (System.currentTimeMillis() - lastDownloadError < ONE_MINUTE)
+            return null;
+        if (!Network.hasConnection(context))
             return null;
 
         String artist = Uri.encode(song.artist);
@@ -105,7 +112,7 @@ public class MediaInfoRetriever2 {
             }
         } catch (Exception e) {
             lastDownloadError = System.currentTimeMillis();
-            System.out.println(">>> AlbumArt ERROR: " + song.album);
+            System.out.println(">>> AlbumArt ERROR: " + song.album + e.getMessage());
             return null;
         }
 
@@ -114,7 +121,7 @@ public class MediaInfoRetriever2 {
     }
 
     private static String albumArtFileName(String artist, String album) {
-        return encode(artist + "-" + album).toLowerCase();
+        return sanitize(artist + "-" + album);
     }
 
     private static String getAlbumImageUrl(JSONObject json) {
@@ -187,12 +194,14 @@ public class MediaInfoRetriever2 {
         File folder = Environment.getExternalStoragePublicDirectory(folderPath);
         if (!folder.exists())
             if (!folder.mkdirs())
-                Log.d(TAG, "Unable to create folder: " + folder);
+                throw new IllegalStateException("Unable to create folder: " + folder);
         return folder;
     }
 
-    private static String encode(String fileName) {
-        return fileName.replaceAll("[^a-zA-Z0-9-_.]", "_").toLowerCase();
+    private static String sanitize(String fileNameCandidate) {
+        return fileNameCandidate
+                .replaceAll("[^a-zA-Z0-9-_.]", "_")
+                .toLowerCase();
     }
 
 }

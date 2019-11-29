@@ -22,27 +22,39 @@ import javax.net.ssl.HttpsURLConnection;
 public class HttpUtils {
 
     public static JSONObject getHttpResponse(String urlString) throws IOException {
-        // build URL
         URL url = getUrl(urlString);
         if (url == null)
             throw new IllegalStateException("Url not found");
 
-        // open connection
-        int responseCode;
-        HttpURLConnection urlConnection;
-        InputStream result;
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection)url.openConnection();
+            conn.setRequestProperty("User-Agent", "BuddyBox App");
 
-        urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.setRequestProperty("User-Agent", "Buddy Box App");
-        responseCode = urlConnection.getResponseCode();
-        result = urlConnection.getInputStream();
-        // check response code
-        if (responseCode != 200)
-            throw new IOException("Response code not 200: " + responseCode);
+            if (conn.getResponseCode() != 200)
+                throw new IOException("Response code not 200: " + conn.getResponseCode());
 
-        JSONObject ret = buildJSON(result);
-        urlConnection.disconnect();
-        return ret;
+            return buildJSON(conn.getInputStream());
+        } finally {
+            if (conn != null)
+                conn.disconnect();
+        }
+    }
+
+    public static JSONObject getHttpResponse(URL url) throws IOException {
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection)url.openConnection();
+            conn.setRequestProperty("User-Agent", "BuddyBox App");
+
+            if (conn.getResponseCode() != 200)
+                throw new IOException("Response code not 200: " + conn.getResponseCode());
+
+            return buildJSON(conn.getInputStream());
+        } finally {
+            if (conn != null)
+                conn.disconnect();
+        }
     }
 
     @Nullable
