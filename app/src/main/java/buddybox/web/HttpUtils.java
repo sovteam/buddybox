@@ -26,19 +26,7 @@ public class HttpUtils {
         if (url == null)
             throw new IllegalStateException("Url not found");
 
-        HttpURLConnection conn = null;
-        try {
-            conn = (HttpURLConnection)url.openConnection();
-            conn.setRequestProperty("User-Agent", "BuddyBox App");
-
-            if (conn.getResponseCode() != 200)
-                throw new IOException("Response code not 200: " + conn.getResponseCode());
-
-            return buildJSON(conn.getInputStream());
-        } finally {
-            if (conn != null)
-                conn.disconnect();
-        }
+        return getHttpResponse(url);
     }
 
     public static JSONObject getHttpResponse(URL url) throws IOException {
