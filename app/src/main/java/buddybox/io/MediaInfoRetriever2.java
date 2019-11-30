@@ -131,7 +131,7 @@ public class MediaInfoRetriever2 {
             return null;
         }
 
-        System.out.println(">>> AlbumArt FOUND: " + song.album);
+        System.out.println(">>> AlbumArt FOUND: " + song.album); // Result might be null. TODO: fix this message
         dispatch(new AlbumArtRequested(song.artist, song.album));
         return result;
     }
