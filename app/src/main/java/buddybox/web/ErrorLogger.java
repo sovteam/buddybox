@@ -29,7 +29,7 @@ public class ErrorLogger {
 
         new Daemon("ErrorLogger.notify") { @Override public void run() {
             try {
-                HttpUtils.postJSONRequest(POST_LOG_URL, body);
+                HttpUtils.postJson(POST_LOG_URL, body);
                 Log.d("ErrorLogger", "done sending error");
             } catch (Exception e) {
                 e.printStackTrace();

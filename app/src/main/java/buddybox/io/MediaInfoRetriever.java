@@ -19,8 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import buddybox.core.Artist;
-import buddybox.core.IModel;
-import buddybox.core.State;
 import buddybox.core.events.ArtistInfoError;
 import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistPictureFound;
@@ -30,7 +28,6 @@ import buddybox.web.HttpUtils;
 import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
-import static buddybox.ui.ModelProxy.addStateListener;
 
 public class MediaInfoRetriever {
 
@@ -104,7 +101,7 @@ public class MediaInfoRetriever {
         Bitmap pic = null;
         String bio;
         try {
-            JSONObject response = HttpUtils.getHttpResponse(urlString);
+            JSONObject response = HttpUtils.getJson(urlString);
             String artistPictureUrl = getArtistPictureUrl(response);
             if (artistPictureUrl == null || artistPictureUrl.isEmpty()) {
                 Log.d(TAG, "no picture url");
@@ -187,7 +184,7 @@ public class MediaInfoRetriever {
 
         Bitmap art;
         try {
-            JSONObject response = HttpUtils.getHttpResponse(urlString);
+            JSONObject response = HttpUtils.getJson(urlString);
             String imageUrl = getAlbumImageUrl(response);
             if (imageUrl == null) {
                 System.out.println(">>> consumeAlbum NOT FOUND: " + albumInfo.name);
@@ -254,7 +251,7 @@ public class MediaInfoRetriever {
 
     private static Bitmap downloadImage(String urlStr, String fullPath) {
         // download image
-        byte[] response = DownloadUtils.downloadFile(urlStr);
+        byte[] response = DownloadUtils.download(urlStr);
         if (response == null)
             return null;
 

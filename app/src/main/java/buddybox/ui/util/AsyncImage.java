@@ -33,7 +33,7 @@ public class AsyncImage {
                if (myImageToLoad == null)
                    continue;
 
-               Bitmap myImageLoaded = MediaInfoRetriever2.load(myImageToLoad); // slow call
+               Bitmap myImageLoaded = MediaInfoRetriever2.loadArt(myImageToLoad); // slow call
 
                imageLoaded(myView, myImageToLoad, myImageLoaded);
            }

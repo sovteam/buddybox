@@ -1,6 +1,5 @@
 package buddybox.web;
 
-import androidx.annotation.Nullable;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -12,105 +11,68 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class HttpUtils {
 
-    public static JSONObject getHttpResponse(String urlString) throws IOException {
-        URL url = getUrl(urlString);
-        if (url == null)
-            throw new IllegalStateException("Url not found");
-
-        return getHttpResponse(url);
+    public static JSONObject getJson(String urlString) throws IOException {
+        return getJson(new URL(urlString));
     }
 
-    public static JSONObject getHttpResponse(URL url) throws IOException {
-        HttpURLConnection conn = null;
+    public static JSONObject getJson(URL url) throws IOException {
+        HttpURLConnection http = (HttpURLConnection)url.openConnection();
         try {
-            conn = (HttpURLConnection)url.openConnection();
-            conn.setRequestProperty("User-Agent", "BuddyBox App");
+            http.setRequestProperty("User-Agent", "BuddyBox App");
 
-            if (conn.getResponseCode() != 200)
-                throw new IOException("Response code not 200: " + conn.getResponseCode());
+            if (http.getResponseCode() != 200)
+                throw new IOException("Response code not 200: " + http.getResponseCode() + " URL: " + url);
 
-            return buildJSON(conn.getInputStream());
+            return readJSON(http.getInputStream());
         } finally {
-            if (conn != null)
-                conn.disconnect();
+            http.disconnect();
         }
     }
 
-    @Nullable
-    private static URL getUrl(String urlString) {
-        URL url = null;
+    private static JSONObject readJSON(InputStream inputStream) throws IOException {
         try {
-            url = new URL(urlString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        return url;
-    }
-
-    private static JSONObject buildJSON(InputStream inputStream) {
-        StringBuilder builder;
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            builder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line).append("\n");
-            }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        JSONObject ret;
-        try {
-            ret = new JSONObject(builder.toString());
+            return new JSONObject(readString(inputStream));
         } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
+            throw new IOException(e);
         }
-
-        return ret;
     }
 
-    public static void postJSONRequest(String urlString, Map<String, String> body) {
-        URL url = getUrl(urlString);
-        if (url == null)
-            return;
+    public static void postJson(String urlString, Map<String, String> body) throws IOException {
 
+        HttpsURLConnection https = (HttpsURLConnection)new URL(urlString).openConnection();
         try {
-            URLConnection con = url.openConnection();
-            HttpsURLConnection https = (HttpsURLConnection)con;
             https.setConnectTimeout(5000);
             https.setRequestMethod("POST");
             https.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 
-            JSONObject json = new JSONObject(body);
-            OutputStream os = https.getOutputStream();
-            os.write(json.toString().getBytes("UTF-8"));
-            os.close();
-
-            // get return
-            StringBuilder ret = new StringBuilder();
-            BufferedReader br = new BufferedReader(new InputStreamReader(https.getInputStream(),"utf-8"));
-            String line;
-            while ((line = br.readLine()) != null) {
-                ret.append(line).append("\n");
+            byte[] bytesOut = new JSONObject(body).toString().getBytes(UTF_8);
+            try (OutputStream os = https.getOutputStream()) {
+                os.write(bytesOut);
             }
-            br.close();
-            Log.i("HttpUtils", ">>>> postJSONRequest returns: " + ret);
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            Log.i("HttpUtils", ">>>> postJson returns: " + readString(https.getInputStream()));
+        } finally {
+            https.disconnect();
         }
+    }
+
+    private static String readString(InputStream inputStream) throws IOException {
+        StringBuilder ret = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, UTF_8));
+        String line;
+        while ((line = reader.readLine()) != null)
+            ret.append(line).append("\n");
+
+        return ret.toString();
     }
 }
 

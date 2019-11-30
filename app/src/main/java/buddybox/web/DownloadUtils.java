@@ -12,7 +12,7 @@ import java.net.URL;
 
 public class DownloadUtils {
 
-    public static byte[] downloadFile(String urlStr) {
+    public static byte[] download(String urlStr) {
         URL url = createUrl(urlStr);
         if (url == null)
             return null;
