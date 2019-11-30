@@ -12,6 +12,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import buddybox.core.Playable;
 import buddybox.io.MediaInfoRetriever2;
+import utils.Daemon;
 
 public class AsyncImage {
 
@@ -25,7 +26,7 @@ public class AsyncImage {
     public static void init(int alternateResourceId_) {
         alternateResourceId = alternateResourceId_;
 
-        new Thread() { @Override public void run() {
+        new Daemon("Image Loader") { @Override public void run() {
            while (true) {
                ImageView myView = pop(viewStack);
                Playable myImageToLoad = imageToLoad(myView);
@@ -36,7 +37,7 @@ public class AsyncImage {
 
                imageLoaded(myView, myImageToLoad, myImageLoaded);
            }
-        }}.start();
+        }};
     }
 
     synchronized
