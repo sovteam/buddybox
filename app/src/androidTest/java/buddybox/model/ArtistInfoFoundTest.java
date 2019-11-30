@@ -9,13 +9,13 @@ import org.junit.Test;
 
 import buddybox.core.Artist;
 import buddybox.core.Song;
-import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistPictureFound;
 import buddybox.core.events.SongFound;
 import sov.Hash;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 
 public class ArtistInfoFoundTest extends ModelTest {
 
@@ -35,15 +35,15 @@ public class ArtistInfoFoundTest extends ModelTest {
     @Test
     public void artistPictureFound_modelUpdateArtist() {
         assertEquals(3, updateCount);
-        assertEquals(null, getArtist("The Jacksons").picture);
-        assertEquals(null, getArtist("Bob Marley").picture);
+        assertNull(getArtist("The Jacksons").picture);
+        assertNull(getArtist("Bob Marley").picture);
 
         Bitmap jacksonsPic = BitmapFactory.decodeByteArray("Jacksons Picture".getBytes(), 0, 16);
         dispatch(new ArtistPictureFound(getArtist("The Jacksons"), jacksonsPic));
 
         assertEquals(4, updateCount);
         assertEquals(jacksonsPic, getArtist("The Jacksons").picture);
-        assertEquals(null, getArtist("Bob Marley").picture);
+        assertNull(getArtist("Bob Marley").picture);
 
         Bitmap bobPic = BitmapFactory.decodeByteArray("Bob Marley Pic".getBytes(), 0, 14);
         dispatch(new ArtistPictureFound(getArtist("Bob Marley"), bobPic));
@@ -51,31 +51,6 @@ public class ArtistInfoFoundTest extends ModelTest {
         assertEquals(5, updateCount);
         assertEquals(jacksonsPic, getArtist("The Jacksons").picture);
         assertEquals(bobPic, getArtist("Bob Marley").picture);
-    }
-
-    @Test
-    public void artistBioFound_modelUpdateArtist() {
-        assertEquals(3, updateCount);
-        assertEquals(null, getArtist("The Jacksons").getBio());
-        assertEquals(null, getArtist("Bob Marley").getBio());
-
-        dispatch(new ArtistBioFound(getArtist("The Jacksons"), "Jacksons short bio"));
-
-        assertEquals(4, updateCount);
-        assertEquals("Jacksons short bio", getArtist("The Jacksons").getBio());
-        assertEquals(null, getArtist("Bob Marley").getBio());
-
-        dispatch(new ArtistBioFound(getArtist("Bob Marley"), "I shot the sheriff"));
-
-        assertEquals(5, updateCount);
-        assertEquals("Jacksons short bio", getArtist("The Jacksons").getBio());
-        assertEquals("I shot the sheriff", getArtist("Bob Marley").getBio());
-
-        reinitialize();
-
-        assertEquals(1, updateCount);
-        assertEquals("Jacksons short bio", getArtist("The Jacksons").getBio());
-        assertEquals("I shot the sheriff", getArtist("Bob Marley").getBio());
     }
 
     private Artist getArtist(String name) {
