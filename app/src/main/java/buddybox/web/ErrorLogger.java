@@ -31,7 +31,7 @@ public class ErrorLogger {
             try {
                 HttpUtils.postJSONRequest(POST_LOG_URL, body);
                 Log.d("ErrorLogger", "done sending error");
-            } catch (RuntimeException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }};
