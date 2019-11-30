@@ -28,7 +28,6 @@ import buddybox.core.Song;
 import buddybox.core.State;
 import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtRequested;
-import buddybox.core.events.ArtistBioFound;
 import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistSelected;
 import buddybox.core.events.ArtistSelectedByName;
@@ -224,7 +223,6 @@ public class Model implements IModel {
         // artist
         if (cls == ArtistSelected.class) artistSelected((ArtistSelected) event);
         if (cls == ArtistSelectedByName.class) artistSelectedByName((ArtistSelectedByName) event);
-        if (cls == ArtistBioFound.class) artistBioFound((ArtistBioFound) event);
 
         // search
         if (cls == Search.class) search((Search) event);
@@ -236,10 +234,8 @@ public class Model implements IModel {
         Log.i(TAG, "info found: " + event.artist.name);
         ContentValues values = new ContentValues();
         values.put("BIO", event.bio);
-        values.put("LAST_INFO", System.currentTimeMillis());
         db.update("ARTISTS", values,"ID=?", new String[]{Long.toString(event.artist.getId())});
         event.artist.setBio(event.bio);
-        event.artist.setPicture(event.pic);
     }
 
     private void search(Search event) {
@@ -292,14 +288,6 @@ public class Model implements IModel {
             }
         });
         return new Playlist(0L, ALL_SONGS, 1L, songs);
-    }
-
-    private void artistBioFound(ArtistBioFound event) {
-        Log.i(TAG, "bio found: " + event.content);
-        ContentValues values = new ContentValues();
-        values.put("BIO", event.content);
-        db.update("ARTISTS", values,"ID=?", new String[]{Long.toString(event.artist.getId())});
-        event.artist.setBio(event.content);
     }
 
     private void artistSelected(ArtistSelected event) {
