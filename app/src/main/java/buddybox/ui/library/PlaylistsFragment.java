@@ -55,8 +55,9 @@ public class PlaylistsFragment extends Fragment {
 
         // List playlists
         ListView list = view.findViewById(R.id.playlists);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-            dispatch(new PlaylistSelected(playlists.get(i)));
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
+            if (index >= playlists.size()) return;
+            dispatch(new PlaylistSelected(playlists.get(index)));
             startActivity(new Intent(getContext(), PlaylistActivity.class));
         }});
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() { @Override public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {

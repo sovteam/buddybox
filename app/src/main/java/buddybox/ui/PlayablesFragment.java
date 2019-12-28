@@ -59,9 +59,11 @@ public class PlayablesFragment extends Fragment {
         ListView list = view.findViewById(R.id.playablesList);
         View footer = inflater.inflate(R.layout.list_footer, list, false);
         list.addFooterView(footer);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() { @Override public void onItemClick(AdapterView<?> adapterView, View view, int index, long l) {
+            if (index >= playables.size()) return;
+
             startActivity(new Intent(getContext(), PlayingActivity.class));
-            dispatch(new Play(playables.get(i)));
+            dispatch(new Play(playables.get(index)));
         }});
         playablesAdapter = new PlayablesArrayAdapter();
         list.setAdapter(playablesAdapter);
@@ -146,6 +148,8 @@ public class PlayablesFragment extends Fragment {
                         : R.drawable.ic_library_music_grey;
                 ((ImageView)rowView.findViewById(R.id.playableArt)).setImageResource(icon);
             }
+
+            AsyncImage.setImage((ImageView)rowView.findViewById(R.id.playableArt), playable);
         }
 
         private void updateSongItem(final Song song, View rowView) {
