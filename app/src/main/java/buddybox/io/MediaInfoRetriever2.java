@@ -45,7 +45,7 @@ public class MediaInfoRetriever2 {
     private static final String TAG = MediaInfoRetriever2.class.getSimpleName();
 
     private static final String ASSETS_FOLDER_PATH = Environment.DIRECTORY_MUSIC + File.separator + "Assets";
-    private static final File ALBUMS_FOLDER  = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Albums");
+    private static File ALBUMS_FOLDER = null;
 
     private static final String API_KEY = "c65adb3fdfa66e16cb4308ad76f2a052";
     private static Application context;
@@ -59,6 +59,7 @@ public class MediaInfoRetriever2 {
 
     public static void init(Application context) {
         MediaInfoRetriever2.context = context;
+        MediaInfoRetriever2.ALBUMS_FOLDER = produceAssetFolder(ASSETS_FOLDER_PATH + File.separator + "Albums");
         addStateListener(new IModel.StateListener() {@Override public void update(final State state) {
             updateState(state);
         }});
@@ -191,7 +192,7 @@ public class MediaInfoRetriever2 {
     }
 
     private static File produceAssetFolder(String folderPath) {
-        File folder = Environment.getExternalStoragePublicDirectory(folderPath);
+        File folder = context.getExternalFilesDir(folderPath);
         if (!folder.exists())
             if (!folder.mkdirs())
                 throw new IllegalStateException("Unable to create folder: " + folder);
