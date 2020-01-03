@@ -192,6 +192,7 @@ public class MediaInfoRetriever2 {
     }
 
     private static File produceAssetFolder(String folderPath) {
+        // TODO: remove checks, new API29 method getExternalFilesDir creates missing folders
         File folder = context.getExternalFilesDir(folderPath);
         if (!folder.exists())
             if (!folder.mkdirs())

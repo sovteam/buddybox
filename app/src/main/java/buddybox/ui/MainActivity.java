@@ -265,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     private void initApp() {
         ModelProxy.init(USE_SIMULATOR ? new ModelSim() : new Model(this));
 
+        SongUtils.initializeContext(this.getApplication());
         MediaInfoRetriever2.init(this.getApplication());
         Player.init(this);
         Library.init();

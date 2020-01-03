@@ -70,14 +70,14 @@ public class Library {
     private static void synchronizeLibrary() {
         Log.i(TAG,"SYNC started");
         long start = System.currentTimeMillis();
-        List<File> mp3Files = SongUtils.listLibraryMp3Files();
+        List<SongMedia> mp3Files = SongUtils.listLibraryMp3Files();
 
         Map<String, Song> songByPath = new HashMap<>();
         if (state != null)
             for (Song song : state.allSongs)
                 songByPath.put(song.filePath, song);
 
-        for (File mp3 : mp3Files) {
+        for (SongMedia mp3 : mp3Files) {
             Song song = songByPath.remove(mp3.getPath());
             if (song == null || song.fileLength != mp3.length() || song.lastModified != mp3.lastModified())
                 dispatch(new SongFound(SongUtils.readSong(mp3)));

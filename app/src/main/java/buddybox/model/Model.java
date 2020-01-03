@@ -93,6 +93,7 @@ public class Model implements IModel {
     public static final String BLUETOOTH = "bluetooth";
     public static final String ALL_SONGS = "%%All%%Songs%%";
 
+    private Context context;
     private SQLiteDatabase db;
     private List<StateListener> listeners = new ArrayList<>();
 
@@ -136,6 +137,8 @@ public class Model implements IModel {
     private ArrayList<Playable> searchResults = new ArrayList<>();
 
     public Model(Context context) {
+        this.context = context;
+
         if (context != null)
             this.db = DatabaseHelper.getInstance(context).getReadableDatabase();
 
@@ -1193,8 +1196,9 @@ public class Model implements IModel {
     }
 
     private File musicDirectory() {
+        // TODO: remove checks, new API29 method getExternalFilesDir creates missing folders
         if (musicDirectory == null) {
-            musicDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+            musicDirectory = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
             if (!musicDirectory.exists())
                 if (!musicDirectory.mkdirs())
                     Log.d("Model.musicDirectory()", "Unable to create folder: " + musicDirectory);

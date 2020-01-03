@@ -1,7 +1,12 @@
 package buddybox.io;
 
+import android.app.Application;
+import android.content.ContentResolver;
+import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,6 +29,8 @@ import buddybox.core.Song;
 
 public class SongUtils {
 
+    private static Application context;
+
     private static final String UNKNOWN_GENRE = "Unknown Genre";
     private static final String UNKNOWN_ARTIST = "Unknown Artist";
     private static final String UNKNOWN_ALBUM = "Unknown Album";
@@ -31,9 +38,14 @@ public class SongUtils {
     private static Map<String, String> genreByCode;
     private static File musicFolder;
 
+    public static void initializeContext(Application context) {
+        SongUtils.context = context;
+    }
+
     static File musicFolder() {
+        // TODO: remove checks, new API29 method getExternalFilesDir creates missing folders
         if (musicFolder == null) {
-            musicFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC);
+            musicFolder = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
             if (!musicFolder.exists())
                 if (!musicFolder.mkdirs())
                     System.out.println("Unable to create folder: " + musicFolder);
@@ -41,13 +53,9 @@ public class SongUtils {
         return musicFolder;
     }
 
-    static List<Song> listSongs(File folder) {
-        List<File> mp3Files = listMp3Files(folder);
-
-        List<Song> ret = new ArrayList<>();
-        for (File mp3 : mp3Files)
-            ret.add(readSong(mp3));
-        return ret;
+    static List<SongMedia> listSongs() {
+        // TODO: remove this method
+        return listMp3Files();
     }
 
     private static Hash mp3Hash(File mp3) {
@@ -105,28 +113,46 @@ public class SongUtils {
         return size + 10;
     }
 
-    static List<File> listLibraryMp3Files() {
-        return listMp3Files(musicFolder());
+    static List<SongMedia> listLibraryMp3Files() {
+        // TODO: remove this method
+        return listMp3Files();
     }
 
-    private static List<File> listMp3Files(File directory) {
-        List<File> ret = new ArrayList<>();
+    private static List<SongMedia> listMp3Files() {
+        List<SongMedia> ret = new ArrayList<>();
 
-        if (!directory.exists()) {
-            System.out.println("Directory does not exist: " + directory);
-            return ret;
+        ContentResolver contentResolver = context.getContentResolver();
+        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
+        System.out.println("Total songs: " + songCursor.getCount());
+
+        if (songCursor != null && songCursor.moveToFirst()) {
+            int songId = songCursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int songDuration = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
+            int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+            int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
+            int songPath = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+            do {
+                long currentId = songCursor.getLong(songId);
+                String currentDuration = songCursor.getString(songDuration);
+                String currentArtist = songCursor.getString(songArtist);
+                String currentTitle = songCursor.getString(songTitle);
+                System.out.println("Song:" + currentId + " / " + currentTitle);
+
+                Uri currentUri = Uri.parse(songCursor.getString(songPath));
+//                Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentId);
+
+                SongMedia songMedia = new SongMedia();
+                songMedia.setDuration(currentDuration);
+                songMedia.setArtist(currentArtist);
+                songMedia.setTitle(currentTitle);
+                songMedia.setUri(currentUri);
+
+                ret.add(songMedia);
+            } while(songCursor.moveToNext());
         }
 
-        File[] files = directory.listFiles();
-        if (files == null)
-            return ret;
-
-        for (File file : files) {
-            if (file.isDirectory())
-                ret.addAll(listMp3Files(file));
-            else if (isMP3(file))
-                ret.add(file);
-        }
         return ret;
     }
 

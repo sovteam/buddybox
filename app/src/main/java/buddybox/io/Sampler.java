@@ -78,6 +78,7 @@ public class Sampler {
     }
 
     private static File samplerDirectory() {
+        // TODO: remove mkdirs, new API29 method getExternalFilesDir creates missing folders
         File ret = context.getExternalFilesDir(Environment.DIRECTORY_MUSIC);
         if (ret != null)
             if (!ret.exists() && !ret.mkdirs())
