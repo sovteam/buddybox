@@ -147,17 +147,7 @@ public class SongUtils {
                 Uri currentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentId);
 
                 String currentModified = songCursor.getString(songModified);
-
-                try {
-//                    contentResolver.openInputStream(currentUri)
-                    ParcelFileDescriptor parcelFileDescriptor = contentResolver.openFileDescriptor(currentUri, "r");
-//                    ParcelFileDescriptor.AutoCloseInputStream autoCloseInputStream = new ParcelFileDescriptor.AutoCloseInputStream(parcelFileDescriptor);
-                    readMp3Metadata(parcelFileDescriptor.getFileDescriptor());
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    continue;
-                }
-
+                
                 SongMedia songMedia = new SongMedia();
                 songMedia.setDuration(currentDuration);
                 songMedia.setArtist(currentArtist);
