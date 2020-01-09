@@ -78,8 +78,8 @@ public class Library {
                 songByPath.put(song.filePath, song);
 
         for (SongMedia mp3 : mp3Files) {
-            Song song = songByPath.remove(mp3.getPath());
-            if (song == null || song.fileLength != mp3.length() || song.lastModified != mp3.lastModified())
+            Song song = songByPath.remove(mp3.getUri());
+            if (song == null || song.duration() != mp3.getDuration() || song.lastModified != mp3.getModified())
                 dispatch(new SongFound(SongUtils.readSong(mp3)));
         }
 

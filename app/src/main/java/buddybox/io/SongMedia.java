@@ -4,41 +4,49 @@ import android.net.Uri;
 
 public class SongMedia {
 
-    String audioTitle;
-    String audioDuration;
-    String audioArtist;
-    Uri audioUri;
-    
+    private String title;
+    private String duration;
+    private String artist;
+    private Uri uri;
+    private long modified;
+
     public String getTitle() {
-        return audioTitle;
+        return title;
     }
 
     public void setTitle(String audioTitle) {
-        this.audioTitle = audioTitle;
+        this.title = audioTitle;
     }
 
     public String getDuration() {
-        return audioDuration;
+        return duration;
     }
 
     public void setDuration(String audioDuration) {
-        this.audioDuration = audioDuration;
+        this.duration = audioDuration;
     }
 
-    public String getaudioArtist() {
-        return audioArtist;
+    public String getArtist() {
+        return artist;
     }
 
     public void setArtist(String audioArtist) {
-        this.audioArtist = audioArtist;
+        this.artist = audioArtist;
     }
     
     public Uri getUri() {
-        return audioUri;
+        return uri;
     }
 
     public void setUri(Uri audioUri) {
-        this.audioUri = audioUri;
+        this.uri = audioUri;
     }
-    
+
+    public long getModified() {
+        return modified;
+    }
+
+    public void setModified(long currentModified) {
+        this.modified = currentModified;
+    }
 }

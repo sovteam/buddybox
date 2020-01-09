@@ -2,20 +2,24 @@ package buddybox.io;
 
 import android.app.Application;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -58,13 +62,13 @@ public class SongUtils {
         return listMp3Files();
     }
 
-    private static Hash mp3Hash(File mp3) {
+    private static Hash mp3Hash(InputStream inputStream) {
         MessageDigest sha256 = getMessageDigest();
         if (sha256 == null)
             throw new RuntimeException("Missing SHA-256 algorithm");
 
         Hash ret = null;
-        byte[] raw = rawMP3(mp3);
+        byte[] raw = rawMP3(inputStream);
         if (raw != null) {
             byte[] hashBytes = Arrays.copyOf(sha256.digest(raw), 16); // 128 bits is enough
             ret = new Hash(hashBytes);
@@ -73,10 +77,10 @@ public class SongUtils {
     }
 
 
-    private static byte[] rawMP3(File file) {
+    private static byte[] rawMP3(InputStream inputStream) {
         byte[] ret = null;
         try {
-            InputStream in = new BufferedInputStream(new FileInputStream(file), 8 * 1024);
+            InputStream in = new BufferedInputStream(inputStream, 8 * 1024);
             in.mark(10);
             int headerEnd = readID3v2Header(in);
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -131,7 +135,7 @@ public class SongUtils {
             int songDuration = songCursor.getColumnIndex(MediaStore.Audio.Media.DURATION);
             int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int songPath = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            int songModified = songCursor.getColumnIndex(MediaStore.Audio.Media.DATE_MODIFIED);
 
             do {
                 long currentId = songCursor.getLong(songId);
@@ -140,14 +144,26 @@ public class SongUtils {
                 String currentTitle = songCursor.getString(songTitle);
                 System.out.println("Song:" + currentId + " / " + currentTitle);
 
-                Uri currentUri = Uri.parse(songCursor.getString(songPath));
-//                Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentId);
+                Uri currentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentId);
+
+                String currentModified = songCursor.getString(songModified);
+
+                try {
+//                    contentResolver.openInputStream(currentUri)
+                    ParcelFileDescriptor parcelFileDescriptor = contentResolver.openFileDescriptor(currentUri, "r");
+//                    ParcelFileDescriptor.AutoCloseInputStream autoCloseInputStream = new ParcelFileDescriptor.AutoCloseInputStream(parcelFileDescriptor);
+                    readMp3Metadata(parcelFileDescriptor.getFileDescriptor());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    continue;
+                }
 
                 SongMedia songMedia = new SongMedia();
                 songMedia.setDuration(currentDuration);
                 songMedia.setArtist(currentArtist);
                 songMedia.setTitle(currentTitle);
                 songMedia.setUri(currentUri);
+                songMedia.setModified(Date.valueOf(currentModified).getTime());
 
                 ret.add(songMedia);
             } while(songCursor.moveToNext());
@@ -158,6 +174,19 @@ public class SongUtils {
 
     private static boolean isMP3(File file) {
         return file.getName().toLowerCase().endsWith(".mp3");
+    }
+
+    private static void readMp3Metadata(FileDescriptor descriptor) {
+        Map<String, String> ret = new HashMap<>();
+
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        mmr.setDataSource(descriptor);
+
+        String name = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        String artist = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+        System.out.println("!!! Name: " + name);
+        System.out.println("!!! Artist: " + artist);
     }
 
     private static Map<String, String> readMp3Metadata(File mp3) {
@@ -384,18 +413,20 @@ public class SongUtils {
         return digest;
     }
 
-    public static Song readSong(File mp3) {
-        Map<String, String> metadata = SongUtils.readMp3Metadata(mp3);
-        Hash hash = SongUtils.mp3Hash(mp3);
-
-        Integer duration = null;
-        String durationStr = metadata.get("duration");
-        if (durationStr != null)
-            duration = Integer.parseInt(durationStr);
-
-        boolean hasEmbeddedArt = getEmbeddedPicture(mp3) != null;
-
-        return new Song(null, hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt, 0);
+    public static Song readSong(SongMedia mp3) {
+        //TODO: altz
+        return null;
+//        Map<String, String> metadata = SongUtils.readMp3Metadata(mp3);
+//        Hash hash = SongUtils.mp3Hash(mp3);
+//
+//        Integer duration = null;
+//        String durationStr = metadata.get("duration");
+//        if (durationStr != null)
+//            duration = Integer.parseInt(durationStr);
+//
+//        boolean hasEmbeddedArt = getEmbeddedPicture(mp3) != null;
+//
+//        return new Song(null, hash, metadata.get("name"), metadata.get("artist"), metadata.get("album"), metadata.get("genre"), duration, mp3.getPath(), mp3.length(), mp3.lastModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt, 0);
     }
 
     static boolean deleteSong(Song song) {

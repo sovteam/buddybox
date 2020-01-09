@@ -196,11 +196,12 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
                     return;
                 System.out.println("Path >>> " + path);
                 File mp3 = new File(path);
-                Song song = SongUtils.readSong(mp3);
-                dispatch(new SongFound(song));
-                dispatch(new SongSelected(song.hash.toString()));
-                dispatch(new Play(song));
-                startActivity(new Intent(this, PlayingActivity.class));
+                //TODO: altz
+//                Song song = SongUtils.readSong(mp3);
+//                dispatch(new SongFound(song));
+//                dispatch(new SongSelected(song.hash.toString()));
+//                dispatch(new Play(song));
+//                startActivity(new Intent(this, PlayingActivity.class));
             }
         }
     }

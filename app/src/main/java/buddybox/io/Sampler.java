@@ -73,8 +73,9 @@ public class Sampler {
     }
 
     private static void updateSamplerLibrary() {
-        List<Song> samples = SongUtils.listSongs(samplerDirectory());
-        dispatch(new SamplerUpdated(samples));
+        //TODO: altz
+//        List<Song> samples = SongUtils.listSongs(samplerDirectory());
+//        dispatch(new SamplerUpdated(samples));
     }
 
     private static File samplerDirectory() {
