@@ -63,7 +63,6 @@ public class Sampler {
         } else {
             System.out.println("File could not be moved to music folder");
         }
-
     }
 
     private static void deleteSong(Song song) {
@@ -73,9 +72,8 @@ public class Sampler {
     }
 
     private static void updateSamplerLibrary() {
-        //TODO: altz
-//        List<Song> samples = SongUtils.listSongs(samplerDirectory());
-//        dispatch(new SamplerUpdated(samples));
+        List<Song> samples = SongUtils.listSongs();
+        dispatch(new SamplerUpdated(samples));
     }
 
     private static File samplerDirectory() {

@@ -55,9 +55,14 @@ public class SongUtils {
         return musicFolder;
     }
 
-    static List<SongMedia> listSongs() {
-        // TODO: remove this method
-        return listMp3Files();
+    static List<Song> listSongs() {
+        List<SongMedia> mp3Files = listSongMediaFiles();
+        List<Song> ret = new ArrayList<>();
+
+        for (SongMedia songMedia : mp3Files)
+            ret.add(readSong(songMedia));
+
+        return ret;
     }
 
     private static Hash mp3Hash(SongMedia songMedia) {
@@ -125,12 +130,7 @@ public class SongUtils {
         return size + 10;
     }
 
-    static List<SongMedia> listLibraryMp3Files() {
-        // TODO: remove this method
-        return listMp3Files();
-    }
-
-    private static List<SongMedia> listMp3Files() {
+    static List<SongMedia> listSongMediaFiles() {
         List<SongMedia> ret = new ArrayList<>();
 
         ContentResolver contentResolver = context.getContentResolver();

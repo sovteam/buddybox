@@ -70,7 +70,7 @@ public class Library {
     private static void synchronizeLibrary() {
         Log.i(TAG,"SYNC started");
         long start = System.currentTimeMillis();
-        List<SongMedia> mp3Files = SongUtils.listLibraryMp3Files();
+        List<SongMedia> mp3Files = SongUtils.listSongMediaFiles();
 
         Map<String, Song> songByPath = new HashMap<>();
         if (state != null)
