@@ -189,20 +189,20 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
             Uri uri = intent.getData();
             System.out.println("URI >>># " + uri);
             System.out.println("URI auth >>># " + uri.getAuthority());
-            if (uri != null) {
+//            if (uri != null) {
+//
+//                String path = getPath(this, uri);
+//                if (path == null)
+//                    return;
+//                System.out.println("Path >>> " + path);
+//                File mp3 = new File(path);
 
-                String path = getPath(this, uri);
-                if (path == null)
-                    return;
-                System.out.println("Path >>> " + path);
-                File mp3 = new File(path);
-                //TODO: altz
 //                Song song = SongUtils.readSong(mp3);
 //                dispatch(new SongFound(song));
 //                dispatch(new SongSelected(song.hash.toString()));
 //                dispatch(new Play(song));
 //                startActivity(new Intent(this, PlayingActivity.class));
-            }
+//            }
         }
     }
 

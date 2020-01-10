@@ -152,7 +152,7 @@ public class SongUtils {
                 String currentArtist = songCursor.getString(songArtist);
                 String currentAlbum = songCursor.getString(songAlbum);
                 String currentTitle = songCursor.getString(songTitle);
-                String currentModified = songCursor.getString(songModified);
+                long currentModified = songCursor.getLong(songModified);
 
                 System.out.println("Song:" + currentId + " / " + currentTitle);
 
@@ -164,7 +164,7 @@ public class SongUtils {
                 songMedia.setAlbum(currentAlbum);
                 songMedia.setTitle(currentTitle);
                 songMedia.setUri(currentUri);
-                songMedia.setModified(Date.valueOf(currentModified).getTime());
+                songMedia.setModified(currentModified);
 
                 ret.add(songMedia);
             } while(songCursor.moveToNext());
