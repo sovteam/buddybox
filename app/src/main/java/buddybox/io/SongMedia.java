@@ -7,6 +7,7 @@ public class SongMedia {
     private String title;
     private String duration;
     private String artist;
+    private String album;
     private Uri uri;
     private long modified;
 
@@ -48,5 +49,13 @@ public class SongMedia {
 
     public void setModified(long currentModified) {
         this.modified = currentModified;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
     }
 }
