@@ -10,6 +10,7 @@ public class SongMedia {
     private String album;
     private Uri uri;
     private long modified;
+    private long mediaId;
 
     public String getTitle() {
         return title;
@@ -57,5 +58,13 @@ public class SongMedia {
 
     public void setAlbum(String album) {
         this.album = album;
+    }
+
+    public void setMediaId(long mediaId) {
+        this.mediaId = mediaId;
+    }
+
+    public long getMediaId() {
+        return mediaId;
     }
 }

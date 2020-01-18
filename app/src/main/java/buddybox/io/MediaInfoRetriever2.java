@@ -1,11 +1,13 @@
 package buddybox.io;
 
 import android.app.Application;
+import android.content.ContentUris;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -27,7 +29,6 @@ import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtRequested;
 import buddybox.core.events.ArtistInfoError;
 import buddybox.core.events.ArtistInfoFound;
@@ -88,31 +89,28 @@ public class MediaInfoRetriever2 {
     private static Bitmap loadArt(Playlist playlist) { Log.d(TAG, "TODO: Load art for playlist: " + playlist); return null; }
 
     private static Bitmap loadEmbeddedArt(Song song) {
-        if (song.hasEmbeddedArt() == Boolean.FALSE)
+        if (!song.hasEmbeddedArt())
             return null;
         byte[] result = getEmbeddedArtBytes(song);
-        if (song.hasEmbeddedArt() == null) {
-            boolean wasFound = result != null;
-            dispatch(new AlbumArtEmbeddedFound(song, wasFound));
-        }
-        return result == null
-            ? null
-            : BitmapFactory.decodeByteArray(result, 0, result.length);
+        return BitmapFactory.decodeByteArray(result, 0, result.length);
     }
 
     private static Bitmap loadExternalArt(Song song) throws IOException {
-        File cache = new File(ALBUMS_FOLDER, albumArtFileName(song.artist, song.album));
-        if (cache.exists())
-            return BitmapFactory.decodeFile(cache.getPath());
-
-        byte[] downloaded = downloadArtFromLastFM(song);
-        if (downloaded == null)
-            return null;
-
-        try (FileOutputStream fos = new FileOutputStream(cache)) {
-            fos.write(downloaded);
-        }
-        return BitmapFactory.decodeByteArray(downloaded, 0, downloaded.length);
+        System.out.println("loadExternalArt disabled!");
+        return null;
+//
+//        File cache = new File(ALBUMS_FOLDER, albumArtFileName(song.artist, song.album));
+//        if (cache.exists())
+//            return BitmapFactory.decodeFile(cache.getPath());
+//
+//        byte[] downloaded = downloadArtFromLastFM(song);
+//        if (downloaded == null)
+//            return null;
+//
+//        try (FileOutputStream fos = new FileOutputStream(cache)) {
+//            fos.write(downloaded);
+//        }
+//        return BitmapFactory.decodeByteArray(downloaded, 0, downloaded.length);
     }
 
     private static byte[] downloadArtFromLastFM(Song song) {
@@ -184,7 +182,8 @@ public class MediaInfoRetriever2 {
     private static byte[] getEmbeddedArtBytes(Song song) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {
-            retriever.setDataSource(song.filePath);
+            Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.mediaId);
+            retriever.setDataSource(context, uri);
             return retriever.getEmbeddedPicture();
         } finally {
             retriever.release();

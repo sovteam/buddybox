@@ -1,5 +1,6 @@
 package buddybox.ui;
 
+import android.content.ContentUris;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -13,6 +14,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -154,7 +157,7 @@ public class PlayingActivity extends AppCompatActivity {
         if (playing.isMissing)
             return;
 
-        Uri uri = Uri.parse(playing.filePath);
+        Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, playing.mediaId);
         Intent share = new Intent(Intent.ACTION_SEND);
         share.setType("file/*");
         share.putExtra(Intent.EXTRA_STREAM, uri);

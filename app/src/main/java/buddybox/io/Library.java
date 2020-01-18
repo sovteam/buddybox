@@ -72,18 +72,18 @@ public class Library {
         long start = System.currentTimeMillis();
         List<SongMedia> mp3Files = SongUtils.listSongMediaFiles();
 
-        Map<String, Song> songByPath = new HashMap<>();
+        Map<Long, Song> songByMediaId = new HashMap<>();
         if (state != null)
             for (Song song : state.allSongs)
-                songByPath.put(song.filePath, song);
+                songByMediaId.put(song.mediaId, song);
 
         for (SongMedia mp3 : mp3Files) {
-            Song song = songByPath.remove(mp3.getUri());
+            Song song = songByMediaId.remove(mp3.getMediaId());
             if (song == null || song.duration() != mp3.getDuration() || song.lastModified != mp3.getModified())
                 dispatch(new SongFound(SongUtils.readSong(mp3)));
         }
 
-        for (Song missing : songByPath.values())
+        for (Song missing : songByMediaId.values())
             dispatch(new SongMissing(missing));
 
         dispatch(SYNC_LIBRARY_FINISHED);

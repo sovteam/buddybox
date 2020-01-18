@@ -42,7 +42,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "ALBUM TEXT," +
                 "GENRE TEXT," +
                 "DURATION INTEGER," +
-                "FILE_PATH TEXT," +
+                "MEDIA_ID INTEGER," +
                 "FILE_LENGTH INTEGER," +
                 "LAST_MODIFIED INTEGER," +
                 "IS_MISSING INTEGER," +

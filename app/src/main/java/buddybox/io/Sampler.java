@@ -54,21 +54,21 @@ public class Sampler {
     private static void samplerLove(SamplerLove event) {
         System.out.println(">>> Sampler Love Song " + event.song.name);
 
-        File newFile = new File(SongUtils.musicFolder(), event.song.filePath); // TODO check filePath of sampler song
-        File currentFile = new File(event.song.filePath);
-        boolean moved = currentFile.renameTo(newFile); // TODO copy file
-        if (moved) {
-            dispatch(new SongAdded(event.song)); // TODO remove
-            event.song.setLoved();
-        } else {
-            System.out.println("File could not be moved to music folder");
-        }
+//        File newFile = new File(SongUtils.musicFolder(), event.song.filePath); // TODO check filePath of sampler song
+//        File currentFile = new File(event.song.filePath);
+//        boolean moved = currentFile.renameTo(newFile); // TODO copy file
+//        if (moved) {
+//            dispatch(new SongAdded(event.song)); // TODO remove
+//            event.song.setLoved();
+//        } else {
+//            System.out.println("File could not be moved to music folder");
+//        }
     }
 
     private static void deleteSong(Song song) {
-        File file = new File(samplerDirectory(), song.filePath);
-        if (file.delete())
-            System.out.println("Unable to delete file: " + file.getPath());
+//        File file = new File(samplerDirectory(), song.filePath);
+//        if (file.delete())
+//            System.out.println("Unable to delete file: " + file.getPath());
     }
 
     private static void updateSamplerLibrary() {

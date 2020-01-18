@@ -23,7 +23,7 @@ public class Song implements Playable {
     public Boolean lovedViewed;
     public Long hated;
     public Long deleted;
-    public String filePath;
+    public long mediaId;
 
     public final long fileLength;
     public final long lastModified;
@@ -31,15 +31,13 @@ public class Song implements Playable {
     public boolean isMissing;
     public boolean isDeleted;
 
-    private Bitmap embeddedArt;
     public long lastAlbumArtRequested;
-    private Bitmap art;
 
     private long lastPlayed;
-    private Boolean hasEmbeddedArt;
+    private boolean hasEmbeddedArt;
 
-    public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, String filePath,
-                long fileLength, long lastModified, boolean isMissing, boolean isDeleted, long lastPlayed, Boolean hasEmbeddedArt, long lastAlbumArtRequested) {
+    public Song(Long id, Hash hash, String name, String artist, String album, String genre, Integer duration, long mediaId,
+                long fileLength, long lastModified, boolean isMissing, boolean isDeleted, long lastPlayed, boolean hasEmbeddedArt, long lastAlbumArtRequested) {
         this.id = id;
         this.hash = hash;
         this.name = name;
@@ -47,7 +45,7 @@ public class Song implements Playable {
         this.album = album;
         this.genre = genre;
         this.duration = duration;
-        this.filePath = filePath;
+        this.mediaId = mediaId;
         this.fileLength = fileLength;
         this.lastModified = lastModified;
         this.isMissing = isMissing;
@@ -143,26 +141,11 @@ public class Song implements Playable {
         return String.format(Locale.getDefault(), "%.1f", (double) fileLength / 1024 / 1024) + " MB";
     }
 
-    public void setEmbeddedArt(Bitmap embeddedArt) {
-        this.embeddedArt = embeddedArt;
-    }
-
-    public void setArt(Bitmap art) {
-        this.art = art;
-    }
-
-    public Bitmap getArt() {
-        if (embeddedArt != null)
-            return embeddedArt;
-
-        return art;
-    }
-
     public void setId(long id) {
         this.id = id;
     }
 
-    public Boolean hasEmbeddedArt() {
+    public boolean hasEmbeddedArt() {
         return hasEmbeddedArt;
     }
 

@@ -34,7 +34,6 @@ public class AsyncImage {
                    continue;
 
                Bitmap myImageLoaded = MediaInfoRetriever2.loadArt(myImageToLoad); // slow call
-
                imageLoaded(myView, myImageToLoad, myImageLoaded);
            }
         }};
@@ -72,6 +71,7 @@ public class AsyncImage {
             else
                 entry.getKey().setImageBitmap(entry.getValue());
         imagesLoaded.clear();
+        System.out.println("useLoadedImages!!!");
     }
 
     static private <T> T pop(BlockingDeque<T> stack) {

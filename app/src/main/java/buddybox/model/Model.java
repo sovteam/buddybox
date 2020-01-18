@@ -26,7 +26,6 @@ import buddybox.core.Playable;
 import buddybox.core.Playlist;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.AlbumArtEmbeddedFound;
 import buddybox.core.events.AlbumArtRequested;
 import buddybox.core.events.ArtistInfoFound;
 import buddybox.core.events.ArtistSelected;
@@ -219,7 +218,6 @@ public class Model implements IModel {
         if (event == BLUETOOTH_DISCONNECT) bluetoothDisconnect();
 
         // media info
-        if (cls == AlbumArtEmbeddedFound.class) albumArtEmbeddedFound((AlbumArtEmbeddedFound) event);
         if (cls == AlbumArtRequested.class) albumArtRequested((AlbumArtRequested) event);
         if (cls == ArtistInfoFound.class) artistInfoFound((ArtistInfoFound) event);
 
@@ -299,13 +297,6 @@ public class Model implements IModel {
 
     private void artistSelectedByName(ArtistSelectedByName event) {
         artistSelected = artists.get(event.name);
-    }
-
-    private void albumArtEmbeddedFound(AlbumArtEmbeddedFound event) {
-        event.song.setHasEmbeddedArt(event.hasEmbeddedArt);
-        ContentValues vals = new ContentValues();
-        vals.put("HAS_EMBEDDED_ART", event.hasEmbeddedArt ? 1 : 0);
-        db.update("SONGS", vals, "ID=?", new String[]{Long.toString(event.song.getId())});
     }
 
     private void albumArtRequested(AlbumArtRequested event) {
@@ -705,7 +696,7 @@ public class Model implements IModel {
         ret.put("ARTIST", song.artist);
         ret.put("ALBUM", song.album);
         ret.put("DURATION", song.duration);
-        ret.put("FILE_PATH", song.filePath);
+        ret.put("MEDIA_ID", song.mediaId);
         ret.put("FILE_LENGTH", song.fileLength);
         ret.put("LAST_MODIFIED", song.lastModified);
         ret.put("IS_MISSING", song.isMissing ? 1 : 0);
@@ -1095,7 +1086,7 @@ public class Model implements IModel {
                         cursor.getString(cursor.getColumnIndex("ALBUM")),
                         cursor.getString(cursor.getColumnIndex("GENRE")),
                         cursor.getInt(cursor.getColumnIndex("DURATION")),
-                        cursor.getString(cursor.getColumnIndex("FILE_PATH")),
+                        cursor.getLong(cursor.getColumnIndex("MEDIA_ID")),
                         cursor.getLong(cursor.getColumnIndex("FILE_LENGTH")),
                         cursor.getLong(cursor.getColumnIndex("LAST_MODIFIED")),
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,

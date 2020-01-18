@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -159,11 +158,12 @@ public class SongUtils {
                 Uri currentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currentId);
 
                 SongMedia songMedia = new SongMedia();
+                songMedia.setMediaId(currentId);
                 songMedia.setDuration(currentDuration);
                 songMedia.setArtist(currentArtist);
                 songMedia.setAlbum(currentAlbum);
                 songMedia.setTitle(currentTitle);
-                songMedia.setUri(currentUri);
+                songMedia.setUri(contentResolver.canonicalize(currentUri));
                 songMedia.setModified(currentModified);
 
                 ret.add(songMedia);
@@ -392,11 +392,12 @@ public class SongUtils {
 
         boolean hasEmbeddedArt = getEmbeddedPicture(songMedia) != null;
 
-        return new Song(null, hash, songMedia.getTitle(), songMedia.getArtist(), songMedia.getAlbum(), metadata.get("genre"), duration, songMedia.getUri().getPath(), 0, songMedia.getModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt, 0);
+        return new Song(null, hash, songMedia.getTitle(), songMedia.getArtist(), songMedia.getAlbum(), metadata.get("genre"), duration, songMedia.getMediaId(), 0, songMedia.getModified(), false, false, System.currentTimeMillis(), hasEmbeddedArt, 0);
     }
 
     static boolean deleteSong(Song song) {
-        File songFile = new File(song.filePath);
-        return songFile.exists() && songFile.delete();
+        ContentResolver contentResolver = context.getContentResolver();
+        Uri uri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, song.mediaId);
+        return contentResolver.delete(uri, null, null) == 1;
     }
 }

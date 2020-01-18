@@ -1,10 +1,14 @@
 package buddybox.io;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +94,8 @@ public class Player {
 
         // play another song
         try {
-            Uri myUri = Uri.parse(state.songPlaying.filePath);
+            Uri myUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, state.songPlaying.mediaId);
+
             mediaPlayer.stop();
             mediaPlayer.reset();
             mediaPlayer.setDataSource(context, myUri);
