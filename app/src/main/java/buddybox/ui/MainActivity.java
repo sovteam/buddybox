@@ -11,42 +11,37 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.annotation.NonNull;
-import com.google.android.material.tabs.TabLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.core.content.ContextCompat;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.File;
+import com.google.android.material.tabs.TabLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import buddybox.ModelSim;
 import buddybox.core.IModel;
 import buddybox.core.Song;
 import buddybox.core.State;
-import buddybox.core.events.Play;
 import buddybox.core.events.SetBluetoothVolume;
 import buddybox.core.events.SetHeadphonesVolume;
 import buddybox.core.events.SetSpeakerVolume;
-import buddybox.core.events.SongFound;
-import buddybox.core.events.SongSelected;
 import buddybox.io.BluetoothListener;
 import buddybox.io.HeadsetPlugListener;
 import buddybox.io.Library;
@@ -66,7 +61,6 @@ import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
-import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.model.Model.BLUETOOTH;
 import static buddybox.model.Model.HEADPHONES;
 import static buddybox.model.Model.SPEAKER;
@@ -128,23 +122,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
 
         // TODO move to library loved frag
         // findViewById(R.id.whatshot).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler); }});
-
-        // Playing
-        findViewById(R.id.playPause).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
-            if (lastState.songPlaying.isMissing) {
-                Toast toast = Toast.makeText(getApplicationContext(), "Song is missing", Toast.LENGTH_SHORT);
-                toast.show();
-            } else {
-                ModelProxy.dispatch(PLAY_PAUSE_CURRENT);
-            }
-        }});
-        findViewById(R.id.playingMaximize).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, PlayingActivity.class));
-                overridePendingTransition(R.anim.slide_in_up, R.anim.stay);
-            }
-        });
 
         findViewById(R.id.grantPermission).setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View view) {
@@ -358,7 +335,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
     }
 
     private void updateState(State state) {
-        updateLibraryState(state);
         // updateSamplerState(state);
         // updateLovedState(state); TODO move to library fragment
         updateSettings(state);
@@ -601,29 +577,6 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         findViewById(R.id.frameLibrary).setVisibility(View.VISIBLE);
         ((TextView) findViewById(R.id.libraryText)).setTextColor(Color.parseColor("#4fc3f7"));
         ((ImageView) findViewById(R.id.libraryNavbarBtn)).setImageResource(R.drawable.ic_library_music_blue);
-    }
-
-    private void updateLibraryState(State state) {
-        Song songPlaying = state.songPlaying;
-        View playingBar = findViewById(R.id.playingBar);
-
-        if (songPlaying == null || state.isSampling) {
-            playingBar.setVisibility(View.INVISIBLE);
-        } else {
-            playingBar.setVisibility(View.VISIBLE);
-
-            int color = songPlaying.isMissing
-                    ? Color.parseColor("#e53935")
-                    : Color.WHITE;
-            TextView name = findViewById(R.id.playingName);
-            name.setText(songPlaying.name());
-            name.setTextColor(color);
-            TextView subtitle = findViewById(R.id.playingSubtitle);
-            subtitle.setText(songPlaying.subtitle());
-            subtitle.setTextColor(color);
-
-            ((ImageButton)findViewById(R.id.playPause)).setImageResource(state.isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
-        }
     }
 
     private void setVolumeControls() {

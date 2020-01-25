@@ -9,14 +9,11 @@
     <include layout="@layout/permission_write_external_storage"
         android:id="@+id/permission" />
 
-    <include layout="@layout/navbar"
-        android:id="@+id/includeNavbar" />
-
     <RelativeLayout
         android:id="@+id/framesContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/includeNavbar">
+        android:layout_above="@+id/includeNavbar">
 
         <!--<FrameLayout
             android:id="@+id/frameSampler"
@@ -55,6 +52,7 @@
         </FrameLayout>
     </RelativeLayout>
 
-    <include layout="@layout/playing_bar" />
+    <include layout="@layout/navbar"
+        android:id="@+id/includeNavbar" />
 
 </RelativeLayout>
