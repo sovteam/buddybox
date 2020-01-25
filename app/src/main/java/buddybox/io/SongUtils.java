@@ -134,7 +134,8 @@ public class SongUtils {
 
         ContentResolver contentResolver = context.getContentResolver();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+        Cursor songCursor = contentResolver.query(songUri, null, selection, null, null);
         System.out.println("Total songs: " + songCursor.getCount());
 
         if (songCursor != null && songCursor.moveToFirst()) {
