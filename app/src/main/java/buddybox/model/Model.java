@@ -1092,7 +1092,7 @@ public class Model implements IModel {
                         cursor.getInt(cursor.getColumnIndex("IS_MISSING")) == 1,
                         cursor.getInt(cursor.getColumnIndex("IS_DELETED")) == 1,
                         cursor.getLong(cursor.getColumnIndex("LAST_PLAYED")),
-                        maybeBoolean(cursor.getInt(cursor.getColumnIndex("HAS_EMBEDDED_ART"))),
+                        cursor.getInt(cursor.getColumnIndex("HAS_EMBEDDED_ART")) == 1,
                         cursor.getLong(cursor.getColumnIndex("LAST_ALBUM_ART_REQUESTED")));
                 addSong(song);
             }
@@ -1267,12 +1267,6 @@ public class Model implements IModel {
     void setDatabase(SQLiteDatabase database) {
         // FORT TEST ONLY!!!
         db = database;
-    }
-
-    private Boolean maybeBoolean(int value) {
-        if (value == 0) return false;
-        if (value == 1) return true;
-        return null;
     }
 
 }
