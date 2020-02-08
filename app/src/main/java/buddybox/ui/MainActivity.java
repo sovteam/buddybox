@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         // NavBar
         findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLibrary, view); }});
         // findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler, view); }});
+        findViewById(R.id.playingNow).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { startActivity(new Intent(getApplicationContext(), PlayingActivity.class)); }});
         findViewById(R.id.searchNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSearch, view); }});
         findViewById(R.id.settingsNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSettings, view); }});
 

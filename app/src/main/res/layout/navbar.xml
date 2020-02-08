@@ -113,6 +113,41 @@
     </LinearLayout>
 
     <RelativeLayout
+        android:id="@+id/playingNow"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="clip_vertical"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:id="@+id/playingNowBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:adjustViewBounds="false"
+            android:background="@android:color/transparent"
+            android:clickable="false"
+            android:contentDescription="@string/playingNow"
+            android:paddingTop="8dp"
+            android:src="@drawable/ic_audiotrack" />
+
+        <TextView
+            android:id="@+id/playingNowText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/playingNowBtn"
+            android:layout_centerHorizontal="true"
+            android:text="@string/playingNow"
+            android:textAlignment="center"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/searchNavBar"
         android:layout_width="0dp"
         android:layout_height="match_parent"

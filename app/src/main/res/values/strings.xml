@@ -57,6 +57,7 @@
     <string name="remove_song">Remove Song</string>
     <string name="blue">Blue</string>
     <string name="clear_search_field">clear search field</string>
+    <string name="playingNow">Playing</string>
     <string name="search">Search</string>
     <string name="settings">Settings</string>
     <string name="sharing_warning">IMPORTANT: This player shares the MP3 files in your music folder: /android/.../music Make sure all MP3 files there can be shared.</string>
