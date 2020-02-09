@@ -65,6 +65,7 @@ import static buddybox.core.events.Library.SYNC_LIBRARY;
 import static buddybox.core.events.Library.SYNC_LIBRARY_FINISHED;
 import static buddybox.core.events.Play.FINISHED_PLAYING;
 import static buddybox.core.events.Play.PAUSE;
+import static buddybox.core.events.Play.PREPARE_FIRST_SONG;
 import static buddybox.core.events.Play.PLAY_PAUSE_CURRENT;
 import static buddybox.core.events.Play.REPEAT;
 import static buddybox.core.events.Play.SHUFFLE;
@@ -163,6 +164,7 @@ public class Model implements IModel {
         if (cls == SeekTo.class) seekTo((SeekTo) event);
         if (event == SHUFFLE_PLAY) shufflePlay();
         if (event == SHUFFLE_PLAY_ARTIST) shufflePlayArtist();
+        if (event == PREPARE_FIRST_SONG) prepareFirstSong();
         if (event == PLAY_PAUSE_CURRENT) playPauseCurrent();
         if (event == PAUSE) pause();
         if (event == SKIP_NEXT) skip(+1);
@@ -971,6 +973,18 @@ public class Model implements IModel {
         isStopped = false;
         isPaused = false;
         currentPlaylist = playlist;
+    }
+
+    private void prepareFirstSong() {
+        Song song = currentSong();
+        if (song == null || song.isMissing) {
+            currentPlaylist = allSongsPlaylist();
+            if (currentPlaylist.size() == 0) return;
+            currentSongIndex = 0;
+            isStopped = false;
+            isPaused = false;
+            updateLastPlayed(currentPlaylist.song(currentSongIndex, false));
+        }
     }
 
     private void playPauseCurrent() {

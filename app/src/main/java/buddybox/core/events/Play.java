@@ -17,6 +17,7 @@ public class Play extends Dispatcher.Event {
     public static final Dispatcher.Event SHUFFLE_PLAY = new Dispatcher.Event("ShufflePlay");
     public static final Dispatcher.Event SHUFFLE_PLAY_ARTIST = new Dispatcher.Event("ShufflePlayArtist");
 
+    public static final Dispatcher.Event PREPARE_FIRST_SONG = new Dispatcher.Event("PrepareFirstSong");
     public static final Dispatcher.Event PLAY_PAUSE_CURRENT = new Dispatcher.Event("PlayPauseCurrent");
     public static final Dispatcher.Event PAUSE = new Dispatcher.Event("Pause");
     public static final Dispatcher.Event SKIP_NEXT = new Dispatcher.Event("SkipNext");

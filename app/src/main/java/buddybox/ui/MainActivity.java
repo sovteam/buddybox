@@ -61,6 +61,7 @@ import sov.buddybox.R;
 
 import static buddybox.core.Dispatcher.dispatch;
 import static buddybox.core.events.Library.SYNC_LIBRARY;
+import static buddybox.core.events.Play.PREPARE_FIRST_SONG;
 import static buddybox.model.Model.BLUETOOTH;
 import static buddybox.model.Model.HEADPHONES;
 import static buddybox.model.Model.SPEAKER;
@@ -132,7 +133,10 @@ public class MainActivity extends AppCompatActivity implements OnRequestPermissi
         // NavBar
         findViewById(R.id.libraryNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameLibrary, view); }});
         // findViewById(R.id.samplerNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSampler, view); }});
-        findViewById(R.id.playingNow).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { startActivity(new Intent(getApplicationContext(), PlayingActivity.class)); }});
+        findViewById(R.id.playingNow).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) {
+            dispatch(PREPARE_FIRST_SONG);
+            startActivity(new Intent(getApplicationContext(), PlayingActivity.class));
+        }});
         findViewById(R.id.searchNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSearch, view); }});
         findViewById(R.id.settingsNavBar).setOnClickListener(new View.OnClickListener() { @Override public void onClick(View view) { navigateTo(R.id.frameSettings, view); }});
 
